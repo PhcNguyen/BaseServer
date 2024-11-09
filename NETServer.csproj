@@ -30,9 +30,4 @@
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
 
-	<ItemGroup>
-	  <Folder Include="Resources\AES\" />
-	  <Folder Include="Resources\RSA\" />
-	</ItemGroup>
-
 </Project>

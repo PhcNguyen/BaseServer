@@ -1,67 +1,86 @@
-﻿using System.Net.Security;
-using System.Net.Sockets;
-using NETServer.Logging;
-using NETServer.Application.Security;
+﻿using NETServer.Application.Security;
 using NETServer.Infrastructure;
+using NETServer.Logging;
+using System.Net.Sockets;
+using System.Net;
 
-namespace NETServer.Application.Network;
+namespace NETServer.Application.NetSocketServer;
 
 internal class ClientSession
 {
-    private Stream? _clientStream;
+    private readonly ConnectionLimiter _connectionLimiter;
+    private readonly RequestLimiter _requestLimiter;
     private readonly TcpClient _tcpClient;
+    private Stream? _clientStream;
 
+    public readonly Guid Id = Guid.NewGuid();
     public bool IsConnected { get; private set; }
-    public string? ClientAddress { get; private set; }
-    public Guid Id = Guid.NewGuid();
+    public string ClientAddress { get; private set; } = string.Empty;
 
     public TcpClient TcpClient => _tcpClient;
-    public Stream? NetworkStream => _clientStream;
+    public Stream? ClientStream => _clientStream;
 
-    public ClientSession (TcpClient tcpClient) 
+    public ClientSession(TcpClient tcpClient, RequestLimiter requestLimiter, ConnectionLimiter connectionLimiter)
     {
+        ValidateParameters(tcpClient, requestLimiter, connectionLimiter);
+
         _tcpClient = tcpClient;
+        _requestLimiter = requestLimiter;
+        _connectionLimiter = connectionLimiter;
+
+        ClientAddress = ValidateClientAddress();
     }
 
     public static implicit operator TcpClient(ClientSession v)
     {
-        throw new NotImplementedException();
+        if (v == null || v.TcpClient == null)
+        {
+            throw new InvalidOperationException("ClientSession or TcpClient is null.");
+        }
+        return v.TcpClient;
+    }
+
+    private static void ValidateParameters(TcpClient tcpClient, RequestLimiter requestLimiter, ConnectionLimiter connectionLimiter)
+    {
+        if (tcpClient == null) throw new ArgumentNullException(nameof(tcpClient), "TcpClient cannot be null");
+        if (requestLimiter == null) throw new ArgumentNullException(nameof(requestLimiter), "RequestLimiter cannot be null");
+        if (connectionLimiter == null) throw new ArgumentNullException(nameof(connectionLimiter), "ConnectionLimiter cannot be null");
+    }
+
+    private string ValidateClientAddress()
+    {
+        var clientEndPoint = _tcpClient.Client.RemoteEndPoint as IPEndPoint;
+        return clientEndPoint?.Address.ToString() ?? string.Empty;
     }
 
     public async Task Connect()
     {
         try
         {
-            // Kiểm tra xem _tcpClient có được khởi tạo và kết nối không
-            if (_tcpClient == null) return;
+            if (string.IsNullOrEmpty(ClientAddress))
+            {
+                NLog.Warning("Client address is not set. Cannot establish connection.");
+                return;
+            }
+
+            if (!_tcpClient.Connected)
+            {
+                NLog.Warning("TcpClient is not connected.");
+                return;
+            }
 
             this.IsConnected = true;
 
-            // Sử dụng SslManager để xác định Stream phù hợp (SSL hoặc không)
             _clientStream = Setting.UseSsl
                 ? await SslSecurity.EstablishSecureClientStream(_tcpClient)
                 : _tcpClient.GetStream();
 
-            // Kiểm tra xem địa chỉ client có hợp lệ không
-            this.ClientAddress = _tcpClient.Client.RemoteEndPoint?.ToString();
-            if (ClientAddress == null)
-            {
-                NLog.Warning("Failed to get client address.");
-                await Disconnect();
-                return;
-            }
-
-            NLog.Info($"Session {Id} connected to {ClientAddress}");
+            NLog.Info($"Session {Id} connected to {this.ClientAddress}");
         }
-        catch (SocketException error)
+        catch (Exception ex)
         {
-            NLog.Error(error);
-            await Disconnect();
-        }
-        catch (Exception error)
-        {
-            NLog.Error(error);
-            await Disconnect();
+            NLog.Error($"Error connecting client {ClientAddress}: {ex.Message}");
+            await DisconnectClient("Unknown", "Connection failed.");
         }
     }
 
@@ -69,17 +88,59 @@ internal class ClientSession
     {
         if (!IsConnected) return;
 
-        IsConnected = false; 
-
         try
         {
-            // Đảm bảo tài nguyên được giải phóng
-            await Task.Run(() => _clientStream?.Dispose()); 
+            if (!string.IsNullOrEmpty(ClientAddress))
+            {
+                await _connectionLimiter.ConnectionClosed(ClientAddress);
+            }
+            IsConnected = false;
+            _clientStream?.Dispose();
+
             NLog.Info($"Session {Id} disconnected from {ClientAddress}");
         }
-        catch (Exception error)
+        catch (Exception ex)
         {
-            NLog.Error(error);
+            NLog.Error(ex, $"Error disconnecting client {ClientAddress}");
+        }
+    }
+
+    public async Task<bool> AuthorizeClientSession()
+    {
+        if (string.IsNullOrEmpty(ClientAddress))
+        {
+            NLog.Warning("Client's endpoint is null or invalid.");
+            await DisconnectClient("Unknown", "Invalid endpoint.");
+            return false;
+        }
+
+        if (!await _connectionLimiter.IsConnectionAllowed(ClientAddress))
+        {
+            NLog.Warning($"Connection from {ClientAddress} is denied due to max connections.");
+            await DisconnectClient(ClientAddress, "Max connections reached.");
+            return false;
+        }
+
+        if (!await _requestLimiter.IsAllowed(ClientAddress))
+        {
+            NLog.Warning($"Request from {ClientAddress} is denied due to rate limit.");
+            await DisconnectClient(ClientAddress, "Rate limit exceeded.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private async Task DisconnectClient(string clientIp, string reason)
+    {
+        try
+        {
+            await Disconnect();
+            NLog.Info($"Disconnected client {clientIp} due to {reason}");
+        }
+        catch (Exception ex)
+        {
+            NLog.Error(ex, $"Error disconnecting client {clientIp}");
         }
     }
 }

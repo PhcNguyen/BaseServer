@@ -1,4 +1,4 @@
-﻿using NETServer.Application.Network;
+﻿using NETServer.Application.NetSocketServer;
 using NETServer.Logging;
 
 namespace NETServer;
@@ -8,7 +8,7 @@ class Program
     private static void Main(string[] args)
     {
         // Initialize the server
-        var server = new NetworkHost();
+        var server = new NetSocketServer();
 
         // Start the server
         server.StartListener();
@@ -18,5 +18,8 @@ class Program
 
         // Stop the server
         server.StopListener();
+
+        Console.ReadLine();
     }
 }
+

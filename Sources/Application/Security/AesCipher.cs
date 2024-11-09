@@ -11,86 +11,75 @@ internal class AesCipher
         if (keySize != 128 && keySize != 192 && keySize != 256)
             throw new ArgumentException("Key size must be 128, 192, or 256 bits.");
 
+        // Tạo Key ngẫu nhiên
         using (var rng = RandomNumberGenerator.Create())
         {
-            byte[] key = new byte[keySize / 8];
-            rng.GetBytes(key);
-            this.Key = key;
+            this.Key = new byte[keySize / 8];
+            rng.GetBytes(this.Key);
         }
-
     }
 
-    /// <summary>
-    /// Increments the given counter byte array. This is typically used for 
-    /// encryption modes like AES CTR, where a counter is incremented 
-    /// for each block of data being encrypted.
-    /// </summary>
-    /// <param name="counter">The byte array representing the counter to increment.</param>
     private static void IncrementCounter(byte[] counter)
     {
-        Span<byte> spanCounter = counter; // Create a span from the counter array for efficient manipulation
-                                          // Iterate from the last byte to the first
-        for (int i = spanCounter.Length - 1; i >= 0; i--)
+        // Dùng Span<byte> để thao tác hiệu quả
+        for (int i = counter.Length - 1; i >= 0; i--)
         {
-            // Increment the current byte
-            if (++spanCounter[i] != 0) break; // If the increment did not wrap around (i.e., did not become 0), exit the loop
+            if (++counter[i] != 0) break;
         }
     }
 
-    /// <summary>
-    /// Encrypts data using AES in CTR mode.
-    /// </summary>
-    /// <param name="plaintext">The plaintext data to encrypt.</param>
-    /// <param name="iv">The initialization vector (IV) for encryption.</param>
-    /// <returns>The encrypted data as a byte array.</returns>
-    public byte[] Encrypt(byte[] plaintext, byte[] iv)
+    private static Aes CreateAesEncryptor(byte[] key)
     {
-        using Aes aes = Aes.Create();
-        aes.Key = this.Key;
+        var aes = Aes.Create();
+        aes.Key = key;
         aes.Mode = CipherMode.ECB;
+        return aes;
+    }
 
+    public byte[] Encrypt(byte[] plaintext)
+    {
+        using var aes = CreateAesEncryptor(this.Key);
         using var ms = new MemoryStream();
-        ms.Write(iv, 0, iv.Length); // Write IV to the start of the encrypted data
 
+        // Sử dụng counter bắt đầu từ 0
+        byte[] counter = new byte[16];  // Khởi tạo counter với giá trị 0 (hoặc có thể khởi tạo giá trị khác)
+
+        // Tạo encryptor để mã hóa
         using var encryptor = aes.CreateEncryptor();
-        byte[] counter = new byte[16];
-        Array.Copy(iv, counter, iv.Length);
 
         for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
         {
+            // Mã hóa counter
             byte[] encryptedCounter = new byte[16];
             encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
 
+            // Đoạn dữ liệu cần mã hóa
             int bytesToEncrypt = Math.Min(plaintext.Length - i, aes.BlockSize / 8);
-            byte[] block = new byte[aes.BlockSize / 8];
+            byte[] block = new byte[bytesToEncrypt];
             Array.Copy(plaintext, i, block, 0, bytesToEncrypt);
 
+            // XOR dữ liệu plaintext với kết quả mã hóa của counter
             for (int j = 0; j < bytesToEncrypt; j++)
                 block[j] ^= encryptedCounter[j];
 
+            // Ghi kết quả vào bộ nhớ
             ms.Write(block, 0, bytesToEncrypt);
+
+            // Tăng counter sau mỗi block
             IncrementCounter(counter);
         }
 
         return ms.ToArray();
     }
 
-    /// <summary>
-    /// Decrypts data using AES in CTR mode.
-    /// </summary>
-    /// <param name="cipherText">The encrypted data to decrypt.</param>
-    /// <param name="iv">The initialization vector (IV) used during encryption.</param>
-    /// <returns>The decrypted data as a byte array.</returns>
-    public byte[] Decrypt(byte[] cipherText, byte[] iv)
+    public byte[] Decrypt(byte[] cipherText)
     {
-        using Aes aes = Aes.Create();
-        aes.Key = this.Key;
-        aes.Mode = CipherMode.ECB;
-
-        using var ms = new MemoryStream(cipherText, iv.Length, cipherText.Length - iv.Length);
+        using var aes = CreateAesEncryptor(this.Key);
+        using var ms = new MemoryStream(cipherText);
         using var encryptor = aes.CreateEncryptor();
-        byte[] counter = new byte[16];
-        Array.Copy(iv, counter, iv.Length);
+
+        // Khởi tạo counter
+        byte[] counter = new byte[16];  // Sử dụng counter bắt đầu từ 0 (hoặc có thể khởi tạo giá trị khác)
 
         using var resultStream = new MemoryStream();
         byte[] buffer = new byte[16];
@@ -98,9 +87,11 @@ internal class AesCipher
 
         while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
         {
+            // Mã hóa counter
             byte[] encryptedCounter = new byte[16];
             encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
 
+            // XOR dữ liệu cipherText với kết quả mã hóa của counter
             for (int j = 0; j < bytesRead; j++)
                 buffer[j] ^= encryptedCounter[j];
 
@@ -111,18 +102,21 @@ internal class AesCipher
         return resultStream.ToArray();
     }
 
-    public async Task<byte[]> EncryptAsync(byte[] plaintext, byte[] iv)
+    public async Task<byte[]> EncryptAsync(byte[] plaintext)
     {
-        using Aes aes = Aes.Create();
-        aes.Key = this.Key;
-        aes.Mode = CipherMode.ECB;
+        using var aes = CreateAesEncryptor(this.Key);
+        byte[] iv = new byte[16];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(iv); // Tạo IV ngẫu nhiên
+        }
 
         using var ms = new MemoryStream();
-        await ms.WriteAsync(iv, 0, iv.Length);
+        await ms.WriteAsync(iv, 0, iv.Length); // Ghi IV vào đầu
 
-        using var encryptor = aes.CreateEncryptor();
         byte[] counter = new byte[16];
         Array.Copy(iv, counter, iv.Length);
+        using var encryptor = aes.CreateEncryptor();
 
         for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
         {
@@ -143,17 +137,17 @@ internal class AesCipher
         return ms.ToArray();
     }
 
-    public async Task<byte[]> DecryptAsync(byte[] cipherText, byte[] iv)
+    public async Task<byte[]> DecryptAsync(byte[] cipherText)
     {
-        using Aes aes = Aes.Create();
-        aes.Key = this.Key;
-        aes.Mode = CipherMode.ECB;
+        using var aes = CreateAesEncryptor(this.Key);
+        byte[] iv = new byte[16];
+        Array.Copy(cipherText, 0, iv, 0, iv.Length);
 
         using var ms = new MemoryStream(cipherText, iv.Length, cipherText.Length - iv.Length);
         using var encryptor = aes.CreateEncryptor();
+
         byte[] counter = new byte[16];
         Array.Copy(iv, counter, iv.Length);
-
         using var resultStream = new MemoryStream();
         byte[] buffer = new byte[16];
         int bytesRead;

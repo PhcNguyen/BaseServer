@@ -1,4 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NETServer.Application.Security;
 
@@ -9,7 +14,7 @@ internal class RequestLimiter
     private readonly int _lockoutDuration;
     private readonly SemaphoreSlim _lock;
     private readonly ConcurrentDictionary<string, DateTime> _blockedIps;
-    private readonly ConcurrentDictionary<string, List<DateTime>> _userRequests;
+    private readonly ConcurrentDictionary<string, Queue<DateTime>> _userRequests;
 
     public RequestLimiter(int limit, int timeWindow, int lockoutDuration = 300)
     {
@@ -18,7 +23,7 @@ internal class RequestLimiter
         _lockoutDuration = lockoutDuration;
         _lock = new SemaphoreSlim(1, 1);
         _blockedIps = new ConcurrentDictionary<string, DateTime>();
-        _userRequests = new ConcurrentDictionary<string, List<DateTime>>();
+        _userRequests = new ConcurrentDictionary<string, Queue<DateTime>>();
     }
 
     public async Task<bool> IsAllowed(string ipAddress)
@@ -40,21 +45,24 @@ internal class RequestLimiter
             // Xóa IP khỏi danh sách khóa nếu hết thời gian khóa
             _blockedIps.TryRemove(ipAddress, out _);
 
-            // Xóa các yêu cầu cũ hơn _timeWindow
-            if (_userRequests.TryGetValue(ipAddress, out var requests) && requests != null)
+            // Lấy danh sách các yêu cầu của IP
+            if (!_userRequests.ContainsKey(ipAddress))
             {
-                requests.RemoveAll(requestTime => (currentTime - requestTime).TotalSeconds >= _timeWindow);
+                _userRequests[ipAddress] = new Queue<DateTime>();
             }
-            else
+
+            var requests = _userRequests[ipAddress];
+
+            // Loại bỏ các yêu cầu cũ hơn _timeWindow
+            while (requests.Count > 0 && (currentTime - requests.Peek()).TotalSeconds >= _timeWindow)
             {
-                requests = new List<DateTime>();
-                _userRequests[ipAddress] = requests;
+                requests.Dequeue();
             }
 
             // Kiểm tra số lượng yêu cầu và cập nhật nếu dưới giới hạn
             if (requests.Count < _limit)
             {
-                requests.Add(currentTime);
+                requests.Enqueue(currentTime);
                 return true;
             }
 
@@ -71,21 +79,61 @@ internal class RequestLimiter
     // Phương thức làm sạch các IP không còn yêu cầu trong danh sách
     public async Task ClearInactiveRequests()
     {
+        // Làm sạch định kỳ và loại bỏ các IP không còn yêu cầu
         while (true)
         {
             DateTime now = DateTime.Now;
+            List<string> inactiveIps = new List<string>();
 
-            var inactiveIps = _userRequests
-                .Where(pair => pair.Value != null && pair.Value.All(t => (now - t).TotalSeconds >= _timeWindow))
-                .Select(pair => pair.Key)
-                .ToList();
+            // Kiểm tra và làm sạch các yêu cầu không còn hợp lệ
+            foreach (var pair in _userRequests)
+            {
+                string ip = pair.Key;
+                var requests = pair.Value;
 
+                // Nếu tất cả các yêu cầu của IP này đã hết thời gian
+                if (requests.All(t => (now - t).TotalSeconds >= _timeWindow))
+                {
+                    inactiveIps.Add(ip);
+                }
+            }
+
+            // Xóa các IP không còn hoạt động
             foreach (var ip in inactiveIps)
             {
                 _userRequests.TryRemove(ip, out _);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(33));
+            // Điều chỉnh thời gian làm sạch, ví dụ mỗi 60 giây
+            await Task.Delay(TimeSpan.FromSeconds(60));
+        }
+    }
+
+    // Phương thức làm sạch các IP bị khóa sau khi hết thời gian khóa
+    public async Task ClearBlockedIps()
+    {
+        while (true)
+        {
+            DateTime now = DateTime.Now;
+            List<string> expiredIps = new List<string>();
+
+            // Kiểm tra và xóa các IP hết thời gian khóa
+            foreach (var pair in _blockedIps)
+            {
+                if ((now - pair.Value).TotalSeconds > _lockoutDuration)
+                {
+                    expiredIps.Add(pair.Key);
+                }
+            }
+
+            // Xóa các IP bị khóa đã hết thời gian
+            foreach (var ip in expiredIps)
+            {
+                _blockedIps.TryRemove(ip, out _);
+            }
+
+            // Điều chỉnh thời gian làm sạch, ví dụ mỗi 60 giây
+            await Task.Delay(TimeSpan.FromSeconds(60));
         }
     }
 }

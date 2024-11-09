@@ -1,4 +1,6 @@
-﻿namespace NETServer.Logging;
+﻿using NETServer.Logging.Internal;
+
+namespace NETServer.Logging;
 
 /// <summary>
 /// Provides logging functionalities with different levels.
@@ -67,4 +69,7 @@ public class NLog
     /// <param name="exception">The exception.</param>
     /// <param name="message">The custom log message.</param>
     public static void Warning(Exception exception, string message) => Log(message, NLogLevel.Warning, exception);
+
+    public static void Pause() => NLogFileHandler.PauseNLog();
+    public static void Resume() => NLogFileHandler.ResumeNLog();
 }

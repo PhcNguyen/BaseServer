@@ -1,5 +1,4 @@
-﻿using System.Reflection.Emit;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace NETServer.Logging.Internal;
 
@@ -33,13 +32,22 @@ internal class NLogString
      * Args:   09:08:45 - INFO - ... 
      * Return: INFO - ...
      */
-    internal static string RemoveTimestamp(string? log)
+    internal static string RemoveTimestamp(string log)
     {
         if (log == null) return string.Empty;
         int dashIndex = log.IndexOf(" - ");
         if (dashIndex == -1 || dashIndex < 8) return log;
         return log.Substring(dashIndex + 3);
     }
+
+    /* Định dạng: "HH:mm:ss"
+     * Args:   09:08:45 - INFO - ... 
+     * Return: 09:08:45
+     */
+    internal static DateTime ExtractTimestamp(string log) =>
+    string.IsNullOrEmpty(log)
+        ? throw new ArgumentException("Invalid log format.")
+        : DateTime.ParseExact(log.Substring(0, 8), "HH:mm:ss", null);
 
     /*
      * Args:   09:08:45 - INFO - Session e2b357fd-c752-4a26-8f19-0629f1fff9a6 disconnected from 192.168.1.8:25383
@@ -49,8 +57,7 @@ internal class NLogString
     {
         if (string.IsNullOrEmpty(log)) return log;
 
-        // Mẫu regex để trích xuất thời gian, mức độ log, IP:port và trạng thái
-        var pattern = @"^(\d{2}:\d{2}:\d{2})\s*-\s*(\w+)\s*-\s*Session\s*[a-f0-9-]+\s*(connected|disconnected)\s*from\s*(\d+\.\d+\.\d+\.\d+:\d+)";
+        var pattern = @"^(\d{2}:\d{2}:\d{2})\s*-\s*(\w+)\s*-\s*Session\s*[a-f0-9-]+\s*(connected|disconnected)\s*(?:from\s*)?(\d+\.\d+\.\d+\.\d+:\d+)";
 
         var match = Regex.Match(log, pattern);
 

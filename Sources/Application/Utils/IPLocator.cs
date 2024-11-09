@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace NETServer.Application.Utils;
 
-internal class IPLocator
+internal class IPResolver
 {
     public static string Public()
     {

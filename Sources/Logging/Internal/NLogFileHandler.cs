@@ -1,105 +1,140 @@
 ﻿using System.Text;
 
-
-namespace NETServer.Logging.Internal;
-
-internal static class NLogFileHandler
+namespace NETServer.Logging.Internal
 {
-    private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
-
-    public static async Task WriteLogAsync(string message, NLogLevel level)
+    internal static class NLogFileHandler
     {
-        string filePath = GetFilePath(level);
+        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
+        private static bool _isPaused = false;
+        private static StringBuilder _logBuffer = new StringBuilder();
 
-        // Kiểm tra xem thông điệp có phải là mới không
-        if (!await IsMessageNew(filePath, message)) return;
-
-        // Xử lý thông điệp
-        var processedMessage = new NLogProcessor().ProcessLogMessage(message, level);
-
-        // In log ra console nếu cần
-        if (level <= NLog.ConsoleLogLevel) Console.WriteLine(processedMessage.ConsoleMessage);
-
-        // Ghi log vào file nếu cần
-        if (level <= NLog.WriteLogLevel)
+        public static async Task WriteLogAsync(string message, NLogLevel level)
         {
-            await AppendLogToFile(filePath, processedMessage.FileMessage, level);
-        }
-    }
+            string filePath = GetFilePath(level);
 
-    private static string GetFilePath(NLogLevel level) =>
-        NLogHelper.LevelFileMapping.GetValueOrDefault(level, NLogHelper.DefaultFilePath);
+            // Kiểm tra xem thông điệp có phải là mới không
+            if (level != NLogLevel.Info) if (!await IsMessageNew(filePath, message)) return;
 
-    private static async Task<bool> IsMessageNew(string filePath, string message)
-    {
-        if (!File.Exists(filePath)) return true;
+            // Xử lý thông điệp
+            var processedMessage = new NLogProcessor().ProcessLogMessage(message, level);
 
-        try
-        {
-            var lastLines = await ReadLastLines(filePath, 5);
-
-            foreach (string lastLine in lastLines)
+            // Ghi log vào file bất kể trạng thái tạm dừng
+            if (level <= NLog.WriteLogLevel)
             {
-                if (NLogString.RemoveTimestamp(message) == NLogString.RemoveTimestamp(lastLine))
+                await AppendLogToFile(filePath, processedMessage.FileMessage, level);
+            }
+
+            // Nếu đang tạm dừng, lưu thông điệp vào bộ đệm và không in ra màn hình
+            if (_isPaused)
+            {
+                _logBuffer.AppendLine(processedMessage.ConsoleMessage);
+                return;
+            }
+
+            // In log ra console nếu cần
+            if (level <= NLog.ConsoleLogLevel)
+            {
+                Console.WriteLine(processedMessage.ConsoleMessage);
+            }
+        }
+
+        private static string GetFilePath(NLogLevel level) =>
+            NLogHelper.LevelFileMapping.GetValueOrDefault(level, NLogHelper.DefaultFilePath);
+
+        private static async Task<bool> IsMessageNew(string filePath, string message)
+        {
+            if (!File.Exists(filePath)) return true;
+
+            try
+            {
+                var messageTimestamp = NLogString.ExtractTimestamp(message);
+                var lastLines = await ReadLastLines(filePath, 10);
+
+                foreach (string lastLine in lastLines)
                 {
-                    return false;
+                    var lastLineTimestamp = NLogString.ExtractTimestamp(lastLine);
+                    var timeDifference = messageTimestamp - lastLineTimestamp;
+
+                    if (NLogString.RemoveTimestamp(message) == NLogString.RemoveTimestamp(lastLine))
+                    {
+                        if (Math.Abs(timeDifference.TotalSeconds) < 5)
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+        }
+
+        private static async Task<List<string>> ReadLastLines(string filePath, int lineCount)
+        {
+            var lastLines = new List<string>();
+
+            using (var reader = new StreamReader(filePath, Encoding.UTF8))
+            {
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    lastLines.Add(line);
+                    if (lastLines.Count > lineCount)
+                    {
+                        lastLines.RemoveAt(0);
+                    }
                 }
             }
 
-            return true;
+            return lastLines;
         }
-        catch
-        {
-            return true;
-        }
-    }
 
-    private static async Task<List<string>> ReadLastLines(string filePath, int lineCount)
-    {
-        var lastLines = new List<string>();
-
-        using (var reader = new StreamReader(filePath, Encoding.UTF8))
+        private static async Task AppendLogToFile(string filePath, string? message, NLogLevel level)
         {
-            string? line;
-            while ((line = await reader.ReadLineAsync()) != null)
+            if (message == null || filePath == null) return;
+            if (NLogString.FindKeyword(message, 2, new HashSet<string> { "Session", "connected", "disconnected" }))
             {
-                lastLines.Add(line);
-                if (lastLines.Count > lineCount)
+                message = NLogString.ExtractSession(message);
+            }
+
+            try
+            {
+                await Semaphore.WaitAsync();
+
+                if (!File.Exists(filePath))
                 {
-                    lastLines.RemoveAt(0);
+                    Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                }
+
+                using (var fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+                using (var writer = new StreamWriter(fileStream, Encoding.UTF8))
+                {
+                    await writer.WriteLineAsync(message);
                 }
             }
-        }
-
-        return lastLines;
-    }
-
-    private static async Task AppendLogToFile(string filePath, string? message, NLogLevel level)
-    {
-        if (message == null || filePath == null) return;
-        if (NLogString.FindKeyword(message, 1, new HashSet<string> { "session" }))
-        {
-            message = NLogString.ExtractSession(message);
-        }
-
-        try
-        {
-            await Semaphore.WaitAsync();
-
-            if (!File.Exists(filePath))
+            finally
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-            }
-
-            using (var fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
-            using (var writer = new StreamWriter(fileStream, Encoding.UTF8))
-            {
-                await writer.WriteLineAsync(message);
+                Semaphore.Release();
             }
         }
-        finally
+
+        // Hàm tạm dừng việc in log ra màn hình
+        public static void PauseNLog() => _isPaused = true;
+
+        // Hàm tiếp tục việc in log ra màn hình từ vị trí đã tạm dừng
+        public static void ResumeNLog()
         {
-            Semaphore.Release();
+            _isPaused = false;
+
+            // In tất cả các thông điệp đã lưu trong bộ đệm
+            if (_logBuffer.Length > 0)
+            {
+                Console.WriteLine(_logBuffer.ToString());
+                _logBuffer.Clear(); // Xóa bộ đệm sau khi đã in xong
+            }
         }
     }
 }
