@@ -1,25 +1,18 @@
-﻿using System;
+﻿using NETServer.Application.Security;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace NETServer.Application.Security;
-
-internal class RequestLimiter
+internal class RequestLimiter : IRequestLimiter
 {
-    private readonly int _limit;
-    private readonly int _timeWindow;
+    private readonly (int MaxRequests, TimeSpan TimeWindow) _requestLimit;
     private readonly int _lockoutDuration;
     private readonly SemaphoreSlim _lock;
     private readonly ConcurrentDictionary<string, DateTime> _blockedIps;
     private readonly ConcurrentDictionary<string, Queue<DateTime>> _userRequests;
 
-    public RequestLimiter(int limit, int timeWindow, int lockoutDuration = 300)
+    // Constructor nhận tuple RequestLimit
+    public RequestLimiter((int MaxRequests, TimeSpan TimeWindow) requestLimit, int lockoutDuration = 300)
     {
-        _limit = limit;
-        _timeWindow = timeWindow;
+        _requestLimit = requestLimit;
         _lockoutDuration = lockoutDuration;
         _lock = new SemaphoreSlim(1, 1);
         _blockedIps = new ConcurrentDictionary<string, DateTime>();
@@ -54,13 +47,13 @@ internal class RequestLimiter
             var requests = _userRequests[ipAddress];
 
             // Loại bỏ các yêu cầu cũ hơn _timeWindow
-            while (requests.Count > 0 && (currentTime - requests.Peek()).TotalSeconds >= _timeWindow)
+            while (requests.Count > 0 && (currentTime - requests.Peek()).TotalSeconds >= _requestLimit.TimeWindow.TotalSeconds)
             {
                 requests.Dequeue();
             }
 
             // Kiểm tra số lượng yêu cầu và cập nhật nếu dưới giới hạn
-            if (requests.Count < _limit)
+            if (requests.Count < _requestLimit.MaxRequests)
             {
                 requests.Enqueue(currentTime);
                 return true;
@@ -92,7 +85,7 @@ internal class RequestLimiter
                 var requests = pair.Value;
 
                 // Nếu tất cả các yêu cầu của IP này đã hết thời gian
-                if (requests.All(t => (now - t).TotalSeconds >= _timeWindow))
+                if (requests.All(t => (now - t).TotalSeconds >= _requestLimit.TimeWindow.TotalSeconds))
                 {
                     inactiveIps.Add(ip);
                 }

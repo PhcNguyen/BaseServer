@@ -1,35 +1,39 @@
-﻿using NETServer.Application.NetSocketServer;
-using NETServer.Infrastructure;
+﻿using NETServer.Infrastructure;
 using NETServer.Logging;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 
-namespace NETServer.Application.NetSocketServer;
+namespace NETServer.Application.Network;
 
-internal class NetSocketServer
+using System.Threading;
+
+internal class Server
 {
-    private bool _isRunning;
+    private int _isRunning;
+    private readonly int MaxConnections = Setting.MaxConnections;
     private readonly TcpListener _tcpListener;
     private readonly SessionController _sessionController;
     private CancellationTokenSource _cancellationTokenSource;
 
-    public NetSocketServer()
+    public Server()
     {
-        _isRunning = false;
+        _isRunning = 0;  // 0:false - 1:true
         _sessionController = new SessionController();
-        _tcpListener = new TcpListener(IPAddress.Any, Setting.Port);
+        _tcpListener = new TcpListener(
+             Setting.IPAddress == null ? IPAddress.Any : IPAddress.Parse(Setting.IPAddress),
+             Setting.Port
+         );
         _cancellationTokenSource = new CancellationTokenSource();
     }
 
-    public void StartListener()
+    public void StartServer()
     {
-        if (_isRunning)
+        if (Interlocked.CompareExchange(ref _isRunning, 1, 0) == 1)
         {
             NLog.Warning("Server is already running");
             return;
         }
 
-        // Khởi động server bất đồng bộ với CancellationToken để dễ dàng dừng
         _cancellationTokenSource = new CancellationTokenSource();
         var token = _cancellationTokenSource.Token;
 
@@ -38,11 +42,16 @@ internal class NetSocketServer
             try
             {
                 _tcpListener.Start();
-                _isRunning = true;
                 NLog.Info($"Server started and listening on {_tcpListener.LocalEndpoint}");
 
-                while (_isRunning && !token.IsCancellationRequested)
+                while (_isRunning == 1 && !token.IsCancellationRequested)
                 {
+                    if (_sessionController.ActiveSessions.Count >= MaxConnections)
+                    {
+                        NLog.Warning("Maximum server connections reached. Refusing new connection.");
+                        return;
+                    }
+
                     try
                     {
                         TcpClient client = await _tcpListener.AcceptTcpClientAsync();
@@ -62,35 +71,31 @@ internal class NetSocketServer
             }
             catch (Exception ex)
             {
-                NLog.Error(ex, $"Error during listener task");
+                NLog.Error(ex, "Error during listener task");
             }
             finally
             {
-                _isRunning = false;
+                Interlocked.Exchange(ref _isRunning, 0);
                 NLog.Info("Listener task has ended.");
             }
         }, token);
     }
 
-    public void StopListener()
+    public void StopServer()
     {
-        if (!_isRunning)
+        if (Interlocked.CompareExchange(ref _isRunning, 0, 1) == 0)
         {
             NLog.Warning("Server is not running.");
             return;
         }
 
-        // Dừng listener và huỷ các phiên đang hoạt động
-        _isRunning = false;
         _cancellationTokenSource.Cancel();
 
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             try
             {
-                // Wait for all connections to close
-                _sessionController.CloseAllConnections().Wait();  
-                NLog.Info("All client sessions have been closed.");
+                await _sessionController.CloseAllConnections();
             }
             catch (Exception ex)
             {
@@ -100,5 +105,12 @@ internal class NetSocketServer
 
         _tcpListener.Stop();
         NLog.Info("Server has stopped successfully.");
+    }
+
+    public void ResetServer()
+    {
+        StopServer();  // Dừng server trước
+        StartServer(); // Khởi động lại server
+        NLog.Info("Server has been reset successfully.");
     }
 }

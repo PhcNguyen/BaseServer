@@ -1,13 +1,16 @@
 ﻿using NETServer.Application.Security;
 using NETServer.Infrastructure;
 using NETServer.Logging;
-using System.Net.Sockets;
-using System.Net;
 
-namespace NETServer.Application.NetSocketServer;
+using System.Net;
+using System.Net.Sockets;
+using System.Collections.Concurrent;
+
+namespace NETServer.Application.Network;
 
 internal class ClientSession
 {
+    private readonly ConcurrentDictionary<string, DateTime> _lastCooldown = new();
     private readonly ConnectionLimiter _connectionLimiter;
     private readonly RequestLimiter _requestLimiter;
     private readonly TcpClient _tcpClient;
@@ -53,6 +56,25 @@ internal class ClientSession
         return clientEndPoint?.Address.ToString() ?? string.Empty;
     }
 
+    private void LogCooldown(string ipAddress, string message)
+    {
+        var cTime = DateTime.UtcNow;
+
+        // Kiểm tra xem có thông báo từ IP này trong vòng 5 giây qua không
+        if (_lastCooldown.TryGetValue(ipAddress, out var lastLoggedTime))
+        {
+            if ((cTime - lastLoggedTime).TotalSeconds < 10)
+            {
+                // Nếu đã có thông báo trong vòng 10 giây, không làm gì cả
+                return;
+            }
+        }
+
+        // In ra thông báo và cập nhật thời gian
+        NLog.Warning($"Client {ipAddress}: {message}");
+        _lastCooldown[ipAddress] = cTime;
+    }
+
     public async Task Connect()
     {
         try
@@ -63,24 +85,35 @@ internal class ClientSession
                 return;
             }
 
+            // Kiểm tra kết nối trước khi lấy stream
             if (!_tcpClient.Connected)
             {
                 NLog.Warning("TcpClient is not connected.");
                 return;
             }
 
-            this.IsConnected = true;
-
+            // Lấy stream sau khi đã đảm bảo kết nối
             _clientStream = Setting.UseSsl
                 ? await SslSecurity.EstablishSecureClientStream(_tcpClient)
                 : _tcpClient.GetStream();
+
+            // Kiểm tra lại kết nối sau khi lấy stream
+            if (!_tcpClient.Connected)
+            {
+                NLog.Warning("TcpClient was disconnected after stream setup.");
+                return;
+            }
+
+            // Đánh dấu là đã kết nối
+            this.IsConnected = true;
 
             NLog.Info($"Session {Id} connected to {this.ClientAddress}");
         }
         catch (Exception ex)
         {
+            // Chỉ thông báo lỗi nếu có ngoại lệ thực sự xảy ra
             NLog.Error($"Error connecting client {ClientAddress}: {ex.Message}");
-            await DisconnectClient("Unknown", "Connection failed.");
+            await Disconnect();
         }
     }
 
@@ -97,10 +130,12 @@ internal class ClientSession
             IsConnected = false;
             _clientStream?.Dispose();
 
+            // Thông báo khi ngắt kết nối thành công
             NLog.Info($"Session {Id} disconnected from {ClientAddress}");
         }
         catch (Exception ex)
         {
+            // Lỗi ngắt kết nối cũng sẽ được thông báo nếu có sự cố
             NLog.Error(ex, $"Error disconnecting client {ClientAddress}");
         }
     }
@@ -109,38 +144,25 @@ internal class ClientSession
     {
         if (string.IsNullOrEmpty(ClientAddress))
         {
-            NLog.Warning("Client's endpoint is null or invalid.");
-            await DisconnectClient("Unknown", "Invalid endpoint.");
+            LogCooldown(ClientAddress, "Client's endpoint is null or invalid.");
+            await Disconnect();
             return false;
         }
 
         if (!await _connectionLimiter.IsConnectionAllowed(ClientAddress))
         {
-            NLog.Warning($"Connection from {ClientAddress} is denied due to max connections.");
-            await DisconnectClient(ClientAddress, "Max connections reached.");
+            LogCooldown(ClientAddress, $"Connection from {ClientAddress} is denied due to max connections.");
+            await Disconnect();
             return false;
         }
 
         if (!await _requestLimiter.IsAllowed(ClientAddress))
         {
-            NLog.Warning($"Request from {ClientAddress} is denied due to rate limit.");
-            await DisconnectClient(ClientAddress, "Rate limit exceeded.");
+            LogCooldown(ClientAddress, $"Request from {ClientAddress} is denied due to rate limit.");
+            await Disconnect();
             return false;
         }
 
         return true;
-    }
-
-    private async Task DisconnectClient(string clientIp, string reason)
-    {
-        try
-        {
-            await Disconnect();
-            NLog.Info($"Disconnected client {clientIp} due to {reason}");
-        }
-        catch (Exception ex)
-        {
-            NLog.Error(ex, $"Error disconnecting client {clientIp}");
-        }
     }
 }

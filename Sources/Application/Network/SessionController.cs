@@ -1,22 +1,25 @@
-﻿using System.Net.Sockets;
-using System.Collections.Concurrent;
-using NETServer.Logging;
+﻿using NETServer.Logging;
 using NETServer.Infrastructure;
-using NETServer.Application.Security;
+using NETServer.Application.Handlers;
 
-namespace NETServer.Application.NetSocketServer;
+using System.Net.Sockets;
+using System.Collections.Concurrent;
+
+namespace NETServer.Application.Network;
 
 internal class SessionController
 {
     private readonly RequestLimiter _requestLimiter;
+    private readonly CommandHandler _commandHandler;
     private readonly ConnectionLimiter _connectionLimiter;
 
-    private readonly ConcurrentDictionary<Guid, WeakReference<ClientSession>> _activeSessions = new();
+    public readonly ConcurrentDictionary<Guid, WeakReference<ClientSession>> ActiveSessions = new();
 
     public SessionController()
     {
         _connectionLimiter = new ConnectionLimiter(Setting.MaxConnectionsPerIp);
-        _requestLimiter = new RequestLimiter(Setting.Limit, Setting.TimeWindow, Setting.LockoutDuration);
+        _requestLimiter = new RequestLimiter(Setting.RequestLimit, Setting.LockoutDuration);
+        _commandHandler = new CommandHandler();
     }
 
     public async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
@@ -27,13 +30,27 @@ internal class SessionController
             return;
 
         await session.Connect();
-        _activeSessions[session.Id] = new WeakReference<ClientSession>(session);
+        ActiveSessions[session.Id] = new WeakReference<ClientSession>(session);
 
         try
         {
+            if (session.ClientStream is not Stream clientStream) return;
+
+            var dataTransmitter = new DataTransmitter(clientStream);
+
+            Command receivedCommand;
+
+            byte[] payload;
+            byte[] receivedData;
+            byte[] keyAes = dataTransmitter.KeyAes;
+
             while (session.IsConnected && !cancellationToken.IsCancellationRequested)
             {
-                // await session.ReceiveDataAsync(cancellationToken);
+                (receivedCommand, receivedData) = await dataTransmitter.Receive(cancellationToken);
+
+                if (receivedCommand == default) break;
+
+                payload = await _commandHandler.HandleCommand(receivedCommand, receivedData);
             }
         }
         catch (Exception ex)
@@ -54,7 +71,7 @@ internal class SessionController
         {
             await session.Disconnect();
 
-            _activeSessions.TryRemove(session.Id, out var _);
+            ActiveSessions.TryRemove(session.Id, out var _);
             NLog.Info($"Session {session.Id} from {session.ClientAddress} disconnected.");
         }
         catch (Exception e)
@@ -65,13 +82,16 @@ internal class SessionController
 
     public async Task CloseAllConnections()
     {
-        if (_activeSessions.IsEmpty) return;
-
-        var closeTasks = _activeSessions.Values
+        if (ActiveSessions.IsEmpty) return;
+        else
+        {
+            var closeTasks = ActiveSessions.Values
             .Select(weakRef => weakRef.TryGetTarget(out var session) ? CloseConnection(session) : Task.CompletedTask)
             .ToList();
 
-        await Task.WhenAll(closeTasks);
+            await Task.WhenAll(closeTasks);
+        }
+        
         NLog.Info("All connections closed successfully.");
     }
 }
