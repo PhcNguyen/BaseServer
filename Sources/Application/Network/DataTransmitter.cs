@@ -1,26 +1,57 @@
-﻿using NETServer.Application.Security;
+﻿using NETServer.Infrastructure.Security;
 using NETServer.Application.Handlers;
 using NETServer.Logging;
+
+using System.Net.Sockets;
+using System.Buffers;
 
 namespace NETServer.Application.Network;
 
 internal class DataTransmitter
 {
     private readonly AesCipher _aesCipher;  // Đối tượng xử lý mã hóa/giải mã AES
-    private readonly Stream _stream;        // Stream dùng để nhận và gửi dữ liệu
+    private readonly BufferedStream _stream; // Sử dụng BufferedStream để tối ưu bộ nhớ
 
     public byte[] KeyAes;
     private bool isEncrypted = false;
 
+    private static ArrayPool<byte> bytePool = ArrayPool<byte>.Shared; // Pool bộ nhớ
+
     public DataTransmitter(Stream stream)
     {
-        _stream = stream;
         _aesCipher = new AesCipher(256);
-
         this.KeyAes = _aesCipher.Key;
+
+        // Bao bọc stream trong BufferedStream
+        _stream = new BufferedStream(stream);
     }
 
-    public async Task<(Command command, byte[] data)> Receive(CancellationToken cancellationToken)
+    public static async Task Send(TcpClient tcpClient, byte[] payload)
+    {
+        if (tcpClient == null || !tcpClient.Connected)
+        {
+            NLog.Error("TCP client is not connected.");
+            return;
+        }
+
+        try
+        {
+            using (var stream = tcpClient.GetStream())
+            using (var bufferedStream = new BufferedStream(stream))
+            {
+                if (!bufferedStream.CanWrite) return;
+                if (payload == null || payload.Length == 0) return;
+
+                byte[] lengthBytes = BitConverter.GetBytes(payload.Length);
+                await bufferedStream.WriteAsync(lengthBytes, 0, lengthBytes.Length);
+                await bufferedStream.WriteAsync(payload, 0, payload.Length);
+                await bufferedStream.FlushAsync();
+            }
+        }
+        catch (Exception) { return; }
+    }
+
+    public async Task<(Command command, byte[] data)> Receive()
     {
         try
         {
@@ -30,52 +61,45 @@ internal class DataTransmitter
                 return (default, Array.Empty<byte>());
             }
 
-            var buffer = new byte[1024];
+            // Sử dụng buffer từ ArrayPool để tối ưu bộ nhớ
+            var buffer = bytePool.Rent(8192);
             var data = new MemoryStream();
 
-            cancellationToken.ThrowIfCancellationRequested();
-
             // Đọc 4 byte đầu tiên để lấy chiều dài dữ liệu
-            if (await _stream.ReadAsync(buffer, 0, 4, cancellationToken) < 4)
-                return (default, Array.Empty<byte>()); // Nếu không đủ 4 byte, trả về mảng rỗng
+            if (await _stream.ReadAsync(buffer, 0, 4) < 4)
+                return (default, Array.Empty<byte>());
 
             int expectedLength = BitConverter.ToInt32(buffer, 0);
 
             // Đọc byte thứ 5 làm Command
-            if (await _stream.ReadAsync(buffer, 0, 1, cancellationToken) < 1)
-                return (default, Array.Empty<byte>()); // Nếu không có byte nào, trả về mảng rỗng
+            if (await _stream.ReadAsync(buffer, 0, 1) < 1)
+                return (default, Array.Empty<byte>());
 
             var command = (Command)buffer[0];
 
             // Đọc byte tiếp theo để kiểm tra flag mã hóa
-            if (await _stream.ReadAsync(buffer, 0, 1, cancellationToken) < 1)
+            if (await _stream.ReadAsync(buffer, 0, 1) < 1)
                 return (default, Array.Empty<byte>());
 
             isEncrypted = buffer[0] == 1;
 
-            while (data.Length < expectedLength - 2) // -2 vì đã đọc command và flag
-            {
-                cancellationToken.ThrowIfCancellationRequested();
+            // Đọc tiếp các byte khác
+            int bytesRead = await _stream.ReadAsync(buffer, 0, expectedLength - 2); // Đã đọc 2 byte (command và flag)
+            if (bytesRead == 0) return (default, Array.Empty<byte>());
 
-                int bytesRead = await _stream.ReadAsync(buffer, 0, Math.Min(buffer.Length, expectedLength - 2 - (int)data.Length), cancellationToken);
-                if (bytesRead == 0) break; // Nếu không còn dữ liệu để đọc thì thoát
+            data.Write(buffer, 0, bytesRead);
+            byte[] receivedData = data.ToArray();
 
-                data.Write(buffer, 0, bytesRead); // Ghi dữ liệu vào MemoryStream
-            }
-
+            // Giải mã nếu cần thiết
             if (isEncrypted)
             {
-                // Giải mã dữ liệu nếu flag mã hóa là true
-                var decryptedData = await _aesCipher.DecryptAsync(data.ToArray());
-                return (command, decryptedData);
+                receivedData = await _aesCipher.DecryptAsync(receivedData);
             }
 
-            return (command, data.ToArray()); // Nếu không mã hóa, trả về dữ liệu gốc
-        }
-        catch (OperationCanceledException)
-        {
-            NLog.Info("Data receive operation was canceled.");
-            return (default, Array.Empty<byte>());
+            // Trả lại buffer cho pool
+            bytePool.Return(buffer);
+
+            return (command, receivedData);
         }
         catch (Exception ex)
         {

@@ -1,5 +1,5 @@
 ﻿using NETServer.Logging;
-using NETServer.Application.Infrastructure;
+using NETServer.Infrastructure.Configuration;
 
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +8,7 @@ namespace NETServer.Application.Network;
 
 using System.Threading;
 
-internal class Server
+internal class ServerEngine
 {
     private int _isRunning;
     private readonly int MaxConnections = Setting.MaxConnections;
@@ -16,7 +16,7 @@ internal class Server
     private readonly SessionController _sessionController;
     private CancellationTokenSource _cancellationTokenSource;
 
-    public Server()
+    public ServerEngine()
     {
         _isRunning = 0;  // 0:false - 1:true
         _sessionController = new SessionController();
@@ -44,8 +44,6 @@ internal class Server
             {
                 _tcpListener.Start();
                 NLog.Info($"Server started and listening on {_tcpListener.LocalEndpoint}");
-
-                await _sessionController.RunCleanUp(token);
 
                 while (_isRunning == 1 && !token.IsCancellationRequested)
                 {

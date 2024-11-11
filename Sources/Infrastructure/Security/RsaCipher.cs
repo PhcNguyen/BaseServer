@@ -1,19 +1,19 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using NETServer.Application.Infrastructure;
 using NETServer.Application.Helpers;
+using NETServer.Infrastructure.Configuration;
 
-namespace NETServer.Application.Security;
+namespace NETServer.Infrastructure.Security;
 
 /// <summary>
 /// Lớp RsaCipher cung cấp các chức năng mã hóa và giải mã sử dụng thuật toán RSA.
 /// </summary>
 internal class RsaCipher
 {
-    private static readonly string ExpiryFilePath = Setting.ExpiryDatePath;
-    private static readonly TimeSpan KeyRotationInterval = Setting.KeyRotationInterval;
-    private readonly string PublicKeyFilePath = Setting.PublicKeyPath;
-    private readonly string PrivateKeyFilePath = Setting.PrivateKeyPath;
+    private static readonly string ExpiryFilePath = Setting.RsaShelfLifePath;
+    private static readonly TimeSpan KeyRotationInterval = Setting.RsaKeyRotationInterval;
+    private readonly string PublicKeyFilePath = Setting.RsaPublicKeyFilePath;
+    private readonly string PrivateKeyFilePath = Setting.RsaPrivateKeyFilePath;
     private readonly RSA rsa = RSA.Create();
 
     public RSAParameters PublicKey { get; private set; }

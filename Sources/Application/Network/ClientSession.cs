@@ -1,67 +1,56 @@
-﻿using NETServer.Application.Infrastructure;
-using NETServer.Application.Security;
+﻿using NETServer.Infrastructure.Configuration;
+using NETServer.Infrastructure.Interfaces;
+using NETServer.Infrastructure.Security;
 using NETServer.Logging;
-using System.Net.Sockets;
+
 using System.Net;
+using System.Text;
+using System.Net.Sockets;
+
+
+namespace NETServer.Application.Network;
 
 internal class ClientSession
 {
     private Stream? _clientStream;
+    private DateTime _lastActivityTime;
     private readonly TcpClient _tcpClient;
-    private readonly RequestLimiter _requestLimiter;
-    private readonly ConnectionLimiter _connectionLimiter;
-    private readonly Dictionary<string, DateTime> _clientLastLogTimes;
-    private readonly TimeSpan _sessionTimeout = Setting.SessionTimeout;
+    private readonly IRequestLimiter _requestLimiter;
+    private readonly IConnectionLimiter _connectionLimiter;
+    private readonly TimeSpan _sessionTimeout = Setting.ClientSessionTimeout;
 
-    public DateTime LastActivityTime;
     public readonly Guid Id = Guid.NewGuid();
     public bool IsConnected { get; private set; }
+    public readonly byte[] KeyCipher = AesCipher.GenerateKey();
     public string ClientAddress { get; private set; } = string.Empty;
 
     public TcpClient TcpClient => _tcpClient;
     public Stream? ClientStream => _clientStream;
 
-    public ClientSession(TcpClient tcpClient, RequestLimiter requestLimiter, ConnectionLimiter connectionLimiter, Dictionary<string, DateTime> clientLastLogTimes)
+    public ClientSession(TcpClient tcpClient, IRequestLimiter requestLimiter, IConnectionLimiter connectionLimiter)
     {
         ValidateParameters(tcpClient, requestLimiter, connectionLimiter);
 
-        LastActivityTime = DateTime.UtcNow;
+        _lastActivityTime = DateTime.UtcNow;
 
         _tcpClient = tcpClient;
         _requestLimiter = requestLimiter;
         _connectionLimiter = connectionLimiter;
-        _clientLastLogTimes = clientLastLogTimes;
 
         ClientAddress = ValidateClientAddress();
     }
 
-    private static void ValidateParameters(TcpClient tcpClient, RequestLimiter requestLimiter, ConnectionLimiter connectionLimiter)
+    private static void ValidateParameters(TcpClient tcpClient, IRequestLimiter requestLimiter, IConnectionLimiter connectionLimiter)
     {
-        if (tcpClient == null) throw new ArgumentNullException(nameof(tcpClient));
-        if (requestLimiter == null) throw new ArgumentNullException(nameof(requestLimiter));
-        if (connectionLimiter == null) throw new ArgumentNullException(nameof(connectionLimiter));
+        ArgumentNullException.ThrowIfNull(tcpClient);
+        ArgumentNullException.ThrowIfNull(requestLimiter);
+        ArgumentNullException.ThrowIfNull(connectionLimiter);
     }
 
     private string ValidateClientAddress()
     {
         var clientEndPoint = _tcpClient.Client.RemoteEndPoint as IPEndPoint;
         return clientEndPoint?.Address.ToString() ?? string.Empty;
-    }
-
-    private void LogRateLimitedAction(string ipAddress, string message)
-    {
-        var cTime = DateTime.UtcNow;
-
-        // Kiểm tra xem có thông báo từ IP này trong vòng _logCooldownTime qua không
-        if (_clientLastLogTimes.TryGetValue(ipAddress, out var lastLoggedTime) &&
-            (cTime - lastLoggedTime) < TimeSpan.FromSeconds(30)) return;
-
-
-        // In ra thông báo và cập nhật thời gian
-        NLog.Warning($"Client {ipAddress}: {message}");
-
-        // Cập nhật thời gian sau khi thông báo
-        _clientLastLogTimes[ipAddress] = cTime;
     }
 
     public async Task Connect()
@@ -74,7 +63,7 @@ internal class ClientSession
                 return;
             }
 
-            _clientStream = Setting.UseSsl
+            _clientStream = Setting.IsSslEnabled
                 ? await SslSecurity.EstablishSecureClientStream(_tcpClient)
                 : _tcpClient.GetStream();
 
@@ -94,20 +83,17 @@ internal class ClientSession
         }
     }
 
-    public void UpdateLastActivityTime() => LastActivityTime = DateTime.UtcNow;
-
-    public bool IsSessionTimedOut() => (DateTime.UtcNow - LastActivityTime) > _sessionTimeout;
-
     public async Task Disconnect()
     {
         if (!IsConnected) return;
+        if (!string.IsNullOrEmpty(ClientAddress))
+        {
+            await Task.Delay(0);
+            _connectionLimiter.ConnectionClosed(ClientAddress);
+        }
 
         try
         {
-            if (!string.IsNullOrEmpty(ClientAddress))
-            {
-                await _connectionLimiter.ConnectionClosed(ClientAddress);
-            }
             IsConnected = false;
             _clientStream?.Dispose();
             NLog.Info($"Session {Id} disconnected from {ClientAddress}");
@@ -122,25 +108,30 @@ internal class ClientSession
     {
         if (string.IsNullOrEmpty(ClientAddress))
         {
-            LogRateLimitedAction(ClientAddress, "Client's endpoint is null or invalid.");
+            await DataTransmitter.Send(_tcpClient, Encoding.UTF8.GetBytes("Client's endpoint is null or invalid."));
             await Disconnect();
             return false;
         }
 
-        if (!await _connectionLimiter.IsConnectionAllowed(ClientAddress))
+        if (!_connectionLimiter.IsConnectionAllowed(ClientAddress))
         {
-            LogRateLimitedAction(ClientAddress, $"Connection is denied due to max connections.");
+            await DataTransmitter.Send(_tcpClient, 
+                Encoding.UTF8.GetBytes("Connection is denied due to max connections."));
             await Disconnect();
             return false;
         }
 
-        if (!await _requestLimiter.IsAllowed(ClientAddress))
+        if (!_requestLimiter.IsAllowed(ClientAddress))
         {
-            LogRateLimitedAction(ClientAddress, $"Request denied due to time limit.");
+            await DataTransmitter.Send(_tcpClient, Encoding.UTF8.GetBytes("Request denied due to time limit."));
             await Disconnect();
             return false;
         }
 
         return true;
     }
+
+    public void UpdateLastActivityTime() => _lastActivityTime = DateTime.UtcNow;
+
+    public bool IsSessionTimedOut() => (DateTime.UtcNow - _lastActivityTime) > _sessionTimeout;
 }

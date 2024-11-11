@@ -1,10 +1,11 @@
 ﻿using NETServer.Application.Handlers;
-using NETServer.Application.Infrastructure;
 using NETServer.Application.Network;
-using NETServer.Application.Security;
 using NETServer.Logging;
-using System.Collections.Concurrent;
+
 using System.Net.Sockets;
+using System.Collections.Concurrent;
+using NETServer.Infrastructure.Security;
+using NETServer.Infrastructure.Configuration;
 
 internal class SessionController
 {
@@ -12,47 +13,51 @@ internal class SessionController
     private readonly CommandHandler _commandHandler;
     private readonly ConnectionLimiter _connectionLimiter;
 
-    public readonly ConcurrentDictionary<Guid, ClientSession> ActiveSessions = new();
-    public readonly Dictionary<string, DateTime> ClientLastLogTimes = new();
+    public readonly ConcurrentDictionary<Guid, WeakReference<ClientSession>> ActiveSessions = new();
+    
 
     public SessionController()
     {
-        _connectionLimiter = new ConnectionLimiter(Setting.MaxConnectionsPerIp);
-        _requestLimiter = new RequestLimiter(Setting.RequestLimit, Setting.LockoutDuration);
+        _connectionLimiter = new ConnectionLimiter(Setting.MaxConnections);
+        _requestLimiter = new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration);
         _commandHandler = new CommandHandler();
     }
 
     public async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
     {
-        var session = new ClientSession(client, _requestLimiter, _connectionLimiter, ClientLastLogTimes);
+        var session = new ClientSession(client, _requestLimiter, _connectionLimiter);
 
         if (!await session.AuthorizeClientSession())
             return;
 
         await session.Connect();
-        ActiveSessions[session.Id] = session; // Directly store the session
+        ActiveSessions[session.Id] = new WeakReference<ClientSession>(session);
 
         try
         {
             if (session.ClientStream is not Stream clientStream) return;
 
             var dataTransmitter = new DataTransmitter(clientStream);
-
             Command receivedCommand;
-            byte[] payload;
             byte[] receivedData;
             byte[] keyAes = dataTransmitter.KeyAes;
 
             while (session.IsConnected && !cancellationToken.IsCancellationRequested)
             {
-                (receivedCommand, receivedData) = await dataTransmitter.Receive(cancellationToken);
+                (receivedCommand, receivedData) = await dataTransmitter.Receive();
 
-                if (receivedCommand == default) break;
+                if (receivedCommand == default)
+                {
+                    if (session.IsSessionTimedOut()) break;
+
+                    await Task.Delay(50);
+                    continue;
+                }
 
                 // Update last activity time each time a command is received
                 session.UpdateLastActivityTime();
 
-                payload = await _commandHandler.HandleCommand(receivedCommand, receivedData);
+                await this.HandleCommand(dataTransmitter, receivedCommand, receivedData);
             }
         }
         catch (IOException ioEx)
@@ -73,13 +78,23 @@ internal class SessionController
         }
     }
 
-    private async Task CloseConnection(ClientSession session)
+    private async Task HandleCommand(DataTransmitter dataTransmitter, Command command, byte[] data)
     {
-        if (!session.IsConnected) return;
+        // Xử lý command
+        var responseData = await _commandHandler.HandleCommand(command, data);
+
+        // Gửi lại dữ liệu cho client tương ứng (sử dụng session ID)
+        await dataTransmitter.Send(responseData);
+    }
+
+    private async Task CloseConnection(ClientSession? session)
+    {
+        if (session == null || !session.IsConnected) return;
 
         try
         {
             await session.Disconnect();
+            // Dọn dẹp WeakReference khi kết thúc phiên
             ActiveSessions.TryRemove(session.Id, out _);
         }
         catch (Exception e)
@@ -88,57 +103,30 @@ internal class SessionController
         }
     }
 
-    private async Task CleanUp()
-    {
-        var expiredSessions = ActiveSessions
-            .Where(kvp => kvp.Value.IsSessionTimedOut())
-            .Select(kvp => kvp.Key)
-            .ToList();
-
-        foreach (var sessionId in expiredSessions)
-        {
-            if (ActiveSessions.TryRemove(sessionId, out var session))
-            {
-                await session.Disconnect();
-                NLog.Info($"Session {sessionId} removed due to timeout.");
-            }
-        }
-
-        // Clean expired sessions from ClientLastLogTimes
-        var expiredIps = ClientLastLogTimes
-            .Where(pair => (DateTime.UtcNow - pair.Value) > Setting.SessionTimeout)
-            .Select(pair => pair.Key)
-            .ToList();
-
-        foreach (var ip in expiredIps)
-        {
-            ClientLastLogTimes.Remove(ip);
-            NLog.Info($"Session for {ip} removed due to timeout.");
-        }
-    }
-
-    public async Task RunCleanUp(CancellationToken cancellationToken)
-    {
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            await CleanUp();
-
-            await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
-        }
-
-        NLog.Info("The cleanup task has stopped due to a cancellation request.");
-    }
-
     public async Task CloseAllConnections()
     {
         if (ActiveSessions.IsEmpty) return;
 
         var closeTasks = ActiveSessions.Values
-            .Where(session => session.IsConnected)
-            .Select(session => CloseConnection(session));
+            .Select(sessionRef => sessionRef.TryGetTarget(out var session) && session?.IsConnected == true
+                ? CloseConnection(session)
+                : Task.CompletedTask);
 
         await Task.WhenAll(closeTasks);
 
         NLog.Info("All connections closed successfully.");
+    }
+
+    public void CleanUpInactiveSessions()
+    {
+        // Lọc ra các session không còn kết nối và xóa khỏi ActiveSessions
+        var inactiveSessions = ActiveSessions
+            .Where(sessionRef => !sessionRef.Value.TryGetTarget(out var session) || session == null || !session.IsConnected)
+            .ToList(); 
+
+        foreach (var session in inactiveSessions)
+        {
+            ActiveSessions.TryRemove(session.Key, out _); // Xóa session khỏi ActiveSessions
+        }
     }
 }

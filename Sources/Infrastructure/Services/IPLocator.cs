@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 
-namespace NETServer.Application.Infrastructure;
+namespace NETServer.Infrastructure.Services;
 
 internal class IPResolver
 {

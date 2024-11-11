@@ -14,7 +14,7 @@ class Program
     private static void Main(string[] args)
     {
         // Initialize the server
-        var server = new NETServer.Application.Network.Server();
+        var server = new NETServer.Application.Network.ServerEngine();
 
         // Start the server
         server.StartServer();

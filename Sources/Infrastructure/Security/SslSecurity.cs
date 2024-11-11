@@ -1,8 +1,10 @@
-﻿using NETServer.Application.Infrastructure;
-using System.Net.Security;
+﻿using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using NETServer.Infrastructure.Configuration;
+
+namespace NETServer.Infrastructure.Security;
 
 public class SslSecurity
 {
@@ -20,10 +22,10 @@ public class SslSecurity
 
             // Xác thực server và bắt đầu mã hóa
             await sslStream.AuthenticateAsServerAsync(
-                serverCertificate: new X509Certificate2(Setting.SslPfxCertificatePath, Setting.SslCertificatePassword),
-                clientCertificateRequired: Setting.ClientCertificateRequired,
-                checkCertificateRevocation: Setting.CheckCertificateRevocation,
-                enabledSslProtocols: Setting.EnabledSslProtocols
+                serverCertificate: new X509Certificate2(Setting.SslPfxCertificatePath, Setting.SslPassword),
+                clientCertificateRequired: Setting.IsClientCertificateRequired,
+                checkCertificateRevocation: Setting.IsCertificateRevocationCheckEnabled,
+                enabledSslProtocols: Setting.SupportedSslProtocols
             );
 
             return sslStream;

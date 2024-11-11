@@ -1,7 +1,7 @@
 ﻿using System.Buffers;
 using System.Security.Cryptography;
 
-namespace NETServer.Application.Security;
+namespace NETServer.Infrastructure.Security;
 
 internal class AesCipher
 {
@@ -17,6 +17,18 @@ internal class AesCipher
         {
             this.Key = new byte[keySize / 8];
             rng.GetBytes(this.Key);
+        }
+    }
+    public static byte[] GenerateKey(int keySize = 256)
+    {
+        if (keySize != 128 && keySize != 192 && keySize != 256)
+            throw new ArgumentException("Key size must be 128, 192, or 256 bits.");
+
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            byte[] key = new byte[keySize / 8];
+            rng.GetBytes(key);
+            return key; 
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
+using NETServer.Infrastructure.Configuration;
 
-namespace NETServer.Application.Infrastructure;
+namespace NETServer.Infrastructure.Services;
 
 internal class OpenSsl
 {
@@ -14,13 +15,13 @@ internal class OpenSsl
             // Bước 2: Tạo yêu cầu chứng chỉ (CSR)
             // Bước 3: Tạo chứng chỉ tự ký (self-signed certificate)
             // Bước 4: Chuyển đổi chứng chỉ và khóa thành tệp PFX
-            
+
             var commands = new (string Command, string[] Args)[]
             {
                 ("genpkey -algorithm RSA -out {0} -pkeyopt rsa_keygen_bits:2048", new[] { Setting.SslPrivateKeyPath }),
                 ("req -new -key {0} -out {1}", new[] { Setting.SslPrivateKeyPath, Setting.SslCsrCertificatePath }),
                 ("req -x509 -key {0} -in {1} -out {2} -days 365", new[] { Setting.SslPrivateKeyPath, Setting.SslCsrCertificatePath, Setting.SslCrtCertificatePath }),
-                ("pkcs12 -export -out {0} -inkey {1} -in {2} -certfile {2} -password pass:{3}", new[] { Setting.SslPfxCertificatePath, Setting.SslPrivateKeyPath, Setting.SslCrtCertificatePath, Setting.SslCertificatePassword })
+                ("pkcs12 -export -out {0} -inkey {1} -in {2} -certfile {2} -password pass:{3}", new[] { Setting.SslPfxCertificatePath, Setting.SslPrivateKeyPath, Setting.SslCrtCertificatePath, Setting.SslPassword })
             };
 
             // Chạy các lệnh OpenSSL theo thứ tự
