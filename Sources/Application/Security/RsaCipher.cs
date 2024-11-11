@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using NETServer.Infrastructure;
+using NETServer.Application.Infrastructure;
 using NETServer.Application.Helpers;
 
 namespace NETServer.Application.Security;

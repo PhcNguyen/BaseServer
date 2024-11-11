@@ -1,7 +1,8 @@
-﻿using NETServer.Application.Security;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
-internal class RequestLimiter : IRequestLimiter
+namespace NETServer.Application.Security;
+
+internal class RequestLimiter
 {
     private readonly (int MaxRequests, TimeSpan TimeWindow) _requestLimit;
     private readonly int _lockoutDuration;

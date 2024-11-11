@@ -1,5 +1,6 @@
-﻿using NETServer.Infrastructure;
-using NETServer.Logging;
+﻿using NETServer.Logging;
+using NETServer.Application.Infrastructure;
+
 using System.Net;
 using System.Net.Sockets;
 
@@ -43,6 +44,8 @@ internal class Server
             {
                 _tcpListener.Start();
                 NLog.Info($"Server started and listening on {_tcpListener.LocalEndpoint}");
+
+                await _sessionController.RunCleanUp(token);
 
                 while (_isRunning == 1 && !token.IsCancellationRequested)
                 {

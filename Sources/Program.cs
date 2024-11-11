@@ -3,21 +3,27 @@ using NETServer.Logging;
 
 namespace NETServer;
 
+
+
+
+
+
+
 class Program
 {
     private static void Main(string[] args)
     {
         // Initialize the server
-        var server = new ServerManager();
+        var server = new NETServer.Application.Network.Server();
 
         // Start the server
-        server.StartListener();
+        server.StartServer();
 
         Console.WriteLine("Press Enter to stop the server.");
         Console.ReadLine();
 
         // Stop the server
-        server.StopListener();
+        server.StopServer();
 
         Console.ReadLine();
     }

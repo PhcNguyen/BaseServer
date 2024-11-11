@@ -1,8 +1,8 @@
-﻿using NETServer.Application.Security;
+﻿using System.Collections.Concurrent;
 
-using System.Collections.Concurrent;
+namespace NETServer.Application.Security;
 
-internal class ConnectionLimiter : IConnectionLimiter
+internal class ConnectionLimiter
 {
     private readonly int _maxConnectionsPerIp;
     private readonly ConcurrentDictionary<string, int> _ipConnectionCounts;

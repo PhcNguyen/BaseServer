@@ -17,7 +17,7 @@ internal class DataTransmitter
         _stream = stream;
         _aesCipher = new AesCipher(256);
 
-        this.KeyAes = _aesCipher.GetKey();
+        this.KeyAes = _aesCipher.Key;
     }
 
     public async Task<(Command command, byte[] data)> Receive(CancellationToken cancellationToken)
@@ -84,17 +84,7 @@ internal class DataTransmitter
         }
     }
 
-    public Task<bool> Send(byte[] payload)
-    {
-        return SendData(payload);
-    }
-
-    public Task<bool> Send(Command command, byte[] payload)
-    {
-        return SendData(payload, (byte)command);
-    }
-
-    private async Task<bool> SendData(byte[] payload, byte? command = null)
+    public async Task<bool> Send(byte[] payload)
     {
         try
         {
@@ -117,17 +107,11 @@ internal class DataTransmitter
             }
 
             // Tính chiều dài tổng cộng
-            int totalLength = (command.HasValue ? 2 : 1) + payload.Length; // 1 byte cho flag và (1 byte cho command nếu có)
+            int totalLength = 1 + payload.Length; // 1 byte flag
             byte[] lengthBytes = BitConverter.GetBytes(totalLength);
 
             // Gửi 4 byte chứa chiều dài
             await _stream.WriteAsync(lengthBytes, 0, lengthBytes.Length);
-
-            // Nếu có Command, gửi byte Command
-            if (command.HasValue)
-            {
-                await _stream.WriteAsync(new byte[] { (byte)command.Value }, 0, 1);
-            }
 
             // Gửi byte flag mã hóa
             await _stream.WriteAsync(new byte[] { (byte)(isEncrypted ? 1 : 0) }, 0, 1);

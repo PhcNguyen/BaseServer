@@ -1,11 +1,8 @@
-﻿using NETServer.Infrastructure;
-
+﻿using NETServer.Application.Infrastructure;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-
-namespace NETServer.Application.Security;
 
 public class SslSecurity
 {
@@ -23,8 +20,7 @@ public class SslSecurity
 
             // Xác thực server và bắt đầu mã hóa
             await sslStream.AuthenticateAsServerAsync(
-                // Tải chứng chỉ của server
-                serverCertificate: new X509Certificate2(Setting.CertificatePath, Setting.CertificatePassword),
+                serverCertificate: new X509Certificate2(Setting.SslPfxCertificatePath, Setting.SslCertificatePassword),
                 clientCertificateRequired: Setting.ClientCertificateRequired,
                 checkCertificateRevocation: Setting.CheckCertificateRevocation,
                 enabledSslProtocols: Setting.EnabledSslProtocols
@@ -34,11 +30,25 @@ public class SslSecurity
         }
         catch (AuthenticationException authEx)
         {
+            // Đóng client nếu có lỗi xác thực SSL
             client.Close();
             throw new InvalidOperationException("SSL authentication failed.", authEx);
         }
+        catch (IOException ioEx)
+        {
+            // Xử lý lỗi kết nối mạng (ví dụ: thời gian chờ, mất kết nối)
+            client.Close();
+            throw new InvalidOperationException("Network error occurred during SSL setup.", ioEx);
+        }
+        catch (SocketException sockEx)
+        {
+            // Xử lý lỗi kết nối socket
+            client.Close();
+            throw new InvalidOperationException("Socket error occurred during SSL connection.", sockEx);
+        }
         catch (Exception ex)
         {
+            // Xử lý các lỗi chung khác
             client.Close();
             throw new InvalidOperationException("SSL connection setup failed.", ex);
         }

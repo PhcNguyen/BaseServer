@@ -1,16 +1,18 @@
-﻿using System.Security.Cryptography;
+﻿using System.Buffers;
+using System.Security.Cryptography;
 
 namespace NETServer.Application.Security;
 
 internal class AesCipher
 {
-    private byte[] Key;
+    public byte[] Key { get; private set; }
 
     public AesCipher(int keySize = 256)
     {
         if (keySize != 128 && keySize != 192 && keySize != 256)
             throw new ArgumentException("Key size must be 128, 192, or 256 bits.");
 
+        // Tạo Key ngẫu nhiên
         using (var rng = RandomNumberGenerator.Create())
         {
             this.Key = new byte[keySize / 8];
@@ -18,26 +20,8 @@ internal class AesCipher
         }
     }
 
-    public byte[] GenerateKey(int keySize = 256)
-    {
-        if (keySize != 128 && keySize != 192 && keySize != 256)
-            throw new ArgumentException("Key size must be 128, 192, or 256 bits.");
-
-        // Tạo khóa ngẫu nhiên
-        byte[] key = new byte[keySize / 8]; // Kích thước khóa tính theo byte
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(key);
-        }
-
-        return key; // Trả về khóa đã tạo
-    }
-
-    public byte[] GetKey() => (byte[])Key.Clone();
-
     private static void IncrementCounter(byte[] counter)
     {
-        // Dùng Span<byte> để thao tác hiệu quả
         for (int i = counter.Length - 1; i >= 0; i--)
         {
             if (++counter[i] != 0) break;
@@ -56,31 +40,29 @@ internal class AesCipher
     {
         using var aes = CreateAesEncryptor(this.Key);
         using var ms = new MemoryStream();
-
-        byte[] counter = new byte[16];  // Khởi tạo counter
+        byte[] counter = new byte[16];
 
         using var encryptor = aes.CreateEncryptor();
-        byte[] encryptedCounter = new byte[16]; // Để lưu trữ kết quả mã hóa của counter
 
-        // Sử dụng Span<byte> để tăng hiệu suất
-        Span<byte> block = new Span<byte>(new byte[plaintext.Length]);
-        plaintext.CopyTo(block);  // Sao chép plaintext vào Span
+        // Sử dụng ArrayPool để tránh phân bổ bộ nhớ quá nhiều
+        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
 
-        for (int i = 0; i < block.Length; i += aes.BlockSize / 8)
+        for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
         {
             encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
 
-            int bytesToEncrypt = Math.Min(block.Length - i, aes.BlockSize / 8);
+            int bytesToEncrypt = Math.Min(plaintext.Length - i, aes.BlockSize / 8);
+            byte[] block = new byte[bytesToEncrypt];
+            Array.Copy(plaintext, i, block, 0, bytesToEncrypt);
 
-            // XOR dữ liệu với kết quả mã hóa của counter
-            block.Slice(i, bytesToEncrypt).ForEach((ref byte b, int idx) =>
-            {
-                b ^= encryptedCounter[idx];
-            });
+            for (int j = 0; j < bytesToEncrypt; j++)
+                block[j] ^= encryptedCounter[j];
 
-            ms.Write(block.Slice(i, bytesToEncrypt));
+            ms.Write(block, 0, bytesToEncrypt);
             IncrementCounter(counter);
         }
+
+        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
 
         return ms.ToArray();
     }
@@ -91,8 +73,8 @@ internal class AesCipher
         using var ms = new MemoryStream(cipherText);
         using var encryptor = aes.CreateEncryptor();
 
-        byte[] counter = new byte[16]; // Khởi tạo counter
-        byte[] encryptedCounter = new byte[16]; // Để lưu trữ kết quả mã hóa của counter
+        byte[] counter = new byte[16];
+        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
 
         using var resultStream = new MemoryStream();
         byte[] buffer = new byte[16];
@@ -102,13 +84,14 @@ internal class AesCipher
         {
             encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
 
-            // XOR với kết quả mã hóa của counter
             for (int j = 0; j < bytesRead; j++)
                 buffer[j] ^= encryptedCounter[j];
 
             resultStream.Write(buffer, 0, bytesRead);
             IncrementCounter(counter);
         }
+
+        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
 
         return resultStream.ToArray();
     }
@@ -118,38 +101,37 @@ internal class AesCipher
         using var aes = CreateAesEncryptor(this.Key);
         byte[] iv = new byte[16];
 
-        // Tạo IV ngẫu nhiên
         using (var rng = RandomNumberGenerator.Create())
         {
-            rng.GetBytes(iv);
+            rng.GetBytes(iv); // Tạo IV ngẫu nhiên
         }
 
         using var ms = new MemoryStream();
         await ms.WriteAsync(iv, 0, iv.Length); // Ghi IV vào đầu
 
         byte[] counter = new byte[16];
-        Array.Copy(iv, counter, iv.Length);  // Đưa IV vào counter
-
+        Array.Copy(iv, counter, iv.Length);
         using var encryptor = aes.CreateEncryptor();
-        byte[] encryptedCounter = new byte[16];
 
-        Span<byte> block = new Span<byte>(new byte[plaintext.Length]);
-        plaintext.CopyTo(block);  // Sao chép plaintext vào Span
+        // Sử dụng ArrayPool để tối ưu hóa bộ nhớ
+        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
 
-        for (int i = 0; i < block.Length; i += aes.BlockSize / 8)
+        for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
         {
             encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
 
-            int bytesToEncrypt = Math.Min(block.Length - i, aes.BlockSize / 8);
+            int bytesToEncrypt = Math.Min(plaintext.Length - i, aes.BlockSize / 8);
+            byte[] block = new byte[bytesToEncrypt];
+            Array.Copy(plaintext, i, block, 0, bytesToEncrypt);
 
-            block.Slice(i, bytesToEncrypt).ForEach((ref byte b, int idx) =>
-            {
-                b ^= encryptedCounter[idx];
-            });
+            for (int j = 0; j < bytesToEncrypt; j++)
+                block[j] ^= encryptedCounter[j];
 
-            await ms.WriteAsync(block.Slice(i, bytesToEncrypt)); // Ghi kết quả vào bộ nhớ
+            await ms.WriteAsync(block, 0, bytesToEncrypt);
             IncrementCounter(counter);
         }
+
+        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
 
         return ms.ToArray();
     }
@@ -164,23 +146,26 @@ internal class AesCipher
         using var encryptor = aes.CreateEncryptor();
 
         byte[] counter = new byte[16];
-        Array.Copy(iv, counter, iv.Length);  // Đưa IV vào counter
+        Array.Copy(iv, counter, iv.Length);
 
         using var resultStream = new MemoryStream();
         byte[] buffer = new byte[16];
         int bytesRead;
 
+        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
+
         while ((bytesRead = await ms.ReadAsync(buffer, 0, buffer.Length)) > 0)
         {
-            encryptor.TransformBlock(counter, 0, counter.Length, buffer, 0); // Sử dụng lại bộ đệm
+            encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
 
-            // XOR với kết quả mã hóa của counter
             for (int j = 0; j < bytesRead; j++)
-                buffer[j] ^= buffer[j];  // XOR với chính dữ liệu đã mã hóa
+                buffer[j] ^= encryptedCounter[j];
 
             await resultStream.WriteAsync(buffer, 0, bytesRead);
             IncrementCounter(counter);
         }
+
+        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
 
         return resultStream.ToArray();
     }

@@ -1,21 +1,19 @@
-﻿using NETServer.Application.Security;
-using NETServer.Infrastructure;
+﻿using NETServer.Application.Infrastructure;
+using NETServer.Application.Security;
 using NETServer.Logging;
-
-using System.Net;
 using System.Net.Sockets;
-using System.Collections.Concurrent;
-
-namespace NETServer.Application.Network;
+using System.Net;
 
 internal class ClientSession
 {
-    private readonly ConcurrentDictionary<string, DateTime> _lastCooldown = new();
-    private readonly ConnectionLimiter _connectionLimiter;
-    private readonly RequestLimiter _requestLimiter;
-    private readonly TcpClient _tcpClient;
     private Stream? _clientStream;
+    private readonly TcpClient _tcpClient;
+    private readonly RequestLimiter _requestLimiter;
+    private readonly ConnectionLimiter _connectionLimiter;
+    private readonly Dictionary<string, DateTime> _clientLastLogTimes;
+    private readonly TimeSpan _sessionTimeout = Setting.SessionTimeout;
 
+    public DateTime LastActivityTime;
     public readonly Guid Id = Guid.NewGuid();
     public bool IsConnected { get; private set; }
     public string ClientAddress { get; private set; } = string.Empty;
@@ -23,31 +21,25 @@ internal class ClientSession
     public TcpClient TcpClient => _tcpClient;
     public Stream? ClientStream => _clientStream;
 
-    public ClientSession(TcpClient tcpClient, RequestLimiter requestLimiter, ConnectionLimiter connectionLimiter)
+    public ClientSession(TcpClient tcpClient, RequestLimiter requestLimiter, ConnectionLimiter connectionLimiter, Dictionary<string, DateTime> clientLastLogTimes)
     {
         ValidateParameters(tcpClient, requestLimiter, connectionLimiter);
+
+        LastActivityTime = DateTime.UtcNow;
 
         _tcpClient = tcpClient;
         _requestLimiter = requestLimiter;
         _connectionLimiter = connectionLimiter;
+        _clientLastLogTimes = clientLastLogTimes;
 
         ClientAddress = ValidateClientAddress();
     }
 
-    public static implicit operator TcpClient(ClientSession v)
-    {
-        if (v == null || v.TcpClient == null)
-        {
-            throw new InvalidOperationException("ClientSession or TcpClient is null.");
-        }
-        return v.TcpClient;
-    }
-
     private static void ValidateParameters(TcpClient tcpClient, RequestLimiter requestLimiter, ConnectionLimiter connectionLimiter)
     {
-        if (tcpClient == null) throw new ArgumentNullException(nameof(tcpClient), "TcpClient cannot be null");
-        if (requestLimiter == null) throw new ArgumentNullException(nameof(requestLimiter), "RequestLimiter cannot be null");
-        if (connectionLimiter == null) throw new ArgumentNullException(nameof(connectionLimiter), "ConnectionLimiter cannot be null");
+        if (tcpClient == null) throw new ArgumentNullException(nameof(tcpClient));
+        if (requestLimiter == null) throw new ArgumentNullException(nameof(requestLimiter));
+        if (connectionLimiter == null) throw new ArgumentNullException(nameof(connectionLimiter));
     }
 
     private string ValidateClientAddress()
@@ -56,66 +48,55 @@ internal class ClientSession
         return clientEndPoint?.Address.ToString() ?? string.Empty;
     }
 
-    private void LogCooldown(string ipAddress, string message)
+    private void LogRateLimitedAction(string ipAddress, string message)
     {
         var cTime = DateTime.UtcNow;
 
-        // Kiểm tra xem có thông báo từ IP này trong vòng 5 giây qua không
-        if (_lastCooldown.TryGetValue(ipAddress, out var lastLoggedTime))
-        {
-            if ((cTime - lastLoggedTime).TotalSeconds < 10)
-            {
-                // Nếu đã có thông báo trong vòng 10 giây, không làm gì cả
-                return;
-            }
-        }
+        // Kiểm tra xem có thông báo từ IP này trong vòng _logCooldownTime qua không
+        if (_clientLastLogTimes.TryGetValue(ipAddress, out var lastLoggedTime) &&
+            (cTime - lastLoggedTime) < TimeSpan.FromSeconds(30)) return;
+
 
         // In ra thông báo và cập nhật thời gian
         NLog.Warning($"Client {ipAddress}: {message}");
-        _lastCooldown[ipAddress] = cTime;
+
+        // Cập nhật thời gian sau khi thông báo
+        _clientLastLogTimes[ipAddress] = cTime;
     }
 
     public async Task Connect()
     {
         try
         {
-            if (string.IsNullOrEmpty(ClientAddress))
+            if (string.IsNullOrEmpty(ClientAddress) || !_tcpClient.Connected)
             {
-                NLog.Warning("Client address is not set. Cannot establish connection.");
+                NLog.Warning("Client address is invalid or TcpClient is not connected.");
                 return;
             }
 
-            // Kiểm tra kết nối trước khi lấy stream
-            if (!_tcpClient.Connected)
-            {
-                NLog.Warning("TcpClient is not connected.");
-                return;
-            }
-
-            // Lấy stream sau khi đã đảm bảo kết nối
             _clientStream = Setting.UseSsl
                 ? await SslSecurity.EstablishSecureClientStream(_tcpClient)
                 : _tcpClient.GetStream();
 
-            // Kiểm tra lại kết nối sau khi lấy stream
             if (!_tcpClient.Connected)
             {
                 NLog.Warning("TcpClient was disconnected after stream setup.");
                 return;
             }
 
-            // Đánh dấu là đã kết nối
-            this.IsConnected = true;
-
-            NLog.Info($"Session {Id} connected to {this.ClientAddress}");
+            IsConnected = true;
+            NLog.Info($"Session {Id} connected to {ClientAddress}");
         }
         catch (Exception ex)
         {
-            // Chỉ thông báo lỗi nếu có ngoại lệ thực sự xảy ra
             NLog.Error($"Error connecting client {ClientAddress}: {ex.Message}");
             await Disconnect();
         }
     }
+
+    public void UpdateLastActivityTime() => LastActivityTime = DateTime.UtcNow;
+
+    public bool IsSessionTimedOut() => (DateTime.UtcNow - LastActivityTime) > _sessionTimeout;
 
     public async Task Disconnect()
     {
@@ -129,13 +110,10 @@ internal class ClientSession
             }
             IsConnected = false;
             _clientStream?.Dispose();
-
-            // Thông báo khi ngắt kết nối thành công
             NLog.Info($"Session {Id} disconnected from {ClientAddress}");
         }
         catch (Exception ex)
         {
-            // Lỗi ngắt kết nối cũng sẽ được thông báo nếu có sự cố
             NLog.Error(ex, $"Error disconnecting client {ClientAddress}");
         }
     }
@@ -144,21 +122,21 @@ internal class ClientSession
     {
         if (string.IsNullOrEmpty(ClientAddress))
         {
-            LogCooldown(ClientAddress, "Client's endpoint is null or invalid.");
+            LogRateLimitedAction(ClientAddress, "Client's endpoint is null or invalid.");
             await Disconnect();
             return false;
         }
 
         if (!await _connectionLimiter.IsConnectionAllowed(ClientAddress))
         {
-            LogCooldown(ClientAddress, $"Connection from {ClientAddress} is denied due to max connections.");
+            LogRateLimitedAction(ClientAddress, $"Connection is denied due to max connections.");
             await Disconnect();
             return false;
         }
 
         if (!await _requestLimiter.IsAllowed(ClientAddress))
         {
-            LogCooldown(ClientAddress, $"Request from {ClientAddress} is denied due to rate limit.");
+            LogRateLimitedAction(ClientAddress, $"Request denied due to time limit.");
             await Disconnect();
             return false;
         }
