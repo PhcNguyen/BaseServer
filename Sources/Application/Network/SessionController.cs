@@ -33,44 +33,50 @@ internal class SessionController
         await session.Connect();
         ActiveSessions[session.Id] = new WeakReference<ClientSession>(session);
 
+        Command command;
+        byte[] data;
+
         try
         {
-            if (session.ClientStream is not Stream clientStream) return;
-
-            var dataTransmitter = new DataTransmitter(clientStream);
-            Command receivedCommand;
-            byte[] receivedData;
-            byte[] keyAes = dataTransmitter.KeyAes;
+            if (session.DataTransport == null)
+            {
+                throw new InvalidOperationException("DataTransport is null. The session is not properly initialized.");
+            }
 
             while (session.IsConnected && !cancellationToken.IsCancellationRequested)
             {
-                (receivedCommand, receivedData) = await dataTransmitter.Receive();
+                // Kiểm tra timeout session
+                if (session.IsSessionTimedOut()) break;
 
-                if (receivedCommand == default)
+                // Kiểm tra cancellationToken nếu server muốn dừng vòng lặp này
+                if (cancellationToken.IsCancellationRequested) break;
+
+                // Nhận dữ liệu từ client
+                (command, data) = await session.DataTransport.Receive(cancellationToken);
+
+                if (command == default)
                 {
-                    if (session.IsSessionTimedOut()) break;
-
-                    await Task.Delay(50);
+                    await Task.Delay(50, cancellationToken);
                     continue;
                 }
 
                 // Update last activity time each time a command is received
                 session.UpdateLastActivityTime();
 
-                await this.HandleCommand(dataTransmitter, receivedCommand, receivedData);
+                await this.HandleCommand(session, command, data);
             }
         }
         catch (IOException ioEx)
         {
-            NLog.Error(ioEx);
+            NLog.Error($"I/O error in client session {session.ClientAddress}: {ioEx.Message}");
         }
         catch (SocketException sockEx)
         {
-            NLog.Error($"Socket error in client session {session.Id}: {sockEx.Message}");
+            NLog.Error($"Socket error in client session {session.ClientAddress}: {sockEx.Message}");
         }
         catch (Exception ex)
         {
-            NLog.Error($"Error in client session {session.Id}: {ex}");
+            NLog.Error($"General error in client session {session.ClientAddress}: {ex.Message}");
         }
         finally
         {
@@ -78,13 +84,16 @@ internal class SessionController
         }
     }
 
-    private async Task HandleCommand(DataTransmitter dataTransmitter, Command command, byte[] data)
+    private async Task HandleCommand(ClientSession session, Command command, byte[] data)
     {
-        // Xử lý command
         var responseData = await _commandHandler.HandleCommand(command, data);
 
-        // Gửi lại dữ liệu cho client tương ứng (sử dụng session ID)
-        await dataTransmitter.Send(responseData);
+        if (session.DataTransport == null)
+        {
+            throw new InvalidOperationException("DataTransport is null. The session is not properly initialized.");
+        }
+
+        await session.DataTransport.Send(responseData);
     }
 
     private async Task CloseConnection(ClientSession? session)

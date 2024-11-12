@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using NETServer.Application.Network;
 
 namespace NETServer.Application.Handlers;
 
@@ -13,13 +11,13 @@ internal class CommandHandler
         // Khởi tạo dictionary ánh xạ các command với các phương thức xử lý
         _commandHandlers = new Dictionary<Command, Func<byte[], Task<byte[]>>>
         {
-            { Command.SET_KEY, HandleSetKey },
+            { Command.PING, HandlePing },
             { Command.GET_KEY, HandleGetKey }
         };
     }
 
     // Phương thức chính để xử lý command và trả về dữ liệu
-    public async Task<byte[]> HandleCommand(Command command, byte[] data)
+    public async Task<byte[]> HandleCommand(Command command, byte[] data, ClientSession session)
     {
         if (_commandHandlers.TryGetValue(command, out var handler))
         {
@@ -34,12 +32,11 @@ internal class CommandHandler
     }
 
     // Ví dụ các phương thức xử lý cho từng command và trả về byte[]
-    private async Task<byte[]> HandleSetKey(byte[] data)
+    private async Task<byte[]> HandlePing(byte[] data)
     {
-        Console.WriteLine("Handling SET_KEY command");
-        // Thêm logic xử lý cho SET_KEY ở đây, ví dụ trả về một byte array
+
         await Task.CompletedTask;
-        return new byte[] { 0x01, 0x02, 0x03 }; // trả về dữ liệu sau khi xử lý
+        return new byte[] {}; 
     }
 
     private async Task<byte[]> HandleGetKey(byte[] data)

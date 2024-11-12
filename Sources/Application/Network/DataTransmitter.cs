@@ -1,4 +1,5 @@
-﻿using NETServer.Infrastructure.Security;
+﻿using NETServer.Infrastructure.Interfaces;
+using NETServer.Infrastructure.Security;
 using NETServer.Infrastructure.Logging;
 using NETServer.Application.Handlers;
 
@@ -7,23 +8,26 @@ using System.Buffers;
 
 namespace NETServer.Application.Network;
 
-internal class DataTransmitter
+internal class DataTransmitter: IDataTransmitter
 {
     private readonly AesCipher _aesCipher;  // Đối tượng xử lý mã hóa/giải mã AES
     private readonly BufferedStream _stream; // Sử dụng BufferedStream để tối ưu bộ nhớ
-
-    public byte[] KeyAes;
     private bool isEncrypted = false;
 
     private static ArrayPool<byte> bytePool = ArrayPool<byte>.Shared; // Pool bộ nhớ
 
-    public DataTransmitter(Stream stream)
+    public DataTransmitter(Stream stream, byte[] key)
     {
-        _aesCipher = new AesCipher(256);
-        this.KeyAes = _aesCipher.Key;
+        ValidateParameters(stream, key);
 
-        // Bao bọc stream trong BufferedStream
         _stream = new BufferedStream(stream);
+        _aesCipher = new AesCipher(key);
+    }
+
+    private static void ValidateParameters(Stream stream, byte[] key)
+    {
+        ArgumentNullException.ThrowIfNull(stream, nameof(stream));
+        ArgumentNullException.ThrowIfNull(key, nameof(key));
     }
 
     public static async Task Send(TcpClient tcpClient, byte[] payload)
@@ -51,59 +55,101 @@ internal class DataTransmitter
         catch (Exception) { return; }
     }
 
-    public async Task<(Command command, byte[] data)> Receive()
+    // Tách phần đọc dữ liệu đầu vào (chiều dài, command, flag mã hóa)
+    private async Task<(Command command, int expectedLength, bool isEncrypted)> ReadInitialData(byte[] buffer, CancellationToken cancellationToken)
+    {
+        // Đọc 4 byte đầu tiên để lấy chiều dài dữ liệu
+        int readLength = await _stream.ReadAsync(buffer, 0, 4, cancellationToken);
+        if (readLength < 4)
+        {
+            return (default, 0, false);
+        }
+
+        int expectedLength = BitConverter.ToInt32(buffer, 0);
+
+        // Đọc byte thứ 5 làm Command
+        readLength = await _stream.ReadAsync(buffer, 0, 1, cancellationToken);
+        if (readLength < 1)
+        {
+            return (default, 0, false);
+        }
+
+        var command = (Command)buffer[0];
+
+        // Đọc byte tiếp theo để kiểm tra flag mã hóa
+        readLength = await _stream.ReadAsync(buffer, 0, 1, cancellationToken);
+        if (readLength < 1)
+        {
+            return (default, 0, false);
+        }
+
+        return (command, expectedLength, buffer[0] == 1);
+    }
+
+    public async Task<(Command command, byte[] data)> Receive(CancellationToken cancellationToken)
     {
         try
         {
             if (!_stream.CanRead)
             {
-                NLog.Error("Stream is not readable.");
-                return (default, Array.Empty<byte>());
+                throw new InvalidOperationException("Stream is not readable. Connection is closed.");
             }
 
-            // Sử dụng buffer từ ArrayPool để tối ưu bộ nhớ
             var buffer = bytePool.Rent(8192);
             var data = new MemoryStream();
 
-            // Đọc 4 byte đầu tiên để lấy chiều dài dữ liệu
-            if (await _stream.ReadAsync(buffer, 0, 4) < 4)
-                return (default, Array.Empty<byte>());
-
-            int expectedLength = BitConverter.ToInt32(buffer, 0);
-
-            // Đọc byte thứ 5 làm Command
-            if (await _stream.ReadAsync(buffer, 0, 1) < 1)
-                return (default, Array.Empty<byte>());
-
-            var command = (Command)buffer[0];
-
-            // Đọc byte tiếp theo để kiểm tra flag mã hóa
-            if (await _stream.ReadAsync(buffer, 0, 1) < 1)
-                return (default, Array.Empty<byte>());
-
-            isEncrypted = buffer[0] == 1;
-
-            // Đọc tiếp các byte khác
-            int bytesRead = await _stream.ReadAsync(buffer, 0, expectedLength - 2); // Đã đọc 2 byte (command và flag)
-            if (bytesRead == 0) return (default, Array.Empty<byte>());
-
-            data.Write(buffer, 0, bytesRead);
-            byte[] receivedData = data.ToArray();
-
-            // Giải mã nếu cần thiết
-            if (isEncrypted)
+            try
             {
-                receivedData = await _aesCipher.DecryptAsync(receivedData);
+                var (command, expectedLength, isEncrypted) = await ReadInitialData(buffer, cancellationToken);
+                if (command == default)
+                {
+                    return (default, Array.Empty<byte>());
+                }
+
+                // Trả về Pong, không cần dữ liệu.
+                if (command == Command.PING)
+                {
+                    return (command, Array.Empty<byte>());
+                }
+
+                // Đọc phần còn lại của dữ liệu
+                int bytesRead = await _stream.ReadAsync(buffer, 0, expectedLength - 2, cancellationToken); // Đã đọc 2 byte (command và flag)
+                if (bytesRead == 0)
+                {
+                    return (default, Array.Empty<byte>());
+                }
+
+                data.Write(buffer, 0, bytesRead);
+
+                byte[] receivedData = data.ToArray();
+
+                // Giải mã nếu cần thiết
+                if (isEncrypted)
+                {
+                    try
+                    {
+                        receivedData = await _aesCipher.DecryptAsync(receivedData);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException("Decryption failed, invalid data.", ex);
+                    }
+                }
+
+                return (command, receivedData);
             }
-
-            // Trả lại buffer cho pool
-            bytePool.Return(buffer);
-
-            return (command, receivedData);
+            finally
+            {
+                bytePool.Return(buffer);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            return (default, Array.Empty<byte>());
         }
         catch (Exception ex)
         {
-            NLog.Error(ex);
+            NLog.Error("An error occurred while receiving data: " + ex.Message);
             return (default, Array.Empty<byte>());
         }
     }
@@ -114,14 +160,7 @@ internal class DataTransmitter
         {
             if (!_stream.CanWrite)
             {
-                NLog.Error("Stream is not writable.");
-                return false;
-            }
-
-            if (payload == null || payload.Length == 0)
-            {
-                NLog.Error("No data to send.");
-                return false;
+                throw new InvalidOperationException("Stream is not readable. Connection is closed.");
             }
 
             // Mã hóa dữ liệu nếu IsEncrypted được bật

@@ -7,18 +7,16 @@ internal class AesCipher
 {
     public byte[] Key { get; private set; }
 
-    public AesCipher(int keySize = 256)
+    public AesCipher(byte[] key)
     {
+        int keySize = key.Length * 8;
         if (keySize != 128 && keySize != 192 && keySize != 256)
-            throw new ArgumentException("Key size must be 128, 192, or 256 bits.");
-
-        // Tạo Key ngẫu nhiên
-        using (var rng = RandomNumberGenerator.Create())
         {
-            this.Key = new byte[keySize / 8];
-            rng.GetBytes(this.Key);
+            throw new ArgumentException("The provided key length must be 128, 192, or 256 bits.");
         }
+        this.Key = key;
     }
+
     public static byte[] GenerateKey(int keySize = 256)
     {
         if (keySize != 128 && keySize != 192 && keySize != 256)
@@ -56,7 +54,6 @@ internal class AesCipher
 
         using var encryptor = aes.CreateEncryptor();
 
-        // Sử dụng ArrayPool để tránh phân bổ bộ nhớ quá nhiều
         byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
 
         for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
@@ -74,7 +71,7 @@ internal class AesCipher
             IncrementCounter(counter);
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
+        ArrayPool<byte>.Shared.Return(encryptedCounter);
 
         return ms.ToArray();
     }
@@ -103,7 +100,7 @@ internal class AesCipher
             IncrementCounter(counter);
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
+        ArrayPool<byte>.Shared.Return(encryptedCounter);  
 
         return resultStream.ToArray();
     }
@@ -115,11 +112,11 @@ internal class AesCipher
 
         using (var rng = RandomNumberGenerator.Create())
         {
-            rng.GetBytes(iv); // Tạo IV ngẫu nhiên
+            rng.GetBytes(iv); 
         }
 
         using var ms = new MemoryStream();
-        await ms.WriteAsync(iv, 0, iv.Length); // Ghi IV vào đầu
+        await ms.WriteAsync(iv, 0, iv.Length); 
 
         byte[] counter = new byte[16];
         Array.Copy(iv, counter, iv.Length);
@@ -143,7 +140,7 @@ internal class AesCipher
             IncrementCounter(counter);
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
+        ArrayPool<byte>.Shared.Return(encryptedCounter);
 
         return ms.ToArray();
     }
@@ -177,7 +174,7 @@ internal class AesCipher
             IncrementCounter(counter);
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);  // Trả lại bộ nhớ
+        ArrayPool<byte>.Shared.Return(encryptedCounter);
 
         return resultStream.ToArray();
     }
