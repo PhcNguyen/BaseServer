@@ -1,9 +1,9 @@
-﻿namespace NETServer.Logging;
+﻿namespace NETServer.Infrastructure.Logging;
 
 /// <summary>
 /// Defines the log level for logging messages.
 /// </summary>
-public enum NLogLevel
+public enum LogLevel
 {
     /// <summary>
     /// Cấp độ log nghiêm trọng nhất, dùng để ghi lại các lỗi có thể làm hệ thống sập hoặc ngừng hoạt động.

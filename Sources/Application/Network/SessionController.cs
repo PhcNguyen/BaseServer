@@ -1,6 +1,6 @@
-﻿using NETServer.Application.Handlers;
+﻿using NETServer.Infrastructure.Logging;
+using NETServer.Application.Handlers;
 using NETServer.Application.Network;
-using NETServer.Logging;
 
 using System.Net.Sockets;
 using System.Collections.Concurrent;
@@ -62,7 +62,7 @@ internal class SessionController
         }
         catch (IOException ioEx)
         {
-            NLog.Error($"I/O error in client session {session.Id}: {ioEx.Message}");
+            NLog.Error(ioEx);
         }
         catch (SocketException sockEx)
         {

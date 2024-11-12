@@ -1,6 +1,6 @@
 ﻿using NETServer.Infrastructure.Security;
+using NETServer.Infrastructure.Logging;
 using NETServer.Application.Handlers;
-using NETServer.Logging;
 
 using System.Net.Sockets;
 using System.Buffers;
@@ -103,7 +103,7 @@ internal class DataTransmitter
         }
         catch (Exception ex)
         {
-            NLog.Error(ex, "Error receiving data.");
+            NLog.Error(ex);
             return (default, Array.Empty<byte>());
         }
     }
@@ -150,7 +150,7 @@ internal class DataTransmitter
         }
         catch (Exception ex)
         {
-            NLog.Error(ex, "Error sending data.");
+            NLog.Error(ex);
             return false;
         }
     }

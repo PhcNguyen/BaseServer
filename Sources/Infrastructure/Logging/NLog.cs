@@ -1,6 +1,6 @@
-﻿using NETServer.Logging.Internal;
+﻿using NETServer.Infrastructure.Logging.Helpers;
 
-namespace NETServer.Logging;
+namespace NETServer.Infrastructure.Logging;
 
 /// <summary>
 /// Provides logging functionalities with different levels.
@@ -8,68 +8,38 @@ namespace NETServer.Logging;
 public class NLog
 {
     /// <summary>
-    /// Gets or sets a value indicating the console log level.
-    /// </summary>
-    public static NLogLevel ConsoleLogLevel { get; set; } = NLogLevel.Info;
-
-    /// <summary>
-    /// Gets or sets a value indicating the file write log level.
-    /// </summary>
-    public static NLogLevel WriteLogLevel { get; set; } = NLogLevel.Info;
-
-    /// <summary>
     /// Logs a message with a specified level and optional exception.
     /// </summary>
     /// <param name="message">The log message.</param>
     /// <param name="level">The log level.</param>
     /// <param name="exception">An optional exception.</param>
-    public static void Log(string? message, NLogLevel level, Exception? exception = null) =>
-        Task.Run(() => Internal.NLogHelper.LogMessage(message, level, exception));
-
+    private static void Log(string? message, LogLevel level, Exception? exception = null) =>
+        Task.Run(() => FileManager.WriteLogToFileAsync(message, level, exception));
+    
     /// <summary>
     /// Logs an informational message.
     /// </summary>
-    /// <param name="message">The log message.</param>
-    public static void Info(string message) => Log(message, NLogLevel.Info);
+    public static void Info(string message) => Log(message, LogLevel.Info);
 
     /// <summary>
     /// Logs an error message.
     /// </summary>
-    /// <param name="message">The log message.</param>
-    public static void Error(string message) => Log(message, NLogLevel.Error);
+    public static void Error(string message) => Log(message, LogLevel.Error);
 
     /// <summary>
     /// Logs an error message with an exception.
     /// </summary>
-    /// <param name="exception">The exception.</param>
-    public static void Error(Exception exception) => Log(exception.Message, NLogLevel.Error, exception);
+    public static void Error(Exception exception) =>
+        Log(null, LogLevel.Error, exception);
 
     /// <summary>
     /// Logs a warning message.
     /// </summary>
-    /// <param name="message">The log message.</param>
-    public static void Warning(string message) => Log(message, NLogLevel.Warning);
+    public static void Warning(string message) => Log(message, LogLevel.Warning);
 
     /// <summary>
     /// Logs a warning message with an exception.
     /// </summary>
-    /// <param name="exception">The exception.</param>
-    public static void Warning(Exception exception) => Log(exception.Message, NLogLevel.Warning);
-
-    /// <summary>
-    /// Logs an error message with an exception and custom message.
-    /// </summary>
-    /// <param name="exception">The exception.</param>
-    /// <param name="message">The custom log message.</param>
-    public static void Error(Exception exception, string message) => Log(message, NLogLevel.Error);
-
-    /// <summary>
-    /// Logs a warning message with an exception and custom message.
-    /// </summary>
-    /// <param name="exception">The exception.</param>
-    /// <param name="message">The custom log message.</param>
-    public static void Warning(Exception exception, string message) => Log(message, NLogLevel.Warning, exception);
-
-    public static void Pause() => NLogFileHandler.PauseNLog();
-    public static void Resume() => NLogFileHandler.ResumeNLog();
+    public static void Warning(Exception exception) =>
+        Log(null, LogLevel.Warning, exception);
 }

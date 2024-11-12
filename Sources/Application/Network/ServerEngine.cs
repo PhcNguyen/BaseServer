@@ -1,5 +1,5 @@
-﻿using NETServer.Logging;
-using NETServer.Infrastructure.Configuration;
+﻿using NETServer.Infrastructure.Configuration;
+using NETServer.Infrastructure.Logging;
 
 using System.Net;
 using System.Net.Sockets;
@@ -60,19 +60,19 @@ internal class ServerEngine
                     }
                     catch (SocketException ex) when (token.IsCancellationRequested)
                     {
-                        NLog.Error(ex, "Listener stopped due to cancellation.");
+                        NLog.Error(ex);
                         break;
                     }
                     catch (Exception ex)
                     {
-                        NLog.Error(ex, "Unexpected error in listener loop");
+                        NLog.Error(ex);
                         break;
                     }
                 }
             }
             catch (Exception ex)
             {
-                NLog.Error(ex, "Error during listener task");
+                NLog.Error(ex);
             }
             finally
             {
@@ -100,7 +100,7 @@ internal class ServerEngine
             }
             catch (Exception ex)
             {
-                NLog.Error(ex, "Error while closing client sessions");
+                NLog.Error(ex);
             }
         });
 

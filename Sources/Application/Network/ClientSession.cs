@@ -1,7 +1,7 @@
 ﻿using NETServer.Infrastructure.Configuration;
 using NETServer.Infrastructure.Interfaces;
 using NETServer.Infrastructure.Security;
-using NETServer.Logging;
+using NETServer.Infrastructure.Logging;
 
 using System.Net;
 using System.Text;

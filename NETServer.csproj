@@ -29,4 +29,8 @@
    		<ErrorReport>prompt</ErrorReport>
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
+	
+  	<ItemGroup>
+  	  <Folder Include="Sources\Database\" />
+  	</ItemGroup>
 </Project>

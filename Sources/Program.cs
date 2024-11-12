@@ -1,13 +1,6 @@
 ﻿using NETServer.Application.Network;
-using NETServer.Logging;
 
 namespace NETServer;
-
-
-
-
-
-
 
 class Program
 {
