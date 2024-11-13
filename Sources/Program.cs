@@ -1,4 +1,4 @@
-﻿using NETServer.Application.Network;
+﻿using NETServer.Database;
 
 namespace NETServer
 {
@@ -6,19 +6,7 @@ namespace NETServer
     {
         private static void Main(string[] args)
         {
-            // Initialize the server
-            var server = new ServerEngine();
-
-            // Start the server
-            server.StartServer();
-
-            Console.WriteLine("Press Enter to stop the server.");
-            Console.ReadLine();
-
-            // Stop the server
-            server.StopServer();
-
-            Console.ReadLine();
+            PostgreConnector.TestConnection();
         }
     }
 

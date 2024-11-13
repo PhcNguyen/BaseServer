@@ -6,9 +6,11 @@ namespace NETServer.Infrastructure.Interfaces
     {
         Guid Id { get; }
         bool IsConnected { get; }
+        byte[] SessionKey { get; }
         string ClientAddress { get; }
         TcpClient TcpClient { get; }
         Stream? ClientStream { get; }
+        IDataTransmitter DataTransport { get; }
         Task Connect();
         Task Disconnect();
         Task<bool> AuthorizeClientSession();

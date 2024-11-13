@@ -21,12 +21,14 @@ namespace NETServer.Application.Network
 
         public Guid Id { get; private set; }
         public bool IsConnected { get; private set; }
-        public byte[] SessionKey { get; private set; } 
+        public byte[] SessionKey { get; private set; }
         public string ClientAddress { get; private set; } = string.Empty;
 
         public TcpClient TcpClient => _tcpClient;
         public Stream? ClientStream => _clientStream;
         public DataTransmitter? DataTransport { get; private set; }
+
+        IDataTransmitter IClientSession.DataTransport => DataTransport ?? throw new InvalidOperationException("DataTransport cannot be null.");
 
         public ClientSession(TcpClient tcpClient, IRequestLimiter requestLimiter, IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
         {
@@ -144,5 +146,30 @@ namespace NETServer.Application.Network
         public void UpdateLastActivityTime() => _lastActivityTime = DateTime.UtcNow;
 
         public bool IsSessionTimedOut() => (DateTime.UtcNow - _lastActivityTime) > _sessionTimeout;
+
+        Task IClientSession.Connect()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task IClientSession.Disconnect()
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<bool> IClientSession.AuthorizeClientSession()
+        {
+            throw new NotImplementedException();
+        }
+
+        void IClientSession.UpdateLastActivityTime()
+        {
+            throw new NotImplementedException();
+        }
+
+        bool IClientSession.IsSessionTimedOut()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

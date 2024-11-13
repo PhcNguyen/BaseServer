@@ -31,7 +31,6 @@
 	</PropertyGroup>
 	
   	<ItemGroup>
-  	  <Folder Include="Sources\Application\Common\" />
-  	  <Folder Include="Sources\Database\" />
+  	  <PackageReference Include="Npgsql" Version="8.0.5" />
   	</ItemGroup>
 </Project>

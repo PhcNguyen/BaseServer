@@ -55,9 +55,9 @@ namespace NETServer.Application.Network
                     if (cancellationToken.IsCancellationRequested) break;
 
                     // Nhận dữ liệu từ client
-                    (command, data) = await session.DataTransport.Receive(cancellationToken);
+                    (command, data) = await session.DataTransport.ReceiveAsync(cancellationToken);
 
-                    if (command == default)
+                    if (command == default || data.Length == 0)
                     {
                         await Task.Delay(50, cancellationToken);
                         continue;
@@ -66,7 +66,7 @@ namespace NETServer.Application.Network
                     // Update last activity time each time a command is received
                     session.UpdateLastActivityTime();
 
-                    await this.HandleCommand(session, command, data);
+                    await _commandHandler.HandleCommand(session, command, data);
                 }
             }
             catch (IOException ioEx)
@@ -85,18 +85,6 @@ namespace NETServer.Application.Network
             {
                 await CloseConnection(session);
             }
-        }
-
-        private async Task HandleCommand(ClientSession session, Command command, byte[] data)
-        {
-            var responseData = await _commandHandler.HandleCommand(command, data);
-
-            if (session.DataTransport == null)
-            {
-                throw new InvalidOperationException("DataTransport is null. The session is not properly initialized.");
-            }
-
-            await session.DataTransport.Send(responseData);
         }
 
         private async Task CloseConnection(ClientSession? session)

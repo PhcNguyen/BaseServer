@@ -1,54 +1,61 @@
-﻿using NETServer.Infrastructure.Security;
+﻿using NETServer.Infrastructure.Interfaces;
+using NETServer.Application.Helper;
+using NETServer.Application.Network;
 
 namespace NETServer.Application.Handlers
 {
     internal class CommandHandler
     {
-        private readonly Dictionary<Command, Func<byte[], Task<byte[]>>> _commandHandlers;
-        private readonly RsaCipher _rsaCipher;
+        private readonly Dictionary<Command, Func<ClientSession, byte[], Task>> _commandHandlers;
 
         public CommandHandler()
         {
-            // Khởi tạo dictionary ánh xạ các command với các phương thức xử lý
-            _commandHandlers = new Dictionary<Command, Func<byte[], Task<byte[]>>>
+            _commandHandlers = new Dictionary<Command, Func<ClientSession, byte[], Task>>
             {
                 { Command.PING, HandlePing },
                 { Command.GET_KEY, HandleGetKey }
             };
-
-            _rsaCipher = new RsaCipher();
         }
 
-        // Phương thức chính để xử lý command và trả về dữ liệu
-        public async Task<byte[]> HandleCommand(Command command, byte[] data)
+        // Phương thức chính để xử lý command
+        public async Task HandleCommand(IClientSession session, Command command, byte[] data)
         {
-            if (_commandHandlers.TryGetValue(command, out var handler))
+            if (!_commandHandlers.TryGetValue(command, out var handler))
             {
-                return await handler(data);
+                if (session.DataTransport != null)
+                {
+                    await session.DataTransport.SendAsync(ByteHelper.ToBytes("No handler found for command"));
+                }
+                else
+                {
+                    throw new InvalidOperationException("DataTransport is null. The session is not properly initialized.");
+                }
             }
             else
             {
-                // Xử lý trường hợp không có handler cho command này
-                Console.WriteLine($"No handler found for command {command}");
-                return new byte[] { };
+                try
+                {
+                    await handler((ClientSession)session, data);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error handling command {command}: {ex.Message}");
+                }
             }
         }
 
-        // Ví dụ các phương thức xử lý cho từng command và trả về byte[]
-        private async Task<byte[]> HandlePing(byte[] data)
+        private async Task HandlePing(IClientSession session, byte[] data)
         {
-
+            // Xử lý ping, thực hiện các tác vụ cần thiết mà không cần trả về dữ liệu
+            Console.WriteLine("Ping handled");
             await Task.CompletedTask;
-            return new byte[] {}; 
         }
 
-        private async Task<byte[]> HandleGetKey(byte[] data)
+        private async Task HandleGetKey(IClientSession session, byte[] data)
         {
-            var key = RsaCipher.ImportPublicKey(data);
-
-
+            // Xử lý GET_KEY, thực hiện các tác vụ cần thiết mà không cần trả về dữ liệu
+            Console.WriteLine("GetKey handled");
             await Task.CompletedTask;
-            return new byte[] { 0x04, 0x05, 0x06 }; // trả về dữ liệu sau khi xử lý
         }
     }
 }

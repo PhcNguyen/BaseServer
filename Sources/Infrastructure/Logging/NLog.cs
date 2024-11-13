@@ -14,7 +14,7 @@ public class NLog
     /// <param name="level">The log level.</param>
     /// <param name="exception">An optional exception.</param>
     private static void Log(string? message, LogLevel level, Exception? exception = null) =>
-        Task.Run(() => FileManager.WriteLogToFileAsync(message, level, exception));
+        Task.Run(() => FileManager.WriteLogToFile(message, level, exception));
     
     /// <summary>
     /// Logs an informational message.
