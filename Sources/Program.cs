@@ -1,24 +1,25 @@
 ﻿using NETServer.Application.Network;
 
-namespace NETServer;
-
-class Program
+namespace NETServer
 {
-    private static void Main(string[] args)
+    class Program
     {
-        // Initialize the server
-        var server = new NETServer.Application.Network.ServerEngine();
+        private static void Main(string[] args)
+        {
+            // Initialize the server
+            var server = new ServerEngine();
 
-        // Start the server
-        server.StartServer();
+            // Start the server
+            server.StartServer();
 
-        Console.WriteLine("Press Enter to stop the server.");
-        Console.ReadLine();
+            Console.WriteLine("Press Enter to stop the server.");
+            Console.ReadLine();
 
-        // Stop the server
-        server.StopServer();
+            // Stop the server
+            server.StopServer();
 
-        Console.ReadLine();
+            Console.ReadLine();
+        }
     }
-}
 
+}

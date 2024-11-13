@@ -1,6 +1,6 @@
 ﻿namespace NETServer.Infrastructure.Configuration
 {
-    public static class NetworkConfig
+    internal static class NetworkConfig
     {
         // Địa chỉ IP của server, null cho phép lắng nghe trên tất cả các địa chỉ IP có sẵn
         public readonly static string? IPAddress = null;

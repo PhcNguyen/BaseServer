@@ -1,55 +1,56 @@
 ﻿using NETServer.Infrastructure.Configuration;
 
-namespace NETServer.Infrastructure.Logging.Helpers;
-
-internal class FileManager
+namespace NETServer.Infrastructure.Logging.Helpers
 {
-    public static string CurrentLogDirectory = Path.Combine(LoggingConfigs.LogFolder, DateTime.Now.ToString("yyMMdd"));
-
-    internal static readonly Dictionary<LogLevel, string> LogLevelFileMappings = new Dictionary<LogLevel, string>
+    internal class FileManager
     {
-        { LogLevel.Info, Path.Combine(CurrentLogDirectory, "info.log") },
-        { LogLevel.Error, Path.Combine(CurrentLogDirectory, "error.log") },
-        { LogLevel.Warning, Path.Combine(CurrentLogDirectory, "warning.log") },
-        { LogLevel.Critical, Path.Combine(CurrentLogDirectory, "critical.log") },
-    };
+        public static string CurrentLogDirectory = Path.Combine(LoggingConfigs.LogFolder, DateTime.Now.ToString("yyMMdd"));
 
-    public static string DefaultLogFilePath => Path.Combine(CurrentLogDirectory, "default.log");
-
-    static FileManager() => EnsureLogDirectoriesExist();
-
-    public static void RefreshLogDirectory()
-    {
-        CurrentLogDirectory = Path.Combine(LoggingConfigs.LogFolder, DateTime.Now.ToString("yyMMdd"));
-
-        if (!Directory.Exists(CurrentLogDirectory))
+        internal static readonly Dictionary<LogLevel, string> LogLevelFileMappings = new Dictionary<LogLevel, string>
         {
-            Directory.CreateDirectory(CurrentLogDirectory);
-        }
-    }
+            { LogLevel.Info, Path.Combine(CurrentLogDirectory, "info.log") },
+            { LogLevel.Error, Path.Combine(CurrentLogDirectory, "error.log") },
+            { LogLevel.Warning, Path.Combine(CurrentLogDirectory, "warning.log") },
+            { LogLevel.Critical, Path.Combine(CurrentLogDirectory, "critical.log") },
+        };
 
-    private static void EnsureLogDirectoriesExist()
-    {
-        if (!Directory.Exists(LoggingConfigs.LogFolder))
+        public static string DefaultLogFilePath => Path.Combine(CurrentLogDirectory, "default.log");
+
+        static FileManager() => EnsureLogDirectoriesExist();
+
+        public static void RefreshLogDirectory()
         {
-            Directory.CreateDirectory(LoggingConfigs.LogFolder);
+            CurrentLogDirectory = Path.Combine(LoggingConfigs.LogFolder, DateTime.Now.ToString("yyMMdd"));
+
+            if (!Directory.Exists(CurrentLogDirectory))
+            {
+                Directory.CreateDirectory(CurrentLogDirectory);
+            }
         }
 
-        if (!Directory.Exists(CurrentLogDirectory))
+        private static void EnsureLogDirectoriesExist()
         {
-            Directory.CreateDirectory(CurrentLogDirectory);
+            if (!Directory.Exists(LoggingConfigs.LogFolder))
+            {
+                Directory.CreateDirectory(LoggingConfigs.LogFolder);
+            }
+
+            if (!Directory.Exists(CurrentLogDirectory))
+            {
+                Directory.CreateDirectory(CurrentLogDirectory);
+            }
         }
-    }
 
-    internal static async Task WriteLogToFileAsync(string? message, LogLevel level, Exception? exception = null)
-    {
-        message = BuildMessageLog.BuildLogMessage(message, level, exception);
-        await FileLogging.WriteLogAsync(message, level);
-
-        if (LoggingConfigs.ConsoleLogging)
+        internal static void WriteLogToFile(string? message, LogLevel level, Exception? exception = null)
         {
-            Console.WriteLine(message);
+            message = BuildMessageLog.BuildLogMessage(message, level, exception);
+            FileLogging.QueueLog(message, level);
+
+            if (LoggingConfigs.ConsoleLogging)
+            {
+                Console.WriteLine(message);
+            }
         }
-    }
         
+    }
 }

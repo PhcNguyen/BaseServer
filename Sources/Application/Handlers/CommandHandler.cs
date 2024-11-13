@@ -1,49 +1,54 @@
-﻿using NETServer.Application.Network;
+﻿using NETServer.Infrastructure.Security;
 
-namespace NETServer.Application.Handlers;
-
-internal class CommandHandler
+namespace NETServer.Application.Handlers
 {
-    private readonly Dictionary<Command, Func<byte[], Task<byte[]>>> _commandHandlers;
-
-    public CommandHandler()
+    internal class CommandHandler
     {
-        // Khởi tạo dictionary ánh xạ các command với các phương thức xử lý
-        _commandHandlers = new Dictionary<Command, Func<byte[], Task<byte[]>>>
-        {
-            { Command.PING, HandlePing },
-            { Command.GET_KEY, HandleGetKey }
-        };
-    }
+        private readonly Dictionary<Command, Func<byte[], Task<byte[]>>> _commandHandlers;
+        private readonly RsaCipher _rsaCipher;
 
-    // Phương thức chính để xử lý command và trả về dữ liệu
-    public async Task<byte[]> HandleCommand(Command command, byte[] data, ClientSession session)
-    {
-        if (_commandHandlers.TryGetValue(command, out var handler))
+        public CommandHandler()
         {
-            return await handler(data);
+            // Khởi tạo dictionary ánh xạ các command với các phương thức xử lý
+            _commandHandlers = new Dictionary<Command, Func<byte[], Task<byte[]>>>
+            {
+                { Command.PING, HandlePing },
+                { Command.GET_KEY, HandleGetKey }
+            };
+
+            _rsaCipher = new RsaCipher();
         }
-        else
+
+        // Phương thức chính để xử lý command và trả về dữ liệu
+        public async Task<byte[]> HandleCommand(Command command, byte[] data)
         {
-            // Xử lý trường hợp không có handler cho command này
-            Console.WriteLine($"No handler found for command {command}");
-            return new byte[] { };
+            if (_commandHandlers.TryGetValue(command, out var handler))
+            {
+                return await handler(data);
+            }
+            else
+            {
+                // Xử lý trường hợp không có handler cho command này
+                Console.WriteLine($"No handler found for command {command}");
+                return new byte[] { };
+            }
         }
-    }
 
-    // Ví dụ các phương thức xử lý cho từng command và trả về byte[]
-    private async Task<byte[]> HandlePing(byte[] data)
-    {
+        // Ví dụ các phương thức xử lý cho từng command và trả về byte[]
+        private async Task<byte[]> HandlePing(byte[] data)
+        {
 
-        await Task.CompletedTask;
-        return new byte[] {}; 
-    }
+            await Task.CompletedTask;
+            return new byte[] {}; 
+        }
 
-    private async Task<byte[]> HandleGetKey(byte[] data)
-    {
-        Console.WriteLine("Handling GET_KEY command");
-        // Thêm logic xử lý cho GET_KEY ở đây, ví dụ trả về một byte array
-        await Task.CompletedTask;
-        return new byte[] { 0x04, 0x05, 0x06 }; // trả về dữ liệu sau khi xử lý
+        private async Task<byte[]> HandleGetKey(byte[] data)
+        {
+            var key = RsaCipher.ImportPublicKey(data);
+
+
+            await Task.CompletedTask;
+            return new byte[] { 0x04, 0x05, 0x06 }; // trả về dữ liệu sau khi xử lý
+        }
     }
 }

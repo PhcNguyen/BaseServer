@@ -1,181 +1,182 @@
 ﻿using System.Buffers;
 using System.Security.Cryptography;
 
-namespace NETServer.Infrastructure.Security;
-
-internal class AesCipher
+namespace NETServer.Infrastructure.Security
 {
-    public byte[] Key { get; private set; }
-
-    public AesCipher(byte[] key)
+    internal class AesCipher
     {
-        int keySize = key.Length * 8;
-        if (keySize != 128 && keySize != 192 && keySize != 256)
+        public byte[] Key { get; private set; }
+
+        public AesCipher(byte[] key)
         {
-            throw new ArgumentException("The provided key length must be 128, 192, or 256 bits.");
-        }
-        this.Key = key;
-    }
-
-    public static byte[] GenerateKey(int keySize = 256)
-    {
-        if (keySize != 128 && keySize != 192 && keySize != 256)
-            throw new ArgumentException("Key size must be 128, 192, or 256 bits.");
-
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            byte[] key = new byte[keySize / 8];
-            rng.GetBytes(key);
-            return key; 
-        }
-    }
-
-    private static void IncrementCounter(byte[] counter)
-    {
-        for (int i = counter.Length - 1; i >= 0; i--)
-        {
-            if (++counter[i] != 0) break;
-        }
-    }
-
-    private static Aes CreateAesEncryptor(byte[] key)
-    {
-        var aes = Aes.Create();
-        aes.Key = key;
-        aes.Mode = CipherMode.ECB;
-        return aes;
-    }
-
-    public byte[] Encrypt(byte[] plaintext)
-    {
-        using var aes = CreateAesEncryptor(this.Key);
-        using var ms = new MemoryStream();
-        byte[] counter = new byte[16];
-
-        using var encryptor = aes.CreateEncryptor();
-
-        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
-
-        for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
-        {
-            encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
-
-            int bytesToEncrypt = Math.Min(plaintext.Length - i, aes.BlockSize / 8);
-            byte[] block = new byte[bytesToEncrypt];
-            Array.Copy(plaintext, i, block, 0, bytesToEncrypt);
-
-            for (int j = 0; j < bytesToEncrypt; j++)
-                block[j] ^= encryptedCounter[j];
-
-            ms.Write(block, 0, bytesToEncrypt);
-            IncrementCounter(counter);
+            int keySize = key.Length * 8;
+            if (keySize != 128 && keySize != 192 && keySize != 256)
+            {
+                throw new ArgumentException("The provided key length must be 128, 192, or 256 bits.");
+            }
+            this.Key = key;
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);
-
-        return ms.ToArray();
-    }
-
-    public byte[] Decrypt(byte[] cipherText)
-    {
-        using var aes = CreateAesEncryptor(this.Key);
-        using var ms = new MemoryStream(cipherText);
-        using var encryptor = aes.CreateEncryptor();
-
-        byte[] counter = new byte[16];
-        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
-
-        using var resultStream = new MemoryStream();
-        byte[] buffer = new byte[16];
-        int bytesRead;
-
-        while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
+        public static byte[] GenerateKey(int keySize = 256)
         {
-            encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
+            if (keySize != 128 && keySize != 192 && keySize != 256)
+                throw new ArgumentException("Key size must be 128, 192, or 256 bits.");
 
-            for (int j = 0; j < bytesRead; j++)
-                buffer[j] ^= encryptedCounter[j];
-
-            resultStream.Write(buffer, 0, bytesRead);
-            IncrementCounter(counter);
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                byte[] key = new byte[keySize / 8];
+                rng.GetBytes(key);
+                return key; 
+            }
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);  
-
-        return resultStream.ToArray();
-    }
-
-    public async Task<byte[]> EncryptAsync(byte[] plaintext)
-    {
-        using var aes = CreateAesEncryptor(this.Key);
-        byte[] iv = new byte[16];
-
-        using (var rng = RandomNumberGenerator.Create())
+        private static void IncrementCounter(byte[] counter)
         {
-            rng.GetBytes(iv); 
+            for (int i = counter.Length - 1; i >= 0; i--)
+            {
+                if (++counter[i] != 0) break;
+            }
         }
 
-        using var ms = new MemoryStream();
-        await ms.WriteAsync(iv, 0, iv.Length); 
-
-        byte[] counter = new byte[16];
-        Array.Copy(iv, counter, iv.Length);
-        using var encryptor = aes.CreateEncryptor();
-
-        // Sử dụng ArrayPool để tối ưu hóa bộ nhớ
-        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
-
-        for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
+        private static Aes CreateAesEncryptor(byte[] key)
         {
-            encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
-
-            int bytesToEncrypt = Math.Min(plaintext.Length - i, aes.BlockSize / 8);
-            byte[] block = new byte[bytesToEncrypt];
-            Array.Copy(plaintext, i, block, 0, bytesToEncrypt);
-
-            for (int j = 0; j < bytesToEncrypt; j++)
-                block[j] ^= encryptedCounter[j];
-
-            await ms.WriteAsync(block, 0, bytesToEncrypt);
-            IncrementCounter(counter);
+            var aes = Aes.Create();
+            aes.Key = key;
+            aes.Mode = CipherMode.ECB;
+            return aes;
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);
-
-        return ms.ToArray();
-    }
-
-    public async Task<byte[]> DecryptAsync(byte[] cipherText)
-    {
-        using var aes = CreateAesEncryptor(this.Key);
-        byte[] iv = new byte[16];
-        Array.Copy(cipherText, 0, iv, 0, iv.Length);
-
-        using var ms = new MemoryStream(cipherText, iv.Length, cipherText.Length - iv.Length);
-        using var encryptor = aes.CreateEncryptor();
-
-        byte[] counter = new byte[16];
-        Array.Copy(iv, counter, iv.Length);
-
-        using var resultStream = new MemoryStream();
-        byte[] buffer = new byte[16];
-        int bytesRead;
-
-        byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
-
-        while ((bytesRead = await ms.ReadAsync(buffer, 0, buffer.Length)) > 0)
+        public byte[] Encrypt(byte[] plaintext)
         {
-            encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
+            using var aes = CreateAesEncryptor(this.Key);
+            using var ms = new MemoryStream();
+            byte[] counter = new byte[16];
 
-            for (int j = 0; j < bytesRead; j++)
-                buffer[j] ^= encryptedCounter[j];
+            using var encryptor = aes.CreateEncryptor();
 
-            await resultStream.WriteAsync(buffer, 0, bytesRead);
-            IncrementCounter(counter);
+            byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
+
+            for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
+            {
+                encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
+
+                int bytesToEncrypt = Math.Min(plaintext.Length - i, aes.BlockSize / 8);
+                byte[] block = new byte[bytesToEncrypt];
+                Array.Copy(plaintext, i, block, 0, bytesToEncrypt);
+
+                for (int j = 0; j < bytesToEncrypt; j++)
+                    block[j] ^= encryptedCounter[j];
+
+                ms.Write(block, 0, bytesToEncrypt);
+                IncrementCounter(counter);
+            }
+
+            ArrayPool<byte>.Shared.Return(encryptedCounter);
+
+            return ms.ToArray();
         }
 
-        ArrayPool<byte>.Shared.Return(encryptedCounter);
+        public byte[] Decrypt(byte[] cipherText)
+        {
+            using var aes = CreateAesEncryptor(this.Key);
+            using var ms = new MemoryStream(cipherText);
+            using var encryptor = aes.CreateEncryptor();
 
-        return resultStream.ToArray();
+            byte[] counter = new byte[16];
+            byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
+
+            using var resultStream = new MemoryStream();
+            byte[] buffer = new byte[16];
+            int bytesRead;
+
+            while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
+
+                for (int j = 0; j < bytesRead; j++)
+                    buffer[j] ^= encryptedCounter[j];
+
+                resultStream.Write(buffer, 0, bytesRead);
+                IncrementCounter(counter);
+            }
+
+            ArrayPool<byte>.Shared.Return(encryptedCounter);  
+
+            return resultStream.ToArray();
+        }
+
+        public async Task<byte[]> EncryptAsync(byte[] plaintext)
+        {
+            using var aes = CreateAesEncryptor(this.Key);
+            byte[] iv = new byte[16];
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(iv); 
+            }
+
+            using var ms = new MemoryStream();
+            await ms.WriteAsync(iv, 0, iv.Length); 
+
+            byte[] counter = new byte[16];
+            Array.Copy(iv, counter, iv.Length);
+            using var encryptor = aes.CreateEncryptor();
+
+            // Sử dụng ArrayPool để tối ưu hóa bộ nhớ
+            byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
+
+            for (int i = 0; i < plaintext.Length; i += aes.BlockSize / 8)
+            {
+                encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
+
+                int bytesToEncrypt = Math.Min(plaintext.Length - i, aes.BlockSize / 8);
+                byte[] block = new byte[bytesToEncrypt];
+                Array.Copy(plaintext, i, block, 0, bytesToEncrypt);
+
+                for (int j = 0; j < bytesToEncrypt; j++)
+                    block[j] ^= encryptedCounter[j];
+
+                await ms.WriteAsync(block, 0, bytesToEncrypt);
+                IncrementCounter(counter);
+            }
+
+            ArrayPool<byte>.Shared.Return(encryptedCounter);
+
+            return ms.ToArray();
+        }
+
+        public async Task<byte[]> DecryptAsync(byte[] cipherText)
+        {
+            using var aes = CreateAesEncryptor(this.Key);
+            byte[] iv = new byte[16];
+            Array.Copy(cipherText, 0, iv, 0, iv.Length);
+
+            using var ms = new MemoryStream(cipherText, iv.Length, cipherText.Length - iv.Length);
+            using var encryptor = aes.CreateEncryptor();
+
+            byte[] counter = new byte[16];
+            Array.Copy(iv, counter, iv.Length);
+
+            using var resultStream = new MemoryStream();
+            byte[] buffer = new byte[16];
+            int bytesRead;
+
+            byte[] encryptedCounter = ArrayPool<byte>.Shared.Rent(16);
+
+            while ((bytesRead = await ms.ReadAsync(buffer, 0, buffer.Length)) > 0)
+            {
+                encryptor.TransformBlock(counter, 0, counter.Length, encryptedCounter, 0);
+
+                for (int j = 0; j < bytesRead; j++)
+                    buffer[j] ^= encryptedCounter[j];
+
+                await resultStream.WriteAsync(buffer, 0, bytesRead);
+                IncrementCounter(counter);
+            }
+
+            ArrayPool<byte>.Shared.Return(encryptedCounter);
+
+            return resultStream.ToArray();
+        }
     }
 }
