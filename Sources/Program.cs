@@ -6,7 +6,7 @@ namespace NETServer
     {
         private static void Main(string[] args)
         {
-            PostgreConnector.TestConnection();
+
         }
     }
 

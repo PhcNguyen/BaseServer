@@ -15,7 +15,7 @@
         public readonly static int RequestDelayMilliseconds = 50;
 
         // Thời gian phiên làm việc của client trước khi hết hạn (5 phút)
-        public readonly static TimeSpan ClientSessionTimeout = TimeSpan.FromMinutes(0.5);
+        public readonly static TimeSpan ClientSessionTimeout = TimeSpan.FromSeconds(30);
 
         // Giới hạn yêu cầu tối đa trong một cửa sổ thời gian (ví dụ: 10 yêu cầu trong 1 giây)
         public readonly static (int MaxRequests, TimeSpan TimeWindow) RateLimit = (10, TimeSpan.FromSeconds(1));
@@ -25,5 +25,27 @@
 
         // Giới hạn số kết nối tối đa từ một địa chỉ IP (ví dụ: 5 kết nối từ cùng một IP)
         public readonly static int MaxConnectionsPerIpAddress = 5;
+
+        // Chế độ không chặn
+        public readonly static bool Blocking = false;
+
+        // Chế độ Keep-Alive cho kết nối
+        public readonly static bool KeepAlive = false;
+
+        // Cho phép tái sử dụng địa chỉ
+        public readonly static bool ReuseAddress = false;
+
+        // Kích thước hàng đợi kết nối chờ
+        public readonly static int QueueSize = 100;
+
+        // Thiết lập bộ đệm gửi 
+        public readonly static int SendBuffer = 8192;
+
+        // Thiết lập bộ đệm nhận 
+        public readonly static int ReceiveBuffer = 8192;
+
+        // Thiết lập thời gian chờ kết nối 
+        public readonly static int SendTimeout = 30000;
+        public readonly static int ReceiveTimeout = 30000;
     }
 }

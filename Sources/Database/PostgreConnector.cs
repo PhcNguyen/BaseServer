@@ -4,24 +4,25 @@ namespace NETServer.Database
 {
     internal class PostgreConnector
     {
-        public static NpgsqlConnection OpenConnection()
+        public static async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
         {
-            var connection = new NpgsqlConnection(PostgreConfig.ConnectionString);
-            connection.Open();
-            return connection;
+            if (string.IsNullOrEmpty(PostgreConfig.ConnectionString))
+                throw new InvalidOperationException("Chuỗi kết nối không hợp lệ.");
+
+            var _connection = new NpgsqlConnection(PostgreConfig.ConnectionString);
+            await _connection.OpenAsync(cancellationToken);
+            return _connection;
         }
 
-        public static bool TestConnection()
+        public static async Task<bool> TestConnectionAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                using var connection = OpenConnection();
-                Console.WriteLine("Kết nối thành công!");
+                await using var connection = await OpenConnectionAsync(cancellationToken);
                 return true;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Lỗi kết nối: {ex.Message}");
+            catch (Exception)
+            { 
                 return false;
             }
         }

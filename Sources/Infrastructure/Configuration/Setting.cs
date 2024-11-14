@@ -14,6 +14,16 @@ namespace NETServer.Infrastructure.Configuration
         public readonly static TimeSpan ClientSessionTimeout = NetworkConfig.ClientSessionTimeout;
         public readonly static (int MaxRequests, TimeSpan TimeWindow) RateLimit = NetworkConfig.RateLimit;
 
+        // Các cài đặt mạng bổ sung
+        public readonly static bool Blocking = NetworkConfig.Blocking;
+        public readonly static bool KeepAlive = NetworkConfig.KeepAlive;
+        public readonly static bool ReuseAddress = NetworkConfig.ReuseAddress;
+        public readonly static int QueueSize = NetworkConfig.QueueSize;
+        public readonly static int SendBuffer = NetworkConfig.SendBuffer;
+        public readonly static int ReceiveBuffer = NetworkConfig.ReceiveBuffer;
+        public readonly static int SendTimeout = NetworkConfig.SendTimeout;
+        public readonly static int ReceiveTimeout = NetworkConfig.ReceiveTimeout;
+
         // Security Settings
         public readonly static bool IsSslEnabled = SecurityConfig.IsSslEnabled;
         public readonly static bool IsClientCertificateRequired = SecurityConfig.IsClientCertificateRequired;
