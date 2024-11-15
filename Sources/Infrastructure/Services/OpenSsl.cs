@@ -3,11 +3,11 @@ using NETServer.Infrastructure.Configuration;
 
 namespace NETServer.Infrastructure.Services
 {
-    internal class OpenSsl
+    internal class Openssl
     {
         private static readonly string OpenSSLPath = "openssl";
 
-        public static void GenerateSslCertificate(string keyFilePath, string csrFilePath, string crtFilePath, string pfxFilePath, string password)
+        public static void GenerateSslCertificate()
         {
             try
             {

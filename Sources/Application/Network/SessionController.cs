@@ -6,6 +6,7 @@ using NETServer.Application.Handlers;
 
 using System.Net.Sockets;
 using System.Collections.Concurrent;
+using NETServer.Application.Enums;
 
 namespace NETServer.Application.Network
 {
@@ -36,12 +37,12 @@ namespace NETServer.Application.Network
             await session.Connect();
             ActiveSessions[session.Id] = new WeakReference<ClientSession>(session);
 
-            Command command;
+            Cmd command;
             byte[] data;
 
             try
             {
-                if (session.DataTransport == null)
+                if (session.Transport == null)
                 {
                     throw new InvalidOperationException("DataTransport is null. The session is not properly initialized.");
                 }
@@ -55,7 +56,7 @@ namespace NETServer.Application.Network
                     if (cancellationToken.IsCancellationRequested) break;
 
                     // Nhận dữ liệu từ client
-                    (command, data) = await session.DataTransport.ReceiveAsync(cancellationToken);
+                    (command, data) = await session.Transport.ReceiveAsync(cancellationToken);
 
                     if (command == default || data.Length == 0)
                     {

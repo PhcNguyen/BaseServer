@@ -1,14 +1,16 @@
-﻿using System.Security.Cryptography;
-using System.Text;
+﻿using NETServer.Infrastructure.Configuration;
+using NETServer.Infrastructure.Interfaces;
 using NETServer.Application.Helpers;
-using NETServer.Infrastructure.Configuration;
+
+using System.Security.Cryptography;
+using System.Text;
 
 namespace NETServer.Infrastructure.Security
 {
     /// <summary>
     /// Lớp RsaCipher cung cấp các chức năng mã hóa và giải mã sử dụng thuật toán RSA.
     /// </summary>
-    internal class RsaCipher
+    internal class RsaCipher : IRsaCipher
     {
         private static readonly string ExpiryFilePath = Setting.RsaShelfLifePath;
         private static readonly TimeSpan KeyRotationInterval = Setting.RsaKeyRotationInterval;
@@ -51,7 +53,7 @@ namespace NETServer.Infrastructure.Security
         /// Kiểm tra xem khóa RSA đã hết hạn hay chưa.
         /// </summary>
         /// <returns>True nếu khóa đã hết hạn, ngược lại là False.</returns>
-        private async Task<bool> IsKeyExpired()
+        private static async Task<bool> IsKeyExpired()
         {
             var expiryDateStr = await FileHelper.ReadFromFileAsync(ExpiryFilePath);
             return DateTime.Now > DateTime.Parse(expiryDateStr);
@@ -117,40 +119,34 @@ namespace NETServer.Infrastructure.Security
 
         public static byte[] ExportPublicKey(RSAParameters publicKey)
         {
-            using (var ms = new MemoryStream())
+            using var ms = new MemoryStream();
+            using (var writer = new BinaryWriter(ms))
             {
-                using (var writer = new BinaryWriter(ms))
-                {
-                    writer.Write(publicKey.Modulus?.Length ?? 0); 
-                    writer.Write(publicKey.Modulus ?? []);
-                    writer.Write(publicKey.Exponent?.Length ?? 0);
-                    writer.Write(publicKey.Exponent ?? []); 
-                }
-                return ms.ToArray();
+                writer.Write(publicKey.Modulus?.Length ?? 0);
+                writer.Write(publicKey.Modulus ?? []);
+                writer.Write(publicKey.Exponent?.Length ?? 0);
+                writer.Write(publicKey.Exponent ?? []);
             }
+            return ms.ToArray();
         }
 
         public static RSAParameters ImportPublicKey(byte[] publicKeyBytes)
         {
-            using (var ms = new MemoryStream(publicKeyBytes))
+            using var ms = new MemoryStream(publicKeyBytes);
+            using var reader = new BinaryReader(ms);
+            // Đọc các tham số từ mảng byte
+            RSAParameters rsaKeyInfo = new()
             {
-                using (var reader = new BinaryReader(ms))
-                {
-                    // Đọc các tham số từ mảng byte
-                    RSAParameters rsaKeyInfo = new RSAParameters
-                    {
-                        Modulus = reader.ReadBytes(reader.ReadInt32()),
-                        Exponent = reader.ReadBytes(reader.ReadInt32())
-                    };
-                    return rsaKeyInfo;
-                }
-            }
+                Modulus = reader.ReadBytes(reader.ReadInt32()),
+                Exponent = reader.ReadBytes(reader.ReadInt32())
+            };
+            return rsaKeyInfo;
         }
 
         /// <summary>
         /// Mã hóa văn bản bằng khóa công khai của client.
         /// </summary>
-        /// <param name="plaintext">Chuỗi văn bản cần mã hóa.</param>
+        /// <param name="plaintextBytes">Chuỗi văn bản cần mã hóa.</param>
         /// <param name="publicKeyClient">Khóa công khai của client.</param>
         /// <returns>Mảng byte chứa dữ liệu đã được mã hóa.</returns>
         public static byte[] Encrypt(byte[] plaintextBytes, RSAParameters publicKeyClient)

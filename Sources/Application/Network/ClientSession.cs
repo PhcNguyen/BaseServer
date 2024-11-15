@@ -2,23 +2,24 @@
 using NETServer.Infrastructure.Interfaces;
 using NETServer.Infrastructure.Services;
 using NETServer.Infrastructure.Logging;
+using NETServer.Application.Helper;
 
-using System.Net;
 using System.Text;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 namespace NETServer.Application.Network
 {
-    internal class ClientSession: IClientSession
+    internal class ClientSession: IClientSession, IDisposable
     {
         private Stream? _clientStream;
-        private DateTime _lastActivityTime;
         private readonly TcpClient _tcpClient;
+        private readonly Stopwatch _activityTimer;
         private readonly IStreamSecurity _streamSecurity;
         private readonly IRequestLimiter _requestLimiter;
         private readonly IConnectionLimiter _connectionLimiter;
         private readonly TimeSpan _sessionTimeout = Setting.ClientSessionTimeout;
-
+        
         public Guid Id { get; private set; }
         public bool IsConnected { get; private set; }
         public byte[] SessionKey { get; private set; }
@@ -26,41 +27,29 @@ namespace NETServer.Application.Network
 
         public TcpClient TcpClient => _tcpClient;
         public Stream? ClientStream => _clientStream;
-        public DataTransmitter? DataTransport { get; private set; }
+        public DataTransmitter Transport { get; private set; }
 
-        IDataTransmitter IClientSession.DataTransport => DataTransport ?? throw new InvalidOperationException("DataTransport cannot be null.");
+        IDataTransmitter IClientSession.Transport => Transport;
 
         public ClientSession(TcpClient tcpClient, IRequestLimiter requestLimiter, 
             IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
         {
-            ValidateParameters(tcpClient, requestLimiter, connectionLimiter, streamSecurity);
+            ValidationHelper.EnsureNotNull(tcpClient, nameof(tcpClient));
+            ValidationHelper.EnsureNotNull(streamSecurity, nameof(streamSecurity));
+            ValidationHelper.EnsureNotNull(requestLimiter, nameof(requestLimiter));
+            ValidationHelper.EnsureNotNull(connectionLimiter, nameof(connectionLimiter));
 
-            _lastActivityTime = DateTime.UtcNow;
+            _activityTimer = Stopwatch.StartNew();
 
             _tcpClient = tcpClient;
             _requestLimiter = requestLimiter;
             _streamSecurity = streamSecurity;
             _connectionLimiter = connectionLimiter;
 
-            ClientAddress = ValidateClientAddress();
-
-            Id = Guid.NewGuid();
-            SessionKey = Generator.K256();
-        }
-
-        private static void ValidateParameters(TcpClient tcpClient, IRequestLimiter requestLimiter, 
-            IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
-        {
-            ArgumentNullException.ThrowIfNull(tcpClient);
-            ArgumentNullException.ThrowIfNull(streamSecurity);
-            ArgumentNullException.ThrowIfNull(requestLimiter);
-            ArgumentNullException.ThrowIfNull(connectionLimiter);
-        }
-
-        private string ValidateClientAddress()
-        {
-            var clientEndPoint = _tcpClient.Client.RemoteEndPoint as IPEndPoint;
-            return clientEndPoint?.Address.ToString() ?? string.Empty;
+            this.Id = Guid.NewGuid();
+            this.SessionKey = Generator.K256();
+            this.Transport = new DataTransmitter(Setting.BytesPerSecond);
+            this.ClientAddress = ValidationHelper.GetClientAddress(_tcpClient);
         }
 
         public async Task Connect()
@@ -83,51 +72,80 @@ namespace NETServer.Application.Network
                     return;
                 }
 
-                DataTransport = new DataTransmitter(_clientStream, SessionKey, Setting.BytesPerSecond);
+                Transport.Create(_clientStream, SessionKey);
 
-                IsConnected = true;
+                this.IsConnected = true;
                 NLog.Info($"Session {Id} connected to {ClientAddress}");
+            }
+            catch (TimeoutException tex)
+            {
+                NLog.Error($"Timeout while establishing connection for {ClientAddress}: {tex.Message}");
+                await Disconnect();
+            }
+            catch (IOException ioex)
+            {
+                NLog.Error($"I/O error while setting up client stream for {ClientAddress}: {ioex.Message}");
+                await Disconnect();
             }
             catch (Exception ex)
             {
-                NLog.Error($"Error connecting client {ClientAddress}: {ex.Message}");
+                NLog.Error($"Unexpected error while connecting client {ClientAddress}: {ex.Message}");
                 await Disconnect();
             }
         }
 
         public async Task Disconnect()
         {
-            if (!IsConnected) return;
+            if (!this.IsConnected) return;
 
             try
             {
-                IsConnected = false;
-                _clientStream?.Dispose();
-
-                NLog.Info($"Session {Id} disconnected from {ClientAddress}");
+                this.IsConnected = false;
 
                 if (!string.IsNullOrEmpty(ClientAddress))
                 {
+                    await Task.Delay(0);
                     _connectionLimiter.ConnectionClosed(ClientAddress);
                 }
+
+                this.Dispose();
+
+                NLog.Info($"Session {Id} disconnected from {ClientAddress}");
+            }
+            catch (ObjectDisposedException ex)
+            {
+                NLog.Warning($"Attempted to dispose already disposed objects: {ex.Message}");
             }
             catch (Exception ex)
             {
-                await Task.Delay(0);
                 NLog.Error(ex);
             }
         }
 
+        public void Dispose()
+        {
+            if (_clientStream != null)
+            {
+                _clientStream.Flush();
+                _clientStream.Dispose();
+                _clientStream = null;
+            }
+
+            _tcpClient.Dispose();
+            Transport.Dispose();
+            GC.SuppressFinalize(this);
+        }
+
         public async Task<bool> AuthorizeClientSession()
         {
-            if (string.IsNullOrEmpty(ClientAddress))
+            if (string.IsNullOrEmpty(this.ClientAddress))
             {
                 await DataTransmitter.Send(_tcpClient, Encoding.UTF8.GetBytes("Client's endpoint is null or invalid."));
                 await Disconnect();
                 return false;
             }
 
-            if (!_connectionLimiter.IsConnectionAllowed(ClientAddress))
+            if (!_connectionLimiter.IsConnectionAllowed(this.ClientAddress))
             {
                 await DataTransmitter.Send(_tcpClient, 
                     Encoding.UTF8.GetBytes("Connection is denied due to max connections."));
@@ -135,7 +153,7 @@ namespace NETServer.Application.Network
                 return false;
             }
 
-            if (!_requestLimiter.IsAllowed(ClientAddress))
+            if (!_requestLimiter.IsAllowed(this.ClientAddress))
             {
                 await DataTransmitter.Send(_tcpClient, Encoding.UTF8.GetBytes("Request denied due to time limit."));
                 await Disconnect();
@@ -145,8 +163,8 @@ namespace NETServer.Application.Network
             return true;
         }
 
-        public void UpdateLastActivityTime() => _lastActivityTime = DateTime.UtcNow;
+        public void UpdateLastActivityTime() => _activityTimer.Restart();
 
-        public bool IsSessionTimedOut() => (DateTime.UtcNow - _lastActivityTime) > _sessionTimeout;
+        public bool IsSessionTimedOut() => _activityTimer.Elapsed > _sessionTimeout;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using NETServer.Application.Helper;
+using NETServer.Infrastructure.Services;
 using NETServer.Infrastructure.Interfaces;
 
 namespace NETServer.Application.Handlers.Client
