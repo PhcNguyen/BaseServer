@@ -1,61 +1,72 @@
 ﻿using NETServer.Infrastructure.Interfaces;
 using NETServer.Application.Helper;
-using NETServer.Application.Network;
+using NETServer.Infrastructure.Logging;  
 
 namespace NETServer.Application.Handlers
 {
     internal class CommandHandler
     {
-        private readonly Dictionary<Command, Func<ClientSession, byte[], Task>> _commandHandlers;
+        private readonly Dictionary<Command, Func<IClientSession, byte[], Task>> _commandHandlers;
 
         public CommandHandler()
         {
-            _commandHandlers = new Dictionary<Command, Func<ClientSession, byte[], Task>>
+            _commandHandlers = new Dictionary<Command, Func<IClientSession, byte[], Task>>
             {
                 { Command.PING, HandlePing },
                 { Command.GET_KEY, HandleGetKey }
             };
         }
 
-        // Phương thức chính để xử lý command
         public async Task HandleCommand(IClientSession session, Command command, byte[] data)
         {
+            // Kiểm tra lệnh có hợp lệ hay không
+            if (data == null || data.Length == 0)
+            {
+                await session.DataTransport.SendAsync(ByteHelper.ToBytes("Invalid data received"));
+                return;
+            }
+
             if (!_commandHandlers.TryGetValue(command, out var handler))
             {
-                if (session.DataTransport != null)
-                {
-                    await session.DataTransport.SendAsync(ByteHelper.ToBytes("No handler found for command"));
-                }
-                else
-                {
-                    throw new InvalidOperationException("DataTransport is null. The session is not properly initialized.");
-                }
+                // Gửi thông báo lỗi khi không tìm thấy handler cho lệnh
+                await HandleUnknownCommand(session, command);
+                return;
             }
-            else
+
+            try
             {
-                try
-                {
-                    await handler((ClientSession)session, data);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error handling command {command}: {ex.Message}");
-                }
+                // Thực thi lệnh đã tìm thấy
+                await handler(session, data);
+            }
+            catch (Exception ex)
+            {
+                // Ghi lại lỗi trong quá trình xử lý lệnh
+                NLog.Error($"Error handling command {command}: {ex.Message}\n{ex.StackTrace}");
+                await session.DataTransport.SendAsync(ByteHelper.ToBytes("Error processing command"));
             }
         }
 
         private async Task HandlePing(IClientSession session, byte[] data)
         {
-            // Xử lý ping, thực hiện các tác vụ cần thiết mà không cần trả về dữ liệu
-            Console.WriteLine("Ping handled");
-            await Task.CompletedTask;
+            // Xử lý lệnh PING, có thể cần phản hồi ngược lại cho client
+            await session.DataTransport.SendAsync(ByteHelper.ToBytes("PONG"));
         }
 
         private async Task HandleGetKey(IClientSession session, byte[] data)
         {
-            // Xử lý GET_KEY, thực hiện các tác vụ cần thiết mà không cần trả về dữ liệu
-            Console.WriteLine("GetKey handled");
-            await Task.CompletedTask;
+            // Xử lý lệnh GET_KEY, có thể cần trả về một giá trị
+            string key = "123456"; // Giả sử đây là key tạm thời
+            await session.DataTransport.SendAsync(ByteHelper.ToBytes(key));
+        }
+
+        private static async Task HandleUnknownCommand(IClientSession session, Command command)
+        {
+            if (session.DataTransport != null)
+            {
+                await session.DataTransport.SendAsync(ByteHelper.ToBytes($"Unknown command: {command}"));
+                return;
+            }
+            throw new InvalidOperationException("DataTransport is null. The session is not properly initialized.");
         }
     }
 }

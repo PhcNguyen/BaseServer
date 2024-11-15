@@ -30,7 +30,8 @@ namespace NETServer.Application.Network
 
         IDataTransmitter IClientSession.DataTransport => DataTransport ?? throw new InvalidOperationException("DataTransport cannot be null.");
 
-        public ClientSession(TcpClient tcpClient, IRequestLimiter requestLimiter, IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
+        public ClientSession(TcpClient tcpClient, IRequestLimiter requestLimiter, 
+            IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
         {
             ValidateParameters(tcpClient, requestLimiter, connectionLimiter, streamSecurity);
 
@@ -47,7 +48,8 @@ namespace NETServer.Application.Network
             SessionKey = Generator.K256();
         }
 
-        private static void ValidateParameters(TcpClient tcpClient, IRequestLimiter requestLimiter, IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
+        private static void ValidateParameters(TcpClient tcpClient, IRequestLimiter requestLimiter, 
+            IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
         {
             ArgumentNullException.ThrowIfNull(tcpClient);
             ArgumentNullException.ThrowIfNull(streamSecurity);
@@ -81,7 +83,7 @@ namespace NETServer.Application.Network
                     return;
                 }
 
-                DataTransport = new DataTransmitter(_clientStream, SessionKey);
+                DataTransport = new DataTransmitter(_clientStream, SessionKey, Setting.BytesPerSecond);
 
                 IsConnected = true;
                 NLog.Info($"Session {Id} connected to {ClientAddress}");
@@ -146,30 +148,5 @@ namespace NETServer.Application.Network
         public void UpdateLastActivityTime() => _lastActivityTime = DateTime.UtcNow;
 
         public bool IsSessionTimedOut() => (DateTime.UtcNow - _lastActivityTime) > _sessionTimeout;
-
-        Task IClientSession.Connect()
-        {
-            throw new NotImplementedException();
-        }
-
-        Task IClientSession.Disconnect()
-        {
-            throw new NotImplementedException();
-        }
-
-        Task<bool> IClientSession.AuthorizeClientSession()
-        {
-            throw new NotImplementedException();
-        }
-
-        void IClientSession.UpdateLastActivityTime()
-        {
-            throw new NotImplementedException();
-        }
-
-        bool IClientSession.IsSessionTimedOut()
-        {
-            throw new NotImplementedException();
-        }
     }
 }

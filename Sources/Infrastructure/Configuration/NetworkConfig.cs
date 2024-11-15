@@ -26,6 +26,9 @@
         // Giới hạn số kết nối tối đa từ một địa chỉ IP (ví dụ: 5 kết nối từ cùng một IP)
         public readonly static int MaxConnectionsPerIpAddress = 5;
 
+        // Tốc độ chậm (ví dụ: 512 KB/s, 1 MB/s) - Tốc độ cao (ví dụ: 5 MB/s, 10 MB/s)
+        public readonly static int BytesPerSecond = 1048576; 
+
         // Chế độ không chặn
         public readonly static bool Blocking = false;
 

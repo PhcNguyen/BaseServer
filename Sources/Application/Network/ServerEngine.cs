@@ -33,10 +33,8 @@ namespace NETServer.Application.Network
             socket.Blocking = Setting.Blocking;
             socket.Listen(Setting.QueueSize);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, Setting.KeepAlive);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendBuffer, Setting.SendBuffer);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, Setting.SendTimeout);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, Setting.ReuseAddress);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveBuffer, Setting.ReceiveBuffer);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, Setting.ReceiveTimeout);
         }
 
@@ -46,31 +44,31 @@ namespace NETServer.Application.Network
             {
                 if (_isInMaintenanceMode)
                 {
-                    NLog.Warning("Server is in maintenance mode, refusing new connections.");
-                    await Task.Delay(5000); // Delay while in maintenance mode
+                    NLog.Warning("Server in maintenance mode.");
+                    await Task.Delay(5000, token);
                     continue;
                 }
 
+                // Kiểm tra ngay session
                 if (_sessionController.ActiveSessions.Count >= _maxConnections)
                 {
-                    NLog.Warning("Maximum server connections reached. Refusing new connection.");
-                    return;
+                    NLog.Warning("Maximum connections reached.");
+                    continue;
                 }
 
                 try
                 {
-                    TcpClient client = await _tcpListener.AcceptTcpClientAsync();
-                    _ = Task.Run(() => _sessionController.HandleClient(client, token), token);
+                    var client = await _tcpListener.AcceptTcpClientAsync(token);
+                    _ = _sessionController.HandleClient(client, token);
                 }
-                catch (SocketException ex) when (token.IsCancellationRequested)
+                catch (Exception ex) when (token.IsCancellationRequested)
                 {
-                    NLog.Error(ex);
+                    NLog.Error($"Server stopped accepting clients due to cancellation - Exception: {ex}");
                     break;
                 }
                 catch (Exception ex)
                 {
                     NLog.Error(ex);
-                    break;
                 }
             }
         }

@@ -8,6 +8,7 @@ namespace NETServer.Infrastructure.Configuration
         public readonly static int Port = NetworkConfig.Port;
         public readonly static string? IPAddress = NetworkConfig.IPAddress;
         public readonly static int MaxConnections = NetworkConfig.MaxConnections;
+        public readonly static int BytesPerSecond = NetworkConfig.BytesPerSecond;
         public readonly static int MaxConnectionsPerIpAddress = NetworkConfig.MaxConnectionsPerIpAddress;
         public readonly static int RequestDelayMilliseconds = NetworkConfig.RequestDelayMilliseconds;
         public readonly static int ConnectionLockoutDuration = NetworkConfig.ConnectionLockoutDuration;

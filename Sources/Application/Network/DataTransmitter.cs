@@ -14,7 +14,7 @@ namespace NETServer.Application.Network
         private static readonly ArrayPool<byte> bytePool = ArrayPool<byte>.Shared;
         private readonly AesCipher _aesCipher;          // Đối tượng xử lý mã hóa/giải mã AES
         private readonly BufferedStream _stream;        // Sử dụng BufferedStream để tối ưu bộ nhớ
-        private readonly BandwidthThrottler _throttler; // Throttler để kiểm soát băng thông
+        private readonly DataThrottlerHelper _throttler; // Throttler để kiểm soát băng thông
 
         public bool IsEncrypted { get; private set; } = false;
 
@@ -25,7 +25,7 @@ namespace NETServer.Application.Network
 
             _stream = new BufferedStream(stream);
             _aesCipher = new AesCipher(key);
-            _throttler = new BandwidthThrottler(maxBytesPerSecond);  // Tạo đối tượng throttler
+            _throttler = new DataThrottlerHelper(maxBytesPerSecond);  // Tạo đối tượng throttler
         }
 
         private static void ValidateParameters(Stream stream, byte[] key)
