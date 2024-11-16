@@ -1,6 +1,6 @@
 ﻿namespace NETServer.Application.Helpers
 {
-    internal static class FileHelper
+    internal static class FileIOHelper
     {
         /// <summary>
         /// Ghi nội dung vào tệp văn bản. 

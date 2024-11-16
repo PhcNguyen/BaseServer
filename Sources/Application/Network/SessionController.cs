@@ -1,44 +1,52 @@
-﻿using NETServer.Infrastructure.Configuration;
-using NETServer.Infrastructure.Interfaces;
-using NETServer.Infrastructure.Security;
+﻿using NETServer.Application.Handlers;
 using NETServer.Infrastructure.Logging;
-using NETServer.Application.Handlers;
+using NETServer.Infrastructure.Security;
+using NETServer.Infrastructure.Interfaces;
+using NETServer.Infrastructure.Configuration;
+using NETServer.Application.Network.Transport;
 
 using System.Net.Sockets;
 using System.Collections.Concurrent;
-using NETServer.Application.Enums;
 
 namespace NETServer.Application.Network
 {
     internal class SessionController : ISessionController
     {
+        private readonly ByteBuffer _byteBuffer;
         private readonly SslSecurity _sslSecurity;
         private readonly RequestLimiter _requestLimiter;
-        private readonly CommandHandler _commandHandler;
+        private readonly CommandProcessor _commandHandler;
         private readonly ConnectionLimiter _connectionLimiter;
 
-        public readonly ConcurrentDictionary<Guid, WeakReference<ClientSession>> ActiveSessions = new();
+        
+        private readonly ConcurrentDictionary<Guid, ClientSession> _activeSessions = new();
+        public IReadOnlyDictionary<Guid, ClientSession> ActiveSessions => _activeSessions;
 
         public SessionController()
         {
+            _byteBuffer = new ByteBuffer();
             _sslSecurity = new SslSecurity();
-            _commandHandler = new CommandHandler();
+            _commandHandler = new CommandProcessor();
             _connectionLimiter = new ConnectionLimiter(Setting.MaxConnections);
             _requestLimiter = new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration);
         }
 
         public async Task HandleClient(TcpClient client, CancellationToken cancellationToken)
         {
-            var session = new ClientSession(client, _requestLimiter, _connectionLimiter, _sslSecurity);
+            ClientSession session = new(client, _requestLimiter, 
+                _connectionLimiter, _sslSecurity, _byteBuffer);
 
             if (!await session.AuthorizeClientSession())
                 return;
 
-            await session.Connect();
-            ActiveSessions[session.Id] = new WeakReference<ClientSession>(session);
+            await session.Connect().ConfigureAwait(false);
+            if (!_activeSessions.TryAdd(session.Id, session))
+            {
+                NLog.Info($"Session {session.Id} already exists, updating.");
+                _activeSessions[session.Id] = session;
+            }
 
-            Cmd command;
-            byte[] data;
+            Packet? packet;
 
             try
             {
@@ -52,27 +60,25 @@ namespace NETServer.Application.Network
                     // Kiểm tra timeout session
                     if (session.IsSessionTimedOut()) break;
 
-                    // Kiểm tra cancellationToken nếu server muốn dừng vòng lặp này
-                    if (cancellationToken.IsCancellationRequested) break;
-
                     // Nhận dữ liệu từ client
-                    (command, data) = await session.Transport.ReceiveAsync(cancellationToken);
+                    packet = await session.Transport.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 
-                    if (command == default || data.Length == 0)
+                    // Kiểm tra dữ liệu rỗng
+                    if (packet?.Command is null)
                     {
-                        await Task.Delay(50, cancellationToken);
+                        await Task.Delay(50, cancellationToken).ConfigureAwait(false);
                         continue;
                     }
 
                     // Update last activity time each time a command is received
                     session.UpdateLastActivityTime();
 
-                    await _commandHandler.HandleCommand(session, command, data);
+                    await _commandHandler.HandleCommand(session, packet, cancellationToken).ConfigureAwait(false);
                 }
             }
             catch (IOException ioEx)
             {
-                NLog.Error($"I/O error in client session {session.ClientAddress}: {ioEx.Message}");
+                NLog.Error($"I/O error in client session {session.ClientAddress}: {ioEx.Message} - StackTrace: {ioEx.StackTrace}");
             }
             catch (SocketException sockEx)
             {
@@ -84,19 +90,18 @@ namespace NETServer.Application.Network
             }
             finally
             {
-                await CloseConnection(session);
+                await CloseConnection(session).ConfigureAwait(false);
             }
         }
 
-        private async Task CloseConnection(ClientSession? session)
+        private async Task CloseConnection(ClientSession session)
         {
             if (session == null || !session.IsConnected) return;
 
             try
             {
-                await session.Disconnect();
-                // Dọn dẹp WeakReference khi kết thúc phiên
-                ActiveSessions.TryRemove(session.Id, out _);
+                await session.Disconnect().ConfigureAwait(false);
+                _activeSessions.TryRemove(session.Id, out _); // Xóa session khỏi ActiveSessions
             }
             catch (Exception e)
             {
@@ -106,28 +111,58 @@ namespace NETServer.Application.Network
 
         public async Task CloseAllConnections()
         {
-            if (ActiveSessions.IsEmpty) return;
+            if (_activeSessions.IsEmpty) return;
 
-            var closeTasks = ActiveSessions.Values
-                .Select(sessionRef => sessionRef.TryGetTarget(out var session) && session?.IsConnected == true
-                    ? CloseConnection(session)
-                    : Task.CompletedTask);
+            var closeTasks = _activeSessions.Values
+                .Where(session => session.IsConnected)
+                .Select(session => CloseConnection(session))
+                .ToList(); // Chuyển sang List để kiểm soát số lượng task đồng thời
 
-            await Task.WhenAll(closeTasks);
+            while (closeTasks.Count != 0)
+            {
+                var batch = closeTasks.Take(10).ToList(); // Giới hạn tối đa 10 kết nối cùng lúc
+                closeTasks = closeTasks.Skip(10).ToList();
+
+                await Task.WhenAll(batch).ConfigureAwait(false);
+            }
 
             NLog.Info("All connections closed successfully.");
         }
 
+
         public void CleanUpInactiveSessions()
         {
-            // Lọc ra các session không còn kết nối và xóa khỏi ActiveSessions
-            var inactiveSessions = ActiveSessions
-                .Where(sessionRef => !sessionRef.Value.TryGetTarget(out var session) || session == null || !session.IsConnected)
+            var inactiveSessions = _activeSessions
+                .Where(session => !session.Value.IsConnected || session.Value.IsSessionTimedOut())
                 .ToList();
 
             foreach (var session in inactiveSessions)
             {
-                ActiveSessions.TryRemove(session.Key, out _); // Xóa session khỏi ActiveSessions
+                _activeSessions.TryRemove(session.Key, out _); // Xóa session khỏi ActiveSessions
+            }
+
+            NLog.Info("Inactive sessions cleaned up.");
+        }
+
+        public async Task CleanUpInactiveSessionsPeriodically(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromMinutes(5), cancellationToken);  // Đợi 5 phút hoặc hủy
+
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                var inactiveSessions = _activeSessions
+                    .Where(session => !session.Value.IsConnected || session.Value.IsSessionTimedOut())
+                    .ToList();
+
+                foreach (var session in inactiveSessions)
+                {
+                    _activeSessions.TryRemove(session.Key, out _);
+                }
+
+                NLog.Info("Inactive sessions cleaned up periodically.");
             }
         }
     }

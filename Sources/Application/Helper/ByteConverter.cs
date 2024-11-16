@@ -5,7 +5,7 @@ namespace NETServer.Application.Helper
     /// <summary>
     /// Provides helper methods for converting between byte arrays and different data types.
     /// </summary>
-    internal class ByteHelper
+    internal class ByteConverter
     {
         /// <summary>
         /// Converts an integer to a byte array.

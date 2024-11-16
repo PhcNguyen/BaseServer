@@ -1,8 +1,7 @@
 ﻿using NETServer.Infrastructure.Configuration;
 using NETServer.Infrastructure.Logging;
-using System.Linq.Expressions;
-using System.Net;
 using System.Net.Sockets;
+using System.Net;
 
 namespace NETServer.Application.Network
 {
@@ -17,7 +16,7 @@ namespace NETServer.Application.Network
 
         public ServerEngine()
         {
-            _isRunning = 0; // 0: false, 1: true
+            _isRunning = 0;
             _sessionController = new SessionController();
             _tcpListener = new TcpListener(
                 Setting.IPAddress == null ? IPAddress.Any : IPAddress.Parse(Setting.IPAddress),
@@ -38,7 +37,7 @@ namespace NETServer.Application.Network
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReceiveTimeout, Setting.ReceiveTimeout);
         }
 
-        private async Task AcceptClientConnectionsAsync(CancellationToken token)
+        private async ValueTask AcceptClientConnectionsAsync(CancellationToken token)
         {
             while (_isRunning == 1 && !token.IsCancellationRequested)
             {
@@ -49,10 +48,10 @@ namespace NETServer.Application.Network
                     continue;
                 }
 
-                // Kiểm tra ngay session
                 if (_sessionController.ActiveSessions.Count >= _maxConnections)
                 {
                     NLog.Warning("Maximum connections reached.");
+                    await Task.Delay(1000, token);  // Delay ngắn để tránh liên tục kiểm tra
                     continue;
                 }
 
@@ -83,7 +82,6 @@ namespace NETServer.Application.Network
 
             var token = _cancellationTokenSource.Token;
 
-            // Chạy server trong một Task riêng
             _ = Task.Run(async () =>
             {
                 try
@@ -91,13 +89,12 @@ namespace NETServer.Application.Network
                     _tcpListener.Start();
                     NLog.Info($"Server started and listening on {_tcpListener.LocalEndpoint}");
 
-                    // Tiến hành nhận kết nối trong khi server đang chạy và chưa bị hủy
-                    await this.AcceptClientConnectionsAsync(token);
+                    await AcceptClientConnectionsAsync(token);
                 }
                 catch (Exception ex)
                 {
                     NLog.Error(ex);
-                } 
+                }
             }, token);
         }
 
@@ -130,8 +127,8 @@ namespace NETServer.Application.Network
 
         public void ResetServer()
         {
-            StopServer();  // Dừng server trước
-            StartServer(); // Khởi động lại server
+            StopServer();
+            StartServer();
             NLog.Info("Server has been reset successfully.");
         }
     }

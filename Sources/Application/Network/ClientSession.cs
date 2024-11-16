@@ -1,25 +1,26 @@
-﻿using NETServer.Infrastructure.Configuration;
-using NETServer.Infrastructure.Interfaces;
+﻿using NETServer.Infrastructure.Logging;
 using NETServer.Infrastructure.Services;
-using NETServer.Infrastructure.Logging;
-using NETServer.Application.Helper;
+using NETServer.Infrastructure.Interfaces;
+using NETServer.Infrastructure.Configuration;
+using NETServer.Application.Network.Transport;
 
-using System.Text;
 using System.Net.Sockets;
 using System.Diagnostics;
 
 namespace NETServer.Application.Network
 {
-    internal class ClientSession: IClientSession, IDisposable
+    internal class ClientSession : IClientSession, IDisposable
     {
         private Stream? _clientStream;
         private readonly TcpClient _tcpClient;
+        private readonly ByteBuffer _byteBuffer;
         private readonly Stopwatch _activityTimer;
         private readonly IStreamSecurity _streamSecurity;
         private readonly IRequestLimiter _requestLimiter;
         private readonly IConnectionLimiter _connectionLimiter;
         private readonly TimeSpan _sessionTimeout = Setting.ClientSessionTimeout;
-        
+        private readonly PacketThrottles _throttles = new(Setting.BytesPerSecond);
+
         public Guid Id { get; private set; }
         public bool IsConnected { get; private set; }
         public byte[] SessionKey { get; private set; }
@@ -27,29 +28,40 @@ namespace NETServer.Application.Network
 
         public TcpClient TcpClient => _tcpClient;
         public Stream? ClientStream => _clientStream;
-        public DataTransmitter Transport { get; private set; }
+        public PacketTransmitter? Transport { get; private set; }
 
-        IDataTransmitter IClientSession.Transport => Transport;
+        IPacketTransmitter IClientSession.Transport => Transport ?? throw new InvalidOperationException("Transport is not initialized.");
 
-        public ClientSession(TcpClient tcpClient, IRequestLimiter requestLimiter, 
-            IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity)
+        public ClientSession(TcpClient tcpClient, IRequestLimiter requestLimiter,
+            IConnectionLimiter connectionLimiter, IStreamSecurity streamSecurity, ByteBuffer bufferPool)
         {
-            ValidationHelper.EnsureNotNull(tcpClient, nameof(tcpClient));
-            ValidationHelper.EnsureNotNull(streamSecurity, nameof(streamSecurity));
-            ValidationHelper.EnsureNotNull(requestLimiter, nameof(requestLimiter));
-            ValidationHelper.EnsureNotNull(connectionLimiter, nameof(connectionLimiter));
-
             _activityTimer = Stopwatch.StartNew();
-
+            
             _tcpClient = tcpClient;
+            _byteBuffer = bufferPool;
             _requestLimiter = requestLimiter;
             _streamSecurity = streamSecurity;
             _connectionLimiter = connectionLimiter;
 
             this.Id = Guid.NewGuid();
             this.SessionKey = Generator.K256();
-            this.Transport = new DataTransmitter(Setting.BytesPerSecond);
-            this.ClientAddress = ValidationHelper.GetClientAddress(_tcpClient);
+            this.ClientAddress = Validator.GetClientAddress(_tcpClient);
+        }
+
+        private async Task<Stream> SetupClientStream()
+        {
+            try
+            {
+                if (Setting.IsSslEnabled)
+                {
+                    return await _streamSecurity.EstablishSecureClientStream(_tcpClient);
+                }
+                return _tcpClient.GetStream();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error setting up client stream", ex);
+            }
         }
 
         public async Task Connect()
@@ -62,9 +74,7 @@ namespace NETServer.Application.Network
                     return;
                 }
 
-                _clientStream = Setting.IsSslEnabled
-                    ? await _streamSecurity.EstablishSecureClientStream(_tcpClient)
-                    : _tcpClient.GetStream();
+                _clientStream = await SetupClientStream();
 
                 if (!_tcpClient.Connected)
                 {
@@ -72,7 +82,7 @@ namespace NETServer.Application.Network
                     return;
                 }
 
-                Transport.Create(_clientStream, SessionKey);
+                this.Transport = new PacketTransmitter(_clientStream, SessionKey, _byteBuffer, _throttles);
 
                 this.IsConnected = true;
                 NLog.Info($"Session {Id} connected to {ClientAddress}");
@@ -124,6 +134,12 @@ namespace NETServer.Application.Network
 
         public void Dispose()
         {
+            if (!string.IsNullOrEmpty(ClientAddress))
+            {
+                _connectionLimiter.ConnectionClosed(ClientAddress);
+                this.IsConnected = false;
+            }
+
             if (_clientStream != null)
             {
                 _clientStream.Flush();
@@ -131,8 +147,10 @@ namespace NETServer.Application.Network
                 _clientStream = null;
             }
 
+            if (this.Transport != null) Transport.Dispose();
+            
             _tcpClient.Dispose();
-            Transport.Dispose();
+            
             GC.SuppressFinalize(this);
         }
 
@@ -140,22 +158,21 @@ namespace NETServer.Application.Network
         {
             if (string.IsNullOrEmpty(this.ClientAddress))
             {
-                await DataTransmitter.Send(_tcpClient, Encoding.UTF8.GetBytes("Client's endpoint is null or invalid."));
+                await PacketTransmitter.TcpSend(_tcpClient, "Client's endpoint is null or invalid.");
                 await Disconnect();
                 return false;
             }
 
             if (!_connectionLimiter.IsConnectionAllowed(this.ClientAddress))
             {
-                await DataTransmitter.Send(_tcpClient, 
-                    Encoding.UTF8.GetBytes("Connection is denied due to max connections."));
+                await PacketTransmitter.TcpSend(_tcpClient, "Connection is denied due to max connections.");
                 await Disconnect();
                 return false;
             }
 
             if (!_requestLimiter.IsAllowed(this.ClientAddress))
             {
-                await DataTransmitter.Send(_tcpClient, Encoding.UTF8.GetBytes("Request denied due to time limit."));
+                await PacketTransmitter.TcpSend(_tcpClient, "Request denied due to time limit.");
                 await Disconnect();
                 return false;
             }

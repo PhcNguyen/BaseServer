@@ -1,19 +1,16 @@
 ﻿using Npgsql;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace NETServer.Database
 {
-    internal class PostgreManager
+    internal partial class PostgreManager
     {
-        public async Task EnsureDatabaseExistsAsync(string database, CancellationToken cancellationToken = default)
+        // Kiểm tra cơ sở dữ liệu đã tồn tại hay chưa
+        public static async Task EnsureDatabaseExistsAsync(string database, CancellationToken cancellationToken = default)
         {
             await using var connection = await PostgreConnector.OpenConnectionAsync(cancellationToken);
             try
             {
-                // Kiểm tra cơ sở dữ liệu đã tồn tại hay chưa (bất đồng bộ)
                 using var cmd = new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = @dbName", connection);
                 cmd.Parameters.AddWithValue("@dbName", database);
                 var result = await cmd.ExecuteScalarAsync(cancellationToken);
@@ -34,45 +31,78 @@ namespace NETServer.Database
             }
         }
 
-        // Tạo cơ sở dữ liệu mới (bất đồng bộ)
-        private async Task CreateDatabaseAsync(string database, NpgsqlConnection connection, CancellationToken cancellationToken = default)
+        // Tạo cơ sở dữ liệu mới 
+        private static async Task CreateDatabaseAsync(string database, NpgsqlConnection connection, CancellationToken cancellationToken = default)
         {
             using var createCmd = new NpgsqlCommand($"CREATE DATABASE \"{database}\"", connection);
             await createCmd.ExecuteNonQueryAsync(cancellationToken);
             Console.WriteLine($"Cơ sở dữ liệu '{database}' đã được tạo thành công.");
         }
 
-        public async Task<bool> ExecuteAsync(string query, CancellationToken cancellationToken = default, params object[] values)
+        // Xóa cơ sở dữ liệu
+        public static async Task DropDatabaseAsync(string database, CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrEmpty(query) || values == null || values.Length == 0) return false;
+            var connectionString = PostgreConfig.ConnectionString.Replace($"Database={PostgreConfig.DatabaseName};", "Database=postgres;");
+            await using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
 
-            await using var connection = await PostgreConnector.OpenConnectionAsync(cancellationToken);
+            using var cmd = new NpgsqlCommand($"DROP DATABASE IF EXISTS \"{database}\"", connection);
+            await cmd.ExecuteNonQueryAsync(cancellationToken);
+            Console.WriteLine($"Cơ sở dữ liệu '{database}' đã được xóa.");
+        }
+
+        // Thực thi câu lệnh SQL với tham số
+        public static async Task<bool> ExecuteAsync(string query, params object[] values)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                throw new ArgumentException("Query cannot be null or empty.", nameof(query));
+
+            ArgumentNullException.ThrowIfNull(values);
+
+            // Thay giá trị null bằng DBNull.Value để tương thích với cơ sở dữ liệu
+            var parameters = values.Select(value => value ?? DBNull.Value).ToArray();
+
+            await using var connection = await PostgreConnector.OpenConnectionAsync();
+            await using var cmd = new NpgsqlCommand(query, connection);
+
             try
             {
-                using var cmd = new NpgsqlCommand(query, connection);
+                // Tìm các tham số bắt đầu bằng '@' trong câu truy vấn
+                var parameterNames = new List<string>();
+                var words = query.Split([' ', ',', ';', '(', ')', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries);
 
-                // Lấy tên tham số từ câu truy vấn (những từ bắt đầu bằng '@')
-                var parameterNames = query.Split(' ').Where(w => w.StartsWith("@")).Distinct().ToArray();
-
-                // Kiểm tra số lượng tham số
-                if (parameterNames.Length != values.Length)
+                foreach (var word in words)
                 {
-                    throw new ArgumentException($"Số lượng tham số truyền vào ({values.Length}) không khớp với số lượng tham số trong câu lệnh SQL ({parameterNames.Length}).");
+                    if (!string.IsNullOrEmpty(word) && word.Equals(string.Concat("@", word.AsSpan(1)), StringComparison.Ordinal))
+                    {
+                        parameterNames.Add(word);
+                    }
                 }
 
-                // Thêm tham số vào câu lệnh SQL
-                for (int i = 0; i < parameterNames.Length; i++)
+                // Loại bỏ các tham số trùng lặp
+                parameterNames = parameterNames.Distinct().ToList();
+
+                // Kiểm tra số lượng tham số
+                if (parameterNames.Count != parameters.Length)
                 {
-                    cmd.Parameters.AddWithValue(parameterNames[i], values[i]);
+                    throw new ArgumentException($"Mismatch: {parameterNames.Count} parameter(s) " +
+                        $"expected but {parameters.Length} value(s) provided.");
+                }
+
+                // Gán tham số và giá trị vào câu lệnh SQL
+                for (int i = 0; i < parameterNames.Count; i++)
+                {
+                    cmd.Parameters.AddWithValue(parameterNames[i], parameters[i]);
                 }
 
                 // Thực thi câu lệnh bất đồng bộ
-                await cmd.ExecuteNonQueryAsync(cancellationToken);
-                return true;
+                int affectedRows = await cmd.ExecuteNonQueryAsync();
+                return affectedRows > 0; // Trả về true nếu có dòng bị ảnh hưởng
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Lỗi khi thực thi truy vấn: {ex.Message}");
+                // Ghi lỗi chi tiết
+                Console.Error.WriteLine($"Query execution failed: {ex.Message}\n{ex.StackTrace}");
                 return false;
             }
         }

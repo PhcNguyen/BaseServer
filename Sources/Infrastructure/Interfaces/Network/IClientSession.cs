@@ -10,7 +10,7 @@ namespace NETServer.Infrastructure.Interfaces
         string ClientAddress { get; }
         TcpClient TcpClient { get; }
         Stream? ClientStream { get; }
-        IDataTransmitter Transport { get; }
+        IPacketTransmitter Transport { get; }
         Task Connect();
         Task Disconnect();
         Task<bool> AuthorizeClientSession();

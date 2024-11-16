@@ -44,9 +44,9 @@ namespace NETServer.Infrastructure.Security
         /// <returns>True nếu tất cả các tập tin khóa tồn tại, ngược lại là False.</returns>
         private async Task<bool> KeysExist() =>
             await Task.WhenAll(
-                FileHelper.FileExistsAsync(PublicKeyFilePath),
-                FileHelper.FileExistsAsync(PrivateKeyFilePath),
-                FileHelper.FileExistsAsync(ExpiryFilePath)
+                FileIOHelper.FileExistsAsync(PublicKeyFilePath),
+                FileIOHelper.FileExistsAsync(PrivateKeyFilePath),
+                FileIOHelper.FileExistsAsync(ExpiryFilePath)
             ).ContinueWith(tasks => tasks.Result.All(x => x));
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace NETServer.Infrastructure.Security
         /// <returns>True nếu khóa đã hết hạn, ngược lại là False.</returns>
         private static async Task<bool> IsKeyExpired()
         {
-            var expiryDateStr = await FileHelper.ReadFromFileAsync(ExpiryFilePath);
+            var expiryDateStr = await FileIOHelper.ReadFromFileAsync(ExpiryFilePath);
             return DateTime.Now > DateTime.Parse(expiryDateStr);
         }
 
@@ -71,7 +71,7 @@ namespace NETServer.Infrastructure.Security
             PrivateKey = rsa.ExportParameters(true);
 
             await SaveKeys();
-            await FileHelper.WriteToFileAsync(ExpiryFilePath, DateTime.Now.Add(KeyRotationInterval).ToString());
+            await FileIOHelper.WriteToFileAsync(ExpiryFilePath, DateTime.Now.Add(KeyRotationInterval).ToString());
         }
 
         /// <summary>
@@ -79,8 +79,8 @@ namespace NETServer.Infrastructure.Security
         /// </summary>
         private async Task SaveKeys()
         {
-            await FileHelper.WriteToFileAsync(PublicKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPublicKey()));
-            await FileHelper.WriteToFileAsync(PrivateKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPrivateKey()));
+            await FileIOHelper.WriteToFileAsync(PublicKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPublicKey()));
+            await FileIOHelper.WriteToFileAsync(PrivateKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPrivateKey()));
         }
 
         /// <summary>
@@ -88,8 +88,8 @@ namespace NETServer.Infrastructure.Security
         /// </summary>
         private async Task LoadKeys()
         {
-            var publicKeyContent = await FileHelper.ReadFromFileAsync(PublicKeyFilePath);
-            var privateKeyContent = await FileHelper.ReadFromFileAsync(PrivateKeyFilePath);
+            var publicKeyContent = await FileIOHelper.ReadFromFileAsync(PublicKeyFilePath);
+            var privateKeyContent = await FileIOHelper.ReadFromFileAsync(PrivateKeyFilePath);
 
             rsa.ImportRSAPublicKey(Convert.FromBase64String(publicKeyContent), out _);
             rsa.ImportRSAPrivateKey(Convert.FromBase64String(privateKeyContent), out _);
