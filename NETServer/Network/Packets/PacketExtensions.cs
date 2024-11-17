@@ -14,6 +14,7 @@ namespace NETServer.Network.Packets
         public static Packet CreatePacket(byte version, byte flags, short command, byte[] payload)
         {
             return new Packet(
+                id: null,
                 version: version, 
                 flags: flags, 
                 command: command, 
@@ -31,6 +32,7 @@ namespace NETServer.Network.Packets
                 return null;
 
             return new Packet(
+                id: null,
                 version: data[PacketMetadata.VERSIONOFFSET],
                 flags: data[PacketMetadata.FLAGSOFFSET],
                 command: BitConverter.ToInt16(data, PacketMetadata.COMMANDOFFSET),

@@ -4,8 +4,7 @@ namespace NETServer.Infrastructure.Interfaces
 {
     internal interface ISessionController
     {
-        void CleanUpInactiveSessions();
-        ValueTask CloseAllConnections();
-        Task HandleClientAsync(TcpClient client, CancellationToken cancellationToken);
+        Task AcceptClient(TcpClient client);
+        Task CloseAllConnections();
     }
 }

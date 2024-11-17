@@ -7,10 +7,6 @@ namespace NETServer.Network.Firewall
     /// <summary>
     /// Lớp xử lý giới hạn số lượng kết nối đồng thời từ mỗi địa chỉ IP.
     /// </summary>
-    /// <remarks>
-    /// Khởi tạo đối tượng ConnectionLimiter với số lượng kết nối tối đa mỗi IP có thể mở.
-    /// </remarks>
-    /// <param name="maxConnectionsPerIp">Số lượng kết nối tối đa cho mỗi địa chỉ IP.</param>
     internal class ConnLimiter(int maxConnectionsPerIp) : IConnLimiter
     {
         private readonly int _maxConnectionsPerIp = maxConnectionsPerIp;
@@ -26,11 +22,17 @@ namespace NETServer.Network.Firewall
         {
             if (string.IsNullOrEmpty(ipAddress)) return false;
 
-            // Sử dụng phương thức AddOrUpdate không khóa để cập nhật và kiểm tra số lượng kết nối
+            // Cập nhật số lượng kết nối của IP trong dictionary
             int newConnectionCount = _ipConnectionCounts.AddOrUpdate(ipAddress, 1, (key, oldValue) => oldValue + 1);
 
-            // Kiểm tra sau khi tăng số lượng kết nối
-            return newConnectionCount <= _maxConnectionsPerIp;
+            // Kiểm tra nếu số lượng kết nối vượt quá giới hạn
+            if (newConnectionCount > _maxConnectionsPerIp)
+            {
+                // Không cho phép kết nối nếu vượt quá giới hạn
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -59,6 +61,17 @@ namespace NETServer.Network.Firewall
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Lấy số lượng kết nối hiện tại của một IP.
+        /// </summary>
+        /// <param name="ipAddress">Địa chỉ IP cần lấy số lượng kết nối.</param>
+        /// <returns>Số lượng kết nối hiện tại.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetCurrentConnectionCount(string ipAddress)
+        {
+            return _ipConnectionCounts.GetValueOrDefault(ipAddress, 0);
         }
     }
 }

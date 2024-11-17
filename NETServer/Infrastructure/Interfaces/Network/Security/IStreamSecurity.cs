@@ -14,6 +14,6 @@ namespace NETServer.Infrastructure.Interfaces
         /// <param name="tcpClient">Đối tượng TcpClient đại diện cho kết nối của client.</param>
         /// <returns>Trả về một <see cref="Stream"/> được mã hóa SSL để giao tiếp an toàn với client.</returns>
         /// <exception cref="InvalidOperationException">Ném ra nếu có lỗi trong quá trình xác thực SSL hoặc thiết lập kết nối.</exception>
-        Task<Stream> EstablishSecureClientStream(TcpClient tcpClient);  
+        Stream EstablishSecureClientStream(TcpClient tcpClient);  
     }
 }

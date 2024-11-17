@@ -20,7 +20,7 @@ namespace NETServer.Network.Security
         /// <param name="tcpClient">Đối tượng TcpClient đại diện cho kết nối của client.</param>
         /// <returns>Trả về một <see cref="Stream"/> được mã hóa SSL để giao tiếp an toàn với client.</returns>
         /// <exception cref="InvalidOperationException">Ném ra nếu có lỗi trong quá trình xác thực SSL hoặc thiết lập kết nối.</exception>
-        public async Task<Stream> EstablishSecureClientStream(TcpClient tcpClient)
+        public Stream EstablishSecureClientStream(TcpClient tcpClient)
         {
             try
             {
@@ -28,7 +28,7 @@ namespace NETServer.Network.Security
                 var sslStream = new SslStream(tcpClient.GetStream(), leaveInnerStreamOpen: false);
 
                 // Xác thực server và bắt đầu mã hóa
-                await sslStream.AuthenticateAsServerAsync(
+                sslStream.AuthenticateAsServerAsync(
                     serverCertificate: new X509Certificate2(Setting.SslPfxCertificatePath, Setting.SslPassword),
                     clientCertificateRequired: Setting.IsClientCertificateRequired,
                     checkCertificateRevocation: Setting.IsCertificateRevocationCheckEnabled,

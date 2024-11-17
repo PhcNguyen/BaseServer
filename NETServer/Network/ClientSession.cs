@@ -12,6 +12,7 @@ namespace NETServer.Network
 {
     internal class ClientSession : IClientSession, IDisposable
     {
+        private readonly Guid _id;
         private Stream? _clientStream;
         private readonly TcpClient _tcpClient;
         private readonly ByteBuffer _byteBuffer;
@@ -20,18 +21,17 @@ namespace NETServer.Network
         private readonly IConnLimiter _connectionLimiter;
         private readonly TimeSpan _sessionTimeout = Setting.ClientSessionTimeout;
         private readonly PacketThrottles _throttles = new(Setting.BytesPerSecond);
-        
 
-        public Guid Id { get; private set; }
         public bool IsConnected { get; private set; }
         public byte[] SessionKey { get; private set; }
         public string ClientAddress { get; private set; } = string.Empty;
-        public readonly SemaphoreSlim TaskSemaphore = new(5);
 
+        public Guid ID => _id;
         public TcpClient TcpClient => _tcpClient;
         public Stream? ClientStream => _clientStream;
         public DataTransmitter? Transport { get; private set; }
 
+        Guid IClientSession.ID => _id;
         IDataTransmitter IClientSession.Transport => Transport ?? throw new InvalidOperationException("Transport is not initialized.");
 
         public ClientSession(TcpClient tcpClient, ByteBuffer bufferPool,
@@ -39,30 +39,23 @@ namespace NETServer.Network
         {
             _activityTimer = Stopwatch.StartNew();
 
+            _id = Guid.NewGuid();
             _tcpClient = tcpClient;
             _byteBuffer = bufferPool;
             _streamSecurity = streamSecurity;
             _connectionLimiter = connectionLimiter;
 
-            Id = Guid.NewGuid();
             SessionKey = Generator.K256();
             ClientAddress = Validator.GetClientAddress(_tcpClient);
         }
 
-        private async Task<Stream> SetupClientStream()
+        private Stream SetupClientStream()
         {
-            try
+            if (Setting.IsSslEnabled)
             {
-                if (Setting.IsSslEnabled)
-                {
-                    return await _streamSecurity.EstablishSecureClientStream(_tcpClient);
-                }
-                return _tcpClient.GetStream();
+                return _streamSecurity.EstablishSecureClientStream(_tcpClient);
             }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error setting up client stream", ex);
-            }
+            return _tcpClient.GetStream();
         }
 
         public async Task Connect()
@@ -75,7 +68,7 @@ namespace NETServer.Network
                     return;
                 }
 
-                _clientStream = await SetupClientStream();
+                _clientStream = SetupClientStream();
 
                 if (!_tcpClient.Connected)
                 {
@@ -83,10 +76,10 @@ namespace NETServer.Network
                     return;
                 }
 
-                Transport = new DataTransmitter(_clientStream, _byteBuffer, _throttles);
+                Transport = new DataTransmitter(_id, _clientStream, _byteBuffer, _throttles);
 
                 IsConnected = true;
-                NLog.Info($"Session {Id} connected to {ClientAddress}");
+                NLog.Info($"Session {_id} connected to {ClientAddress}");
             }
             catch (TimeoutException tex)
             {
@@ -115,13 +108,12 @@ namespace NETServer.Network
 
                 if (!string.IsNullOrEmpty(ClientAddress))
                 {
-                    await Task.Delay(0);
                     _connectionLimiter.ConnectionClosed(ClientAddress);
                 }
 
-                Dispose();
+                await Task.Run(() => Dispose());
 
-                NLog.Info($"Session {Id} disconnected from {ClientAddress}");
+                NLog.Info($"Session {_id} disconnected from {ClientAddress}");
             }
             catch (ObjectDisposedException ex)
             {
@@ -135,12 +127,6 @@ namespace NETServer.Network
 
         public void Dispose()
         {
-            if (!string.IsNullOrEmpty(ClientAddress))
-            {
-                _connectionLimiter.ConnectionClosed(ClientAddress);
-                IsConnected = false;
-            }
-
             if (_clientStream != null)
             {
                 _clientStream.Flush();
@@ -148,7 +134,7 @@ namespace NETServer.Network
                 _clientStream = null;
             }
 
-            if (Transport != null) Transport.Dispose();
+            Transport?.Dispose();
 
             _tcpClient.Dispose();
 
@@ -160,14 +146,14 @@ namespace NETServer.Network
             if (string.IsNullOrEmpty(ClientAddress))
             {
                 await DataTransmitter.TcpSend(_tcpClient, "Client's endpoint is null or invalid.");
-                await Disconnect();
+                Dispose();
                 return false;
             }
 
             if (!_connectionLimiter.IsConnectionAllowed(ClientAddress))
             {
-                await DataTransmitter.TcpSend(_tcpClient, "Connection is denied due to max connections.");
-                await Disconnect();
+                // await DataTransmitter.TcpSend(_tcpClient, "Connection is denied due to max connections.");
+                Dispose();
                 return false;
             }
 

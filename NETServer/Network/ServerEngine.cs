@@ -30,7 +30,6 @@ namespace NETServer.Network
         private static void ConfigureSocket(Socket socket)
         {
             socket.Blocking = Setting.Blocking;
-            socket.Listen(Setting.QueueSize);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, Setting.KeepAlive);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.SendTimeout, Setting.SendTimeout);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, Setting.ReuseAddress);
@@ -39,8 +38,14 @@ namespace NETServer.Network
 
         private async ValueTask AcceptClientConnectionsAsync(CancellationToken token)
         {
-            while (_isRunning == 1 && !token.IsCancellationRequested)
+            while (_isRunning == 1)
             {
+                if (token.IsCancellationRequested)
+                {
+                    NLog.Warning("Server stopping due to cancellation request.");
+                    break;
+                }
+
                 if (_isInMaintenanceMode)
                 {
                     NLog.Warning("Server in maintenance mode.");
@@ -57,13 +62,15 @@ namespace NETServer.Network
 
                 try
                 {
+                    token.ThrowIfCancellationRequested(); // Ngừng nếu token bị hủy
+
                     var client = await _tcpListener.AcceptTcpClientAsync(token);
-                    _ = _sessionController.HandleClientAsync(client, token);
+                    await _sessionController.AcceptClientAsync(client);
                 }
-                catch (Exception ex) when (token.IsCancellationRequested)
+                catch (OperationCanceledException)
                 {
-                    NLog.Error($"Server stopped accepting clients due to cancellation - Exception: {ex}");
-                    break;
+                    NLog.Info("AcceptTcpClientAsync operation canceled.");
+                    break; // Dừng vòng lặp khi cancellation được yêu cầu
                 }
                 catch (Exception ex)
                 {
@@ -81,6 +88,11 @@ namespace NETServer.Network
             }
 
             var token = _cancellationTokenSource.Token;
+
+            _ = Task.Run(async () =>
+            {
+                await _sessionController.StartProcessingSessions(token);
+            }, token);
 
             _ = Task.Run(async () =>
             {

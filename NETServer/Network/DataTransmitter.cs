@@ -8,8 +8,9 @@ using System.Net.Sockets;
 
 namespace NETServer.Network
 {
-    internal class DataTransmitter(Stream stream, ByteBuffer bufferPool, PacketThrottles packetThrottles) : IDataTransmitter
+    internal class DataTransmitter(Guid UID, Stream stream, ByteBuffer bufferPool, PacketThrottles packetThrottles) : IDataTransmitter
     {
+        private readonly Guid UID = UID;
         private readonly ByteBuffer _buffer = bufferPool;
         private readonly BufferedStream _stream = new(stream);
         private readonly PacketThrottles _throttler = packetThrottles;
@@ -92,7 +93,7 @@ namespace NETServer.Network
             try
             {
                 // Send packet using existing SendDataAsync method
-                await SendDataAsync(new Packet(command: command, payload: payload));
+                await SendDataAsync(new Packet(UID, command: command, payload: payload));
                 return true;
             }
             catch (Exception ex)

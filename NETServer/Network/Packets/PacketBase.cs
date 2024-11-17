@@ -18,6 +18,8 @@ namespace NETServer.Network.Packets
         private static readonly PacketFlags[] CachedFlags =
             (PacketFlags[])Enum.GetValues(typeof(PacketFlags));
 
+        public Guid? ID { get; protected set; }
+
         // Kích thước cố định của header.
         private const int HeaderSize = PacketMetadata.HEADERSIZE;
 

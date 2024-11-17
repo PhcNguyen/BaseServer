@@ -12,8 +12,10 @@ namespace NETServer.Network.Packets
         /// <summary>
         /// Constructor để tạo Packet với Command và Payload.
         /// </summary>
-        public Packet(byte? version = null, byte? flags = null, short? command = null, byte[]? payload = null)
+        public Packet(Guid? id, byte? version = null, byte? flags = null, short? command = null, byte[]? payload = null)
         {
+            ID = id;
+
             Version = version ?? Setting.VERSION;
 
             Flags = flags.HasValue && Enum.IsDefined(typeof(PacketFlags), flags.Value)

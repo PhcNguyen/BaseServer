@@ -14,8 +14,8 @@
         // Độ trễ (tính bằng millisecond) giữa các yêu cầu từ client đến server
         public readonly static int RequestDelayMilliseconds = 50;
 
-        // Thời gian phiên làm việc của client trước khi hết hạn (5 phút)
-        public readonly static TimeSpan ClientSessionTimeout = TimeSpan.FromSeconds(30);
+        // Thời gian phiên làm việc của client trước khi hết hạn (10s)
+        public readonly static TimeSpan ClientSessionTimeout = TimeSpan.FromSeconds(10);
 
         // Giới hạn yêu cầu tối đa trong một cửa sổ thời gian (ví dụ: 10 yêu cầu trong 1 giây)
         public readonly static (int MaxRequests, TimeSpan TimeWindow) RateLimit = (10, TimeSpan.FromSeconds(1));
@@ -30,7 +30,7 @@
         public readonly static int BytesPerSecond = 1048576; 
 
         // Chế độ không chặn
-        public readonly static bool Blocking = false;
+        public readonly static bool Blocking = true;
 
         // Chế độ Keep-Alive cho kết nối
         public readonly static bool KeepAlive = false;
@@ -48,7 +48,7 @@
         public readonly static int ReceiveBuffer = 8192;
 
         // Thiết lập thời gian chờ kết nối 
-        public readonly static int SendTimeout = 30000;
-        public readonly static int ReceiveTimeout = 30000;
+        public readonly static int SendTimeout = 10000;
+        public readonly static int ReceiveTimeout = 10000;
     }
 }
