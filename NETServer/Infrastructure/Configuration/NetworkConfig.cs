@@ -30,7 +30,7 @@
         public readonly static int BytesPerSecond = 1048576; 
 
         // Chế độ không chặn
-        public readonly static bool Blocking = true;
+        public readonly static bool Blocking = false;
 
         // Chế độ Keep-Alive cho kết nối
         public readonly static bool KeepAlive = false;
@@ -48,7 +48,7 @@
         public readonly static int ReceiveBuffer = 8192;
 
         // Thiết lập thời gian chờ kết nối 
-        public readonly static int SendTimeout = 10000;
-        public readonly static int ReceiveTimeout = 10000;
+        public readonly static int SendTimeout = 5000;
+        public readonly static int ReceiveTimeout = 5000;
     }
 }

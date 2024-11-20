@@ -14,10 +14,10 @@ namespace NETServer.Infrastructure.Configuration
         public readonly static int MaxConnectionsPerIpAddress = NetworkConfig.MaxConnectionsPerIpAddress;
         public readonly static int RequestDelayMilliseconds = NetworkConfig.RequestDelayMilliseconds;
         public readonly static int ConnectionLockoutDuration = NetworkConfig.ConnectionLockoutDuration;
-        public readonly static TimeSpan ClientSessionTimeout = NetworkConfig.ClientSessionTimeout;
+        public readonly static TimeSpan Timeout = NetworkConfig.ClientSessionTimeout;
         public readonly static (int MaxRequests, TimeSpan TimeWindow) RateLimit = NetworkConfig.RateLimit;
 
-        // Các cài đặt mạng bổ sung
+        // Các cài đặt mạng bổ sung Socket
         public readonly static bool Blocking = NetworkConfig.Blocking;
         public readonly static bool KeepAlive = NetworkConfig.KeepAlive;
         public readonly static bool ReuseAddress = NetworkConfig.ReuseAddress;
@@ -26,6 +26,10 @@ namespace NETServer.Infrastructure.Configuration
         public readonly static int ReceiveBuffer = NetworkConfig.ReceiveBuffer;
         public readonly static int SendTimeout = NetworkConfig.SendTimeout;
         public readonly static int ReceiveTimeout = NetworkConfig.ReceiveTimeout;
+
+        // Buffer Settings
+        public readonly static int TotalBuffers = BufferConfig.TotalBuffers;
+        public readonly static Dictionary<int, double> BufferAllocations = BufferConfig.BufferAllocations;
 
         // Security Settings
         public readonly static bool IsSslEnabled = SecurityConfig.IsSslEnabled;

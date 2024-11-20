@@ -1,87 +1,68 @@
-﻿using NETServer.Infrastructure.Interfaces;
+﻿using NETServer.Core.Network.Packet;
+using NETServer.Interfaces.Core.Network;
+
 using System.Reflection;
-using System.Threading.Tasks;
-using NETServer.Network.Packets;
 
 namespace NETServer.Application.Handlers
 {
     internal class CommandHandler
     {
-        private readonly Dictionary<Cmd, Func<IClientSession, byte[], CancellationToken, ValueTask>> _commandHandlers;
+        private static readonly Lazy<Dictionary<Cmd, MethodInfo>> CommandCache = new Lazy<Dictionary<Cmd, MethodInfo>>(() =>
+            LoadMethodsWithCommandAttribute("NETServer.Application.Handlers.Client")
+        );
 
-        public CommandHandler()
+        private static Dictionary<Cmd, MethodInfo> LoadMethodsWithCommandAttribute(string targetNamespace)
         {
-            // Khởi tạo dictionary để lưu trữ các handler theo command
-            _commandHandlers = [];
-            RegisterHandlers();
+            var assembly = Assembly.GetExecutingAssembly();
+
+            return assembly.GetTypes()
+                           .Where(t => t.Namespace == targetNamespace)
+                           .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
+                           .Where(m => m.GetCustomAttribute<CommandAttribute>() != null)
+                           .ToDictionary(
+                               m => m.GetCustomAttribute<CommandAttribute>()!.Command, // Key: Command từ Attribute
+                               m => m // Value: MethodInfo
+                           );
         }
 
-        // Đăng ký các phương thức handler có CommandAttribute
-        private void RegisterHandlers()
+        private static Dictionary<Cmd, MethodInfo> CommandCacheValue => CommandCache.Value;
+
+
+        public async ValueTask HandleCommand(ISession session, Packet packet, CancellationToken cancellationToken)
         {
-            // Tìm tất cả các method có CommandAttribute trong class
-            var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
+            Packet newPacket = new(session.Id);
+            newPacket.SetCommand(Cmd.ERROR);
 
-            foreach (var method in methods)
+            if (packet.Command == (short)Cmd.NONE)
             {
-                var commandAttribute = method.GetCustomAttribute<CommandAttribute>();
-                if (commandAttribute != null)
-                {
-                    // Tạo delegate cho handler từ method
-                    var handler = (Func<IClientSession, byte[], CancellationToken, ValueTask>)method
-                        .CreateDelegate(typeof(Func<IClientSession, byte[], CancellationToken, ValueTask>), this);
-
-                    // Đăng ký handler với command tương ứng
-                    _commandHandlers[commandAttribute.Command] = handler;
-                }
-            }
-        }
-
-        // Xử lý lệnh gửi từ client
-        public async ValueTask HandleCommand(IClientSession session, Packet packet, CancellationToken cancellationToken)
-        {
-            if (packet.Command == null)
-            {
-                // Gửi thông báo lỗi nếu không tìm thấy Command hợp lệ
-                await session.Transport.SendAsync((short)Cmd.ERROR, "Invalid command: Command is null or invalid.");
+                newPacket.SetPayload("Invalid command: Command is null or invalid.");
+                await session.Send(newPacket.ToByteArray());
                 return;
             }
 
-            if (!_commandHandlers.TryGetValue((Cmd)packet.Command, out var handler))
+            var command = (Cmd)packet.Command;
+
+            if (!CommandCacheValue.TryGetValue(command, out var method))
             {
-                // Gửi thông báo lỗi nếu không tìm thấy handler tương ứng
-                await session.Transport.SendAsync((short)Cmd.ERROR, $"Unknown command: {(Cmd)packet.Command}");
+                newPacket.SetPayload($"Unknown command: {command}");
+                await session.Send(newPacket.ToByteArray());
                 return;
             }
 
             try
             {
-                // Gọi handler tương ứng với lệnh
-                await handler(session, packet.Payload.ToArray(), cancellationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                await session.Transport.SendAsync((short)Cmd.ERROR, $"Command {(Cmd)packet.Command} was cancelled.");
+                // Delegate creation
+                var func = (Func<ISession, byte[], CancellationToken, ValueTask>)method
+                                .CreateDelegate(typeof(Func<ISession, byte[], CancellationToken, ValueTask>),
+                                method.IsStatic ? null : this);
+
+                await func(session, packet.Payload.Span.ToArray(), cancellationToken); // ToArray only when necessary
             }
             catch (Exception ex)
             {
-                await session.Transport.SendAsync((short)Cmd.ERROR, $"Error processing command {(Cmd)packet.Command}: {ex.Message}");
+                newPacket.SetPayload($"Error executing command: {command}. Exception: {ex.Message}");
+                await session.Send(newPacket.ToByteArray());
             }
-        }
-
-        // Handler cho PING
-        [Command(Cmd.PING)]
-        public static async ValueTask HandlePing(IClientSession session, byte[] payload)
-        {
-            await session.Transport.SendAsync((short)Cmd.PONG, "PONG");
-        }
-
-        // Handler cho GET_KEY
-        [Command(Cmd.GET_KEY)]
-        public static async ValueTask HandleGetKey(IClientSession session, byte[] payload)
-        {
-            string key = "123456"; // Lấy giá trị key
-            await session.Transport.SendAsync((short)Cmd.GET_KEY, key); // Gửi key cho client
         }
     }
 }
