@@ -3,7 +3,8 @@
     [System.AttributeUsage(System.AttributeTargets.Method)]
     internal class CommandAttribute(Cmd command) : System.Attribute
     {
-        public Cmd Command { get; } = command;  // Gán giá trị cho thuộc tính Command
+        // Gán giá trị cho thuộc tính Command
+        public Cmd Command { get; } = command;  
     }
 
     internal enum Cmd : short
@@ -16,11 +17,14 @@
 
         REGISTER,
         LOGIN,
+        LOGOUT,
         UPDATE_PASSWORD,
 
         SUCCESS = 100,
         ERROR = 101,
         INVALID_COMMAND = 102,
-        TIMEOUT = 103
+        TIMEOUT = 103,
+
+        CLOSE = 104, // Lệnh đóng kết nối
     }
 }

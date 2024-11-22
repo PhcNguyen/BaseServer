@@ -21,10 +21,7 @@
                     File.WriteAllText(filePath, content);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error writing to file: {ex.Message}");
-            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -38,9 +35,8 @@
             {
                 return File.ReadAllText(filePath);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Error reading from file: {ex.Message}");
                 return string.Empty;
             }
         }
@@ -55,15 +51,10 @@
         {
             try
             {
-                using (var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write))
-                {
-                    fileStream.Write(data, 0, data.Length);
-                }
+                using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
+                fileStream.Write(data, 0, data.Length);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error writing bytes to file: {ex.Message}");
-            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -77,10 +68,9 @@
             {
                 return File.ReadAllBytes(filePath);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Error reading bytes from file: {ex.Message}");
-                return Array.Empty<byte>();
+                return [];
             }
         }
 
@@ -103,10 +93,7 @@
                     await File.WriteAllTextAsync(filePath, content);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error writing to file: {ex.Message}");
-            }
+            catch (Exception ) { }
         }
 
         /// <summary>
@@ -120,9 +107,8 @@
             {
                 return await File.ReadAllTextAsync(filePath);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Error reading from file: {ex.Message}");
                 return string.Empty;
             }
         }
@@ -137,15 +123,10 @@
         {
             try
             {
-                using (var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write))
-                {
-                    await fileStream.WriteAsync(data, 0, data.Length);
-                }
+                using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
+                await fileStream.WriteAsync(data);
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error writing bytes to file: {ex.Message}");
-            }
+            catch (Exception) { }
         }
 
         /// <summary>
@@ -159,10 +140,9 @@
             {
                 return await File.ReadAllBytesAsync(filePath);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine($"Error reading bytes from file: {ex.Message}");
-                return Array.Empty<byte>();
+                return [];
             }
         }
 

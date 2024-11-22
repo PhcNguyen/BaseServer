@@ -1,18 +1,18 @@
 ﻿using NServer.Infrastructure.Configuration;
-using Npgsql;
+using NServer.Interfaces.Core.Database;
 
 namespace NServer.Core.Database
 {
-    internal class PostgreConnector : IAsyncDisposable
+    internal class NpgsqlConnection : IDatabaseConnection, IAsyncDisposable
     {
-        private NpgsqlConnection? _connection;
+        private Npgsql.NpgsqlConnection? _connection;
 
-        public static async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
+        public static async Task<Npgsql.NpgsqlConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(PostgreConfig.ConnectionString))
                 throw new InvalidOperationException("Chuỗi kết nối không hợp lệ.");
 
-            var connection = new NpgsqlConnection(PostgreConfig.ConnectionString);
+            var connection = new Npgsql.NpgsqlConnection(PostgreConfig.ConnectionString);
             await connection.OpenAsync(cancellationToken);
             return connection;
         }
@@ -31,7 +31,7 @@ namespace NServer.Core.Database
         }
 
         // Mở kết nối và lưu lại trong instance
-        public async Task<NpgsqlConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
+        public async Task<Npgsql.NpgsqlConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
         {
             if (_connection != null && _connection.State == System.Data.ConnectionState.Open)
                 return _connection;

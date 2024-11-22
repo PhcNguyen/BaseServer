@@ -1,25 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading;
+﻿using System.Net.Sockets;
 
-namespace TcpClientExample
+namespace NClient.Core.Network
 {
-    class TcpClientApp
+    class TcpClientApp(string serverIp, int serverPort)
     {
-        private readonly string _serverIp;
-        private readonly int _serverPort;
-        private TcpClient _tcpClient;
-        private NetworkStream _networkStream;
-        private BinaryReader _reader;
-        private BinaryWriter _writer;
-
-        public TcpClientApp(string serverIp, int serverPort)
-        {
-            _serverIp = serverIp;
-            _serverPort = serverPort;
-        }
+        private readonly string _serverIp = serverIp;
+        private readonly int _serverPort = serverPort;
+        private TcpClient? _tcpClient;
+        private NetworkStream? _networkStream;
+        private BinaryReader? _reader;
+        private BinaryWriter? _writer;
 
         // Kết nối đến Server
         public void Connect()
@@ -43,12 +33,15 @@ namespace TcpClientExample
         // Gửi dữ liệu tới Server
         public void SendData(byte[] data)
         {
-            if (_tcpClient.Connected)
+            if (_tcpClient != null && _tcpClient.Connected)
             {
                 try
                 {
-                    _writer.Write(data);
-                    Console.WriteLine($"Sent to server: {BitConverter.ToString(data)}");
+                    if (_writer != null)
+                    {
+                        _writer.Write(data);
+                        Console.WriteLine($"Sent to server: {BitConverter.ToString(data)}");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -64,8 +57,10 @@ namespace TcpClientExample
         // Đọc dữ liệu từ Server
         private void StartReading()
         {
-            Thread readThread = new Thread(new ThreadStart(ReadData));
-            readThread.IsBackground = true;
+            Thread readThread = new Thread(new ThreadStart(ReadData))
+            {
+                IsBackground = true
+            };
             readThread.Start();
         }
 
@@ -74,10 +69,9 @@ namespace TcpClientExample
         {
             try
             {
-                while (_tcpClient.Connected)
+                while (_tcpClient != null && _tcpClient.Connected && _reader != null)
                 {
-                    // Đọc dữ liệu từ stream dưới dạng byte
-                    byte[] buffer = new byte[1024]; // Kích thước buffer có thể thay đổi tùy theo yêu cầu
+                    byte[] buffer = new byte[8192]; 
                     int bytesRead = _reader.Read(buffer, 0, buffer.Length);
 
                     if (bytesRead > 0)

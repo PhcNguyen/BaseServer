@@ -1,8 +1,6 @@
-﻿using System;
-using System.IO;
-using NServer.Core.Network.Buffers;
+﻿using NServer.Core.Network.Buffers;
 
-namespace NServer.Application.Analysis
+namespace NServer.Infrastructure.Analyzer
 {
     internal class BufferUsageAnalyzer(MultiSizeBuffer bufferManager)
     {

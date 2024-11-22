@@ -2,7 +2,7 @@
 {
     internal class BufferConfig
     {
-        public static readonly int TotalBuffers = 100;
+        public static readonly int TotalBuffers = 200; // TU DONG TANG KHI THIEU
         public readonly static Dictionary<int, double> BufferAllocations = new()
         {
             { 256, 0.12 },

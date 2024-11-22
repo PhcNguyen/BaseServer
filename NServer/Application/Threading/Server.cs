@@ -2,7 +2,7 @@
 using System.Net;
 using NServer.Application.Main;
 using NServer.Infrastructure.Configuration;
-using NServer.Core.Logging;
+using NServer.Infrastructure.Logging;
 
 namespace NServer.Application.Threading
 {
@@ -12,7 +12,7 @@ namespace NServer.Application.Threading
         private bool _isInMaintenanceMode = false;
         private readonly int _maxConnections;
         private readonly Socket _listenerSocket;
-        private readonly SessionController _sessionController;
+        private readonly Controller _sessionController;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public Server()
@@ -20,7 +20,7 @@ namespace NServer.Application.Threading
             _isRunning = 0;
             _cancellationTokenSource = new CancellationTokenSource();
             _maxConnections = Setting.MaxConnections;
-            _sessionController = new SessionController(_cancellationTokenSource.Token);
+            _sessionController = new Controller(_cancellationTokenSource.Token);
             _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             ConfigureSocket(_listenerSocket);
@@ -84,10 +84,10 @@ namespace NServer.Application.Threading
                     continue;
                 }
 
-                if (_sessionController.ActiveSessions.Count >= _maxConnections)
+                if (_sessionController.ActiveSessions() >= _maxConnections)
                 {
                     NLog.Warning("Maximum connections reached.");
-                    await Task.Delay(1000, token); // Delay để giảm tải vòng lặp
+                    await Task.Delay(10000, token); // Delay để giảm tải vòng lặp
                     continue;
                 }
 

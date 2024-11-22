@@ -1,9 +1,9 @@
-﻿using NServer.Core.Logging;
-using NServer.Infrastructure.Configuration;
+﻿using NServer.Infrastructure.Configuration;
+using NServer.Infrastructure.Logging.Enums;
 using System.Collections.Concurrent;
 using System.Text;
 
-namespace NServer.Core.Logging.Helpers
+namespace NServer.Infrastructure.Logging.Helpers
 {
     internal static class FileLogging
     {
@@ -71,7 +71,7 @@ namespace NServer.Core.Logging.Helpers
             _logTask = Task.Run(ProcessLogQueue);
 
             _flushTimer = new Timer(
-                async _ => await FlushAsync(LogLevel.Info),  // Ghi log bất đồng bộ theo LogLevel
+                async _ => await FlushAsync(LogLevel.INFO),  // Ghi log bất đồng bộ theo LogLevel
                 null,
                 LoggingConfigs.InitialFlushDelay,
                 LoggingConfigs.FlushInterval
@@ -93,7 +93,7 @@ namespace NServer.Core.Logging.Helpers
             _logTask?.GetAwaiter().GetResult();
 
             // Ghi log còn lại một cách đồng bộ, với LogLevel mặc định
-            FlushAsync(LogLevel.Info).GetAwaiter().GetResult();
+            FlushAsync(LogLevel.INFO).GetAwaiter().GetResult();
         }
     }
 }

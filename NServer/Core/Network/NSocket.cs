@@ -1,9 +1,10 @@
-﻿using NServer.Core.Network.Buffers;
+﻿using NServer.Core.Packet;
+using NServer.Core.Packet.Utils;
+using NServer.Core.Network.Buffers;
+using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 
 using System.Net.Sockets;
-using NServer.Core.Packet;
-using NServer.Core.Packet.Utils;
 
 namespace NServer.Core.Network
 {
@@ -16,6 +17,7 @@ namespace NServer.Core.Network
         private readonly Socket _socket;
         private readonly Guid _id;
         private bool _disposed = false;
+        private bool _hasError = false;
 
         private readonly SocketAsyncEventArgs _receiveEventArgs = new();
         private readonly SocketAsyncEventArgs _sendEventArgs = new();
@@ -29,6 +31,18 @@ namespace NServer.Core.Network
             _sendEventArgs.Completed += OnSendCompleted;
         }
 
+        private void ProcessPacket(Guid sessionId, byte[] data)
+        {
+            if (data.Length < 8) return;
+
+            Packets packet = PacketExtensions.FromByteArray(data);
+            if (packet != null)
+            {
+                if (!packet.IsValid()) return;
+                _packetContainer.AddPacket(sessionId, packet);
+            }
+        }
+
         public void StartReceiving() => ReceiveData();
 
         public void SendData(byte[] data) => SendDataInternal(data);
@@ -37,7 +51,7 @@ namespace NServer.Core.Network
 
         private void ReceiveData()
         {
-            if (_socket == null) return;
+            if (_socket == null || _hasError) return;
 
             byte[] buffer = GetReceiveBuffer();
             _receiveEventArgs.SetBuffer(buffer, 0, buffer.Length);
@@ -70,12 +84,13 @@ namespace NServer.Core.Network
 
             ProcessPacket(_id, data);
 
-            ReceiveData(); // Tiếp tục nhận dữ liệu
+            // Tiếp tục nhận dữ liệu
+            ReceiveData();
         }
 
         private void SendDataInternal(byte[] data)
         {
-            if (_socket == null) return;
+            if (_socket == null || _hasError) return;
 
             byte[] buffer = GetSendBuffer(data.Length);
             Array.Copy(data, buffer, data.Length);
@@ -93,19 +108,6 @@ namespace NServer.Core.Network
             {
                 HandleSocketError(e.SocketError);
                 return;
-            }
-
-            Console.WriteLine("Data sent successfully.");
-        }
-
-        private void ProcessPacket(Guid sessionId, byte[] data)
-        {
-            if (data.Length < 8) return;
-
-            Packets packet = PacketExtensions.FromByteArray(data);
-            if (packet != null)
-            {
-                _packetContainer.AddPacket(sessionId, packet);
             }
         }
 
@@ -156,69 +158,56 @@ namespace NServer.Core.Network
 
         private void HandleSocketError(SocketError socketError)
         {
+            _hasError = true;
+
             switch (socketError)
             {
                 case SocketError.OperationAborted:
                 case SocketError.Interrupted:
-                    // Lỗi này có thể không phải là vấn đề nghiêm trọng và có thể tiếp tục.
-                    Console.WriteLine("Operation aborted or interrupted. Continuing...");
+                    NLog.Warning($"{_id} - Operation aborted or interrupted. Continuing...");
                     break;
 
                 case SocketError.MessageSize:
-                    // Lỗi kích thước gói tin quá lớn hoặc không hợp lệ. Bạn có thể thử lại.
-                    Console.WriteLine("Message size error. Trying again...");
-                    ReceiveData(); // Tiếp tục nhận dữ liệu
+                    NLog.Warning($"{_id} - Message size error. Trying again...");
+                    ReceiveData();
                     break;
 
                 case SocketError.TimedOut:
-                    // Lỗi timeout, có thể thử lại hoặc tiếp tục nhận.
-                    Console.WriteLine("Socket timeout. Attempting to reconnect or continue...");
-                    ReceiveData(); // Tiếp tục nhận dữ liệu nếu thời gian chờ hết hạn
+                    NLog.Warning($"{_id} - Socket timeout. Attempting to reconnect or continue...");
+                    _socket?.Close();
+                    break;
+
+                case SocketError.AddressNotAvailable:
+                    NLog.Warning($"{_id} - Address not available. Closing connection.");
+                    _socket?.Close();
+                    break;
+
+                case SocketError.Shutdown:
+                    NLog.Error($"{_id} - Socket has been shutdown. Closing connection.");
+                    _socket?.Close();
+                    break;
+
+                case SocketError.InvalidArgument:
+                    NLog.Error($"{_id} - Invalid argument passed to socket. Closing connection.");
+                    _socket?.Close();
                     break;
 
                 case SocketError.ConnectionReset:
                 case SocketError.NotConnected:
                 case SocketError.Disconnecting:
-                    // Lỗi nghiêm trọng liên quan đến kết nối, đóng socket.
-                    Console.WriteLine("Connection reset or disconnected. Closing socket.");
+                    NLog.Error($"{_id} - Connection reset or disconnected. Closing socket.");
                     _socket?.Close();
                     break;
 
                 case SocketError.HostUnreachable:
                 case SocketError.NetworkDown:
                 case SocketError.NetworkUnreachable:
-                    // Các lỗi liên quan đến mạng không thể truy cập hoặc không có mạng
-                    Console.WriteLine("Network unreachable or down. Closing connection.");
-                    _socket?.Close();
-                    break;
-
-                case SocketError.AddressNotAvailable:
-                    // Địa chỉ không khả dụng, đóng kết nối
-                    Console.WriteLine("Address not available. Closing connection.");
-                    _socket?.Close();
-                    break;
-
-                case SocketError.ConnectionRefused:
-                    // Máy chủ từ chối kết nối, có thể thử lại hoặc thông báo cho người dùng
-                    Console.WriteLine("Connection refused by server. Closing connection.");
-                    _socket?.Close();
-                    break;
-
-                case SocketError.Shutdown:
-                    // Kết nối đã đóng, không thể tiếp tục.
-                    Console.WriteLine("Socket has been shutdown. Closing connection.");
-                    _socket?.Close();
-                    break;
-
-                case SocketError.InvalidArgument:
-                    // Tham số không hợp lệ, cần điều tra thêm
-                    Console.WriteLine("Invalid argument passed to socket. Closing connection.");
+                    NLog.Error($"{_id} - Network unreachable or down. Closing connection.");
                     _socket?.Close();
                     break;
 
                 default:
-                    // Các lỗi khác, có thể log chi tiết và đóng socket
-                    Console.WriteLine("Unknown socket error. Closing connection.");
+                    NLog.Error($"{_id} - Unknown socket error. Closing connection.");
                     _socket?.Close();
                     break;
             }

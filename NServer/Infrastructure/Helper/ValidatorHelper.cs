@@ -1,10 +1,9 @@
 ﻿using System.Net;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 
 namespace NServer.Infrastructure.Helper
 {
-    internal class Validator
+    internal class ValidatorHelper
     {
         /// <summary>
         /// Kiểm tra định dạng email có hợp lệ không.

@@ -1,4 +1,4 @@
-﻿namespace NServer.Application.Handler.Model
+﻿namespace NServer.Application.Model
 {
     /// <summary>
     /// Đại diện cho tài khoản người dùng trong hệ thống.

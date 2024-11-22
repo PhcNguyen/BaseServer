@@ -6,7 +6,7 @@
         public readonly static string Username = "ROOT";
         public readonly static string Password = "APNxH8x5a";
         public readonly static string DatabaseName = "Server";
-        public readonly static string ConnectionString = $"Host={Host};Username=postgres;Password={Password};Database={DatabaseName};Pooling=true;Max Pool Size=100;Min Pool Size=10;CommandTimeout=10;";
+        public readonly static string ConnectionString = $"Host={Host};Username=postgres;Password={Password};Database={DatabaseName};Pooling=true;Max Pool Size=100;Min Pool Size=5;CommandTimeout=10;";
 
         public readonly static string AccountTableSchema = @"
         CREATE TABLE IF NOT EXISTS account (

@@ -3,7 +3,7 @@ using NServer.Infrastructure.Configuration;
 
 namespace NServer.Infrastructure.Helper
 {
-    internal class Openssl
+    internal class OpenSslHelper
     {
         private static readonly string OpenSSLPath = "openssl";
 
@@ -63,7 +63,7 @@ namespace NServer.Infrastructure.Helper
         // Hàm chạy lệnh OpenSSL và trả về kết quả
         private static string RunOpenSslCommand(string arguments)
         {
-            ProcessStartInfo pro = new ProcessStartInfo
+            ProcessStartInfo pro = new()
             {
                 FileName = OpenSSLPath,
                 Arguments = arguments,

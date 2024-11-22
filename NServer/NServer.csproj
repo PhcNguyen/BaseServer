@@ -32,12 +32,6 @@
 	</PropertyGroup>
 	
   	<ItemGroup>
-  	  <Compile Remove="Sources\**" />
-  	  <EmbeddedResource Remove="Sources\**" />
-  	  <None Remove="Sources\**" />
-  	</ItemGroup>
-	
-  	<ItemGroup>
   	  <PackageReference Include="Npgsql" Version="8.0.5" />
   	</ItemGroup>
 </Project>

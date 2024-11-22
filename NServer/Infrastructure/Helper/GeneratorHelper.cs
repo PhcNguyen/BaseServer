@@ -2,7 +2,7 @@
 
 namespace NServer.Infrastructure.Helper
 {
-    internal class Generator
+    internal class GeneratorHelper
     {
         public static byte[] K128()
         {

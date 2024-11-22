@@ -1,9 +1,10 @@
-﻿using NServer.Infrastructure.Configuration;
+﻿using NServer.Interfaces.Core.Network;
+using NServer.Infrastructure.Helper;
+using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Configuration;
+
 using System.Net.Sockets;
 using System.Diagnostics;
-using NServer.Infrastructure.Helper;
-using NServer.Interfaces.Core.Network;
-using NServer.Core.Logging;
 
 namespace NServer.Core.Network
 {
@@ -56,7 +57,7 @@ namespace NServer.Core.Network
             _socket = socket;
             _socketAsync = new NSocket(socket, _id);
 
-            Key = Generator.K256();
+            Key = GeneratorHelper.K256();
             Ip = IPAddressHelper.GetClientIP(_socket);
         }
 
@@ -141,7 +142,7 @@ namespace NServer.Core.Network
                     _socketAsync.SendData(byteArray);
                     break;
                 case string str:
-                    _socketAsync.SendData(ByteConverter.ToBytes(str));
+                    _socketAsync.SendData(ConverterHelper.ToBytes(str));
                     break;
                 default:
                     throw new ArgumentException("Unsupported data type.");

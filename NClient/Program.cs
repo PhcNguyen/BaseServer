@@ -1,6 +1,5 @@
 ﻿using NClient.Core.Network;
 using System.Text;
-using TcpClientExample;
 
 string serverIp = "192.168.1.2"; // IP của server
 int serverPort = 65000;        // Port của server

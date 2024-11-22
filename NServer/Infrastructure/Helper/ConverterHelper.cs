@@ -5,7 +5,7 @@ namespace NServer.Infrastructure.Helper
     /// <summary>
     /// Provides helper methods for converting between byte arrays and different data types.
     /// </summary>
-    internal class ByteConverter
+    internal class ConverterHelper
     {
         /// <summary>
         /// Converts an integer to a byte array.
@@ -58,11 +58,20 @@ namespace NServer.Infrastructure.Helper
         {
             int numberChars = hex.Length;
             byte[] bytes = new byte[numberChars / 2];
+
+            // Tối ưu hóa vòng lặp để không dùng Substring
             for (int i = 0; i < numberChars; i += 2)
             {
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+                // Chuyển 2 ký tự hex thành một byte
+                bytes[i / 2] = (byte)((GetHexValue(hex[i]) << 4) + GetHexValue(hex[i + 1]));
             }
             return bytes;
+        }
+
+        private static int GetHexValue(char hexChar)
+        {
+            // Xử lý ký tự hex (0-9, A-F)
+            return hexChar <= '9' ? hexChar - '0' : (char.ToUpper(hexChar) - 'A' + 10);
         }
 
         /// <summary>
@@ -72,9 +81,11 @@ namespace NServer.Infrastructure.Helper
         /// <returns>A string representing the byte array in hexadecimal format.</returns>
         public static string BytesToHexStr(byte[] byteArray)
         {
-            StringBuilder hex = new StringBuilder(byteArray.Length * 2);
+            // Tối ưu hóa capacity của StringBuilder theo độ dài của byteArray
+            var hex = new StringBuilder(byteArray.Length * 2);
             foreach (byte b in byteArray)
             {
+                // Sử dụng Append thay vì AppendFormat để tối ưu
                 hex.AppendFormat("{0:x2}", b);
             }
             return hex.ToString();

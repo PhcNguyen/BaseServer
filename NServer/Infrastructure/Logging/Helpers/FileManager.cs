@@ -1,18 +1,18 @@
-﻿using NServer.Core.Logging;
-using NServer.Infrastructure.Configuration;
+﻿using NServer.Infrastructure.Configuration;
+using NServer.Infrastructure.Logging.Enums;
 
-namespace NServer.Core.Logging.Helpers
+namespace NServer.Infrastructure.Logging.Helpers
 {
     internal class FileManager
     {
         public static string CurrentLogDirectory = Path.Combine(LoggingConfigs.LogFolder, DateTime.Now.ToString("yyMMdd"));
 
-        internal static readonly Dictionary<LogLevel, string> LogLevelFileMappings = new Dictionary<LogLevel, string>
+        internal static readonly Dictionary<LogLevel, string> LogLevelFileMappings = new()
         {
-            { LogLevel.Info, Path.Combine(CurrentLogDirectory, "info.log") },
-            { LogLevel.Error, Path.Combine(CurrentLogDirectory, "error.log") },
-            { LogLevel.Warning, Path.Combine(CurrentLogDirectory, "warning.log") },
-            { LogLevel.Critical, Path.Combine(CurrentLogDirectory, "critical.log") },
+            { LogLevel.INFO, Path.Combine(CurrentLogDirectory, "info.log") },
+            { LogLevel.ERROR, Path.Combine(CurrentLogDirectory, "error.log") },
+            { LogLevel.WARNING, Path.Combine(CurrentLogDirectory, "warning.log") },
+            { LogLevel.CRITICAL, Path.Combine(CurrentLogDirectory, "critical.log") },
         };
 
         public static string DefaultLogFilePath => Path.Combine(CurrentLogDirectory, "default.log");
@@ -44,8 +44,8 @@ namespace NServer.Core.Logging.Helpers
 
         internal static void WriteLogToFile(string? message, LogLevel level, Exception? exception = null)
         {
-            message = BuildMessageLog.BuildLogMessage(message, level, exception);
-            FileLogging.QueueLog(message, level);
+            NLogEntry logging = new(level, message, exception);
+            FileLogging.QueueLog(logging.ToStrings(), level);
 
             if (LoggingConfigs.ConsoleLogging)
             {
