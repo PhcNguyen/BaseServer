@@ -1,6 +1,10 @@
-﻿using NServer.Core.Packet;
+﻿using System;
+using System.Threading.Tasks;
+
+using NServer.Core.Packet;
 using NServer.Core.Database;
 using NServer.Core.Security;
+using NServer.Core.Database.Postgre;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Interfaces.Core.Network;
@@ -9,6 +13,8 @@ namespace NServer.Application.Handler.Client
 {
     internal class Authentication
     {
+        private static readonly SqlExecutor _sqlExecutor = new(new NpgsqlFactory());
+
         [Command(Cmd.REGISTER)]
         public static async Task Register(ISession session, byte[] data)
         {
@@ -46,8 +52,8 @@ namespace NServer.Application.Handler.Client
                 return;
             }
 
-            int? accountCount = await SqlExecutor.ExecuteScalarAsync<int?>(SqlCommand.SELECT_ACCOUNT_COUNT, email);
-            if (accountCount.GetValueOrDefault(0) > 0)
+            int accountCount = await _sqlExecutor.ExecuteScalarAsync<int>(SqlCommand.SELECT_ACCOUNT_COUNT, email);
+            if (accountCount > 0)
             {
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("This email was used.");
@@ -58,7 +64,7 @@ namespace NServer.Application.Handler.Client
 
             try
             {
-                if (await SqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, PBKDF2.HashPassword(password)))
+                if (await _sqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, PBKDF2.HashPassword(password)))
                 {
                     packet.SetCommand((short)Cmd.SUCCESS);
                     packet.SetPayload("Registration successful.");
@@ -106,7 +112,7 @@ namespace NServer.Application.Handler.Client
             try
             {
                 // Lấy mật khẩu đã hash từ cơ sở dữ liệu
-                string? hashedPassword = await SqlExecutor.ExecuteScalarAsync<string?>(
+                string hashedPassword = await _sqlExecutor.ExecuteScalarAsync<string>(
                     SqlCommand.SELECT_ACCOUNT_PASSWORD,
                     email
                 );
@@ -175,7 +181,7 @@ namespace NServer.Application.Handler.Client
             try
             {
                 // Lấy mật khẩu hiện tại từ cơ sở dữ liệu
-                string? storedPasswordHash = await SqlExecutor.ExecuteScalarAsync<string?>(
+                string? storedPasswordHash = await _sqlExecutor.ExecuteScalarAsync<string?>(
                     SqlCommand.SELECT_ACCOUNT_PASSWORD, email
                 );
 
@@ -200,7 +206,7 @@ namespace NServer.Application.Handler.Client
                 string newPasswordHash = PBKDF2.HashPassword(newPassword);
 
                 // Cập nhật mật khẩu mới vào cơ sở dữ liệu
-                bool updateSuccess = await SqlExecutor.ExecuteAsync(
+                bool updateSuccess = await _sqlExecutor.ExecuteAsync(
                     SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, newPasswordHash
                 );
 

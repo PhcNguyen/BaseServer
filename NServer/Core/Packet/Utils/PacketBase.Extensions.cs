@@ -1,6 +1,8 @@
-﻿using NServer.Core.Packet.Enums;
-using NServer.Core.Packet.Utils;
+﻿using System;
 using System.Text;
+
+using NServer.Core.Packet.Enums;
+using NServer.Core.Packet.Utils;
 
 namespace NServer.Core.Packet
 {

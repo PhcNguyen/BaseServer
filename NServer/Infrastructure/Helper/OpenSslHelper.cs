@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+
+using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Configuration;
 
 namespace NServer.Infrastructure.Helper
@@ -29,7 +32,8 @@ namespace NServer.Infrastructure.Helper
                 {
                     RunOpenSslCommand(string.Format(command, args));
                 }
-                Console.WriteLine("SSL Certificate generated successfully.");
+
+                NLog.Info("SSL Certificate generated successfully.");
             }
             catch (Exception ex)
             {
@@ -50,7 +54,7 @@ namespace NServer.Infrastructure.Helper
                 }
                 else
                 {
-                    Console.WriteLine("OpenSSL đã được cài đặt: " + output);
+                    NLog.Info("OpenSSL đã được cài đặt: " + output);
                 }
             }
             catch (Exception ex)

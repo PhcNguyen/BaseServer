@@ -1,23 +1,11 @@
-﻿using System.Net.Sockets;
-using System.Net;
+﻿using System.Net;
+using System.Linq;
+using System.Net.Sockets;
 
 namespace NServer.Infrastructure.Helper
 {
     internal class IPAddressHelper
     {
-        public static async Task<string> GetPublicIPAsync()
-        {
-            using HttpClient client = new();
-            try
-            {
-                return await client.GetStringAsync("https://api.ipify.org");
-            }
-            catch
-            {
-                return "N/A";
-            }
-        }
-
         public static string GetPublicIPFromDns()
         {
             try

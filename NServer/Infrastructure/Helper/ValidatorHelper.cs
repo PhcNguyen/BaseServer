@@ -1,5 +1,6 @@
-﻿using System.Net;
-using System.Runtime.CompilerServices;
+﻿using System;
+using System.Net;
+using System.Linq;
 
 namespace NServer.Infrastructure.Helper
 {
@@ -10,84 +11,94 @@ namespace NServer.Infrastructure.Helper
         /// </summary>
         /// <param name="email">Email cần kiểm tra.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEmailValid(string email)
         {
             if (string.IsNullOrEmpty(email))
                 return false;
 
-            int atIndex = email.IndexOf('@');
-            if (atIndex <= 0 || atIndex == email.Length - 1)
+            var emailSpan = email.AsSpan();
+            int atIndex = emailSpan.IndexOf('@');
+            if (atIndex <= 0 || atIndex == emailSpan.Length - 1)
                 return false;
 
-            string localPart = email[..atIndex];
-            string domainPart = email[(atIndex + 1)..];
+            var localPart = emailSpan[..atIndex];
+            var domainPart = emailSpan[(atIndex + 1)..];
 
             return IsValidLocalPart(localPart) && IsValidDomainPart(domainPart);
         }
+
 
         /// <summary>
         /// Kiểm tra mật khẩu có hợp lệ hay không.
         /// </summary>
         /// <param name="password">Mật khẩu cần kiểm tra.</param>
         /// <returns>True nếu mật khẩu hợp lệ, ngược lại là False.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPasswordValid(string password)
         {
             if (string.IsNullOrEmpty(password) || password.Length < 8)
                 return false;
 
+            bool hasLowerCase = false, hasUpperCase = false, hasDigit = false, hasSpecialChar = false;
             char[] specialChars = "!@#$%^&*(),.?\"{}|<>".ToCharArray();
 
-            // Kiểm tra các tiêu chí
-            bool hasLowerCase = password.Any(char.IsLower);                    // Có chữ thường
-            bool hasUpperCase = password.Any(char.IsUpper);                    // Có chữ hoa
-            bool hasDigit = password.Any(char.IsDigit);                        // Có chữ số
-            bool hasSpecialChar = password.Any(c => specialChars.Contains(c)); // Có ký tự đặc biệt
+            foreach (var c in password)
+            {
+                switch (c)
+                {
+                    case var _ when char.IsLower(c): hasLowerCase = true; break;
+                    case var _ when char.IsUpper(c): hasUpperCase = true; break;
+                    case var _ when char.IsDigit(c): hasDigit = true; break;
+                    case var _ when specialChars.Contains(c): hasSpecialChar = true; break;
+                }
 
-            return hasLowerCase && hasUpperCase && hasDigit && hasSpecialChar;
+                if (hasLowerCase && hasUpperCase && hasDigit && hasSpecialChar)
+                    return true;
+            }
+
+            return false;
         }
+
 
         /// <summary>
         /// Kiểm tra số điện thoại có hợp lệ không.
         /// </summary>
         /// <param name="phoneNumber">Số điện thoại cần kiểm tra.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPhoneNumberValid(string phoneNumber)
         {
             if (string.IsNullOrEmpty(phoneNumber))
                 return false;
 
-            phoneNumber = phoneNumber.Replace("-", "")
-                                     .Replace(" ", "")
-                                     .Replace("(", "")
-                                     .Replace(")", "")
-                                     .Replace("+", "");
+            int digitCount = 0;
 
-            return phoneNumber.All(char.IsDigit) && (phoneNumber.Length == 10 || phoneNumber.Length >= 11);
+            foreach (var c in phoneNumber)
+            {
+                if (char.IsDigit(c))
+                {
+                    digitCount++;
+                }
+                else if (!(c is '-' or ' ' or '(' or ')' or '+')) 
+                {
+                    return false;
+                }
+            }
+
+            return digitCount == 10 || digitCount >= 11;
         }
+
 
         /// <summary>
         /// Kiểm tra dữ liệu có hợp lệ không.
         /// </summary>
         /// <param name="data">Mảng byte cần kiểm tra.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsDataValid(byte[] data)
-        {
-            if (data == null || data.Length == 0 || data.Length > 1024 * 1024)
-                return false;
-
-            return true;
-        }
+        public static bool IsDataValid(byte[] data) => data is { Length: > 0 and <= 1024 * 1024 };
 
         /// <summary>
         /// Kiểm tra địa chỉ IP có hợp lệ không.
         /// </summary>
         /// <param name="ipAddress">Chuỗi địa chỉ IP cần kiểm tra.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsIpAddressValid(string ipAddress)
         {
             return !string.IsNullOrEmpty(ipAddress) && IPAddress.TryParse(ipAddress, out _);
@@ -98,7 +109,6 @@ namespace NServer.Infrastructure.Helper
         /// </summary>
         /// <param name="dateTime">Chuỗi ngày tháng cần kiểm tra.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDateTimeValid(string dateTime)
         {
             return !string.IsNullOrEmpty(dateTime) && DateTime.TryParse(dateTime, out _);
@@ -109,14 +119,18 @@ namespace NServer.Infrastructure.Helper
         /// </summary>
         /// <param name="localPart">Phần local-part của email.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsValidLocalPart(string localPart)
+        private static bool IsValidLocalPart(ReadOnlySpan<char> localPart)
         {
-            if (string.IsNullOrEmpty(localPart) || localPart.Length > 64 ||
-                localPart.StartsWith('.') || localPart.EndsWith('.') || localPart.Contains(".."))
+            if (localPart.IsEmpty || localPart.Length > 64 ||
+                localPart[0] == '.' || localPart[^1] == '.' || localPart.ToString().Contains(".."))
                 return false;
 
-            return localPart.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '-' || c == '_');
+            foreach (var c in localPart)
+            {
+                if (!(char.IsLetterOrDigit(c) || c == '.' || c == '-' || c == '_'))
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -124,20 +138,41 @@ namespace NServer.Infrastructure.Helper
         /// </summary>
         /// <param name="domainPart">Phần domain-part của email.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsValidDomainPart(string domainPart)
+        private static bool IsValidDomainPart(ReadOnlySpan<char> domainPart)
         {
-            if (string.IsNullOrEmpty(domainPart) || domainPart.Length > 255)
+            if (domainPart.IsEmpty || domainPart.Length > 255)
                 return false;
 
-            string[] labels = domainPart.Split('.');
-            if (labels.Length < 2)
-                return false;
+            int labelStart = 0;
 
-            return labels.All(label =>
-                !string.IsNullOrEmpty(label) && label.Length <= 63 &&
-                !label.StartsWith('-') && !label.EndsWith('-') &&
-                label.All(c => char.IsLetterOrDigit(c) || c == '-'));
+            for (int i = 0; i <= domainPart.Length; i++)
+            {
+                // Tìm dấu chấm hoặc kết thúc chuỗi
+                if (i == domainPart.Length || domainPart[i] == '.')
+                {
+                    var label = domainPart[labelStart..i];
+
+                    // Kiểm tra các điều kiện của nhãn
+                    if (label.IsEmpty || label.Length > 63 ||
+                        label[0] == '-' || label[^1] == '-' ||
+                        !IsLabelValid(label))
+                        return false;
+
+                    labelStart = i + 1; // Bắt đầu nhãn mới
+                }
+            }
+
+            return true;
+        }
+
+        private static bool IsLabelValid(ReadOnlySpan<char> label)
+        {
+            foreach (var c in label)
+            {
+                if (!(char.IsLetterOrDigit(c) || c == '-'))
+                    return false;
+            }
+            return true;
         }
     }
 }

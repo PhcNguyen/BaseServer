@@ -1,11 +1,15 @@
-﻿using NServer.Core.Network;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+
+using NServer.Core.Network;
+using NServer.Core.Packet.Utils;
 using NServer.Application.Handler;
 using NServer.Core.Network.Buffers;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
-
-using System.Net.Sockets;
-using NServer.Core.Packet.Utils;
 
 namespace NServer.Application.Main
 {
@@ -110,10 +114,8 @@ namespace NServer.Application.Main
 
                 try
                 {
-                    Console.WriteLine(1);
                     await _commandHandler.HandleCommand(session, packet, cancellationToken).ConfigureAwait(false);
                     session?.UpdateLastActivityTime();
-                    Console.WriteLine(2);
                 }
                 catch (Exception ex)
                 {

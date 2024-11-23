@@ -1,4 +1,7 @@
-﻿namespace NServer.Core.Database
+﻿using System;
+using System.Collections.Generic;
+
+namespace NServer.Core.Database
 {
     internal class SqlCommandMapper
     {

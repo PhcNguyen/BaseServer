@@ -1,9 +1,11 @@
-﻿using NServer.Infrastructure.Helper;
-using NServer.Interfaces.Core.Security;
-using NServer.Infrastructure.Configuration;
-
+﻿using System;
+using System.IO;
 using System.Text;
 using System.Security.Cryptography;
+
+using NServer.Infrastructure.Helper;
+using NServer.Interfaces.Core.Security;
+using NServer.Infrastructure.Configuration;
 
 namespace NServer.Core.Security
 {

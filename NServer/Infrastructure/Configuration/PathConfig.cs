@@ -1,4 +1,7 @@
-﻿namespace NServer.Infrastructure.Configuration
+﻿using System;
+using System.IO;
+
+namespace NServer.Infrastructure.Configuration
 {
     internal class PathConfig
     {

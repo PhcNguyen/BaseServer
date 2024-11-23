@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 using NServer.Interfaces.Core.Network;
 
 namespace NServer.Core.Network.Firewall
@@ -17,13 +17,16 @@ namespace NServer.Core.Network.Firewall
         /// </summary>
         /// <param name="ipAddress">Địa chỉ IP cần kiểm tra.</param>
         /// <returns>True nếu kết nối được phép, False nếu không.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsConnectionAllowed(string ipAddress)
         {
             if (string.IsNullOrEmpty(ipAddress)) return false;
 
             // Cập nhật số lượng kết nối của IP trong dictionary
-            int newConnectionCount = _ipConnectionCounts.AddOrUpdate(ipAddress, 1, (key, oldValue) => oldValue + 1);
+            int newConnectionCount = _ipConnectionCounts.AddOrUpdate(
+                ipAddress,
+                1,  // Initialize to 1 if the IP is not found
+                (key, oldValue) => oldValue + 1  // Increment existing value
+            );
 
             // Kiểm tra nếu số lượng kết nối vượt quá giới hạn
             return newConnectionCount <= _maxConnectionsPerIp;
@@ -33,28 +36,21 @@ namespace NServer.Core.Network.Firewall
         /// Phương thức gọi khi kết nối bị đóng từ một địa chỉ IP.
         /// </summary>
         /// <param name="ipAddress">Địa chỉ IP cần cập nhật sau khi kết nối đóng.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ConnectionClosed(string ipAddress)
         {
             if (string.IsNullOrEmpty(ipAddress)) return false;
-
-            // Nếu IP đang có kết nối, giảm số lượng kết nối đi 1
-            if (_ipConnectionCounts.TryGetValue(ipAddress, out int currentCount) && currentCount > 0)
+            _ipConnectionCounts.AddOrUpdate(ipAddress, 0, (key, currentCount) =>
             {
                 int newCount = currentCount - 1;
-
                 if (newCount == 0)
                 {
-                    // Nếu số lượng kết nối bằng 0, xóa IP khỏi danh sách
-                    _ipConnectionCounts.TryRemove(ipAddress, out _);
+                    return 0;  // Remove the entry
                 }
-                else
-                {
-                    _ipConnectionCounts[ipAddress] = newCount;
-                }
-                return true;
-            }
-            return false;
+                return newCount;
+            });
+
+            // If the count reaches zero, the entry will be removed automatically
+            return true;
         }
 
         /// <summary>
@@ -62,7 +58,6 @@ namespace NServer.Core.Network.Firewall
         /// </summary>
         /// <param name="ipAddress">Địa chỉ IP cần lấy số lượng kết nối.</param>
         /// <returns>Số lượng kết nối hiện tại.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetCurrentConnectionCount(string ipAddress)
         {
             return _ipConnectionCounts.GetValueOrDefault(ipAddress, 0);

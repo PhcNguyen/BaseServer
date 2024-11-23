@@ -1,4 +1,8 @@
-﻿namespace NServer.Infrastructure.Helper
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+
+namespace NServer.Infrastructure.Helper
 {
     internal static class FileIOHelper
     {

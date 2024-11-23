@@ -1,6 +1,8 @@
-﻿using NServer.Infrastructure.Logging.Enums;
-using NServer.Infrastructure.Logging.Helpers;
+﻿using System;
+
 using NServer.Infrastructure.Services;
+using NServer.Infrastructure.Logging.Enums;
+using NServer.Infrastructure.Logging.Helpers;
 
 namespace NServer.Infrastructure.Logging
 {

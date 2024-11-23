@@ -1,4 +1,6 @@
-﻿namespace NServer.Interfaces.Core.Network
+﻿using System;
+
+namespace NServer.Interfaces.Core.Network
 {
     internal interface INSocket : IDisposable
     {

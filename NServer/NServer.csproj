@@ -1,37 +1,63 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+	<!-- Sử dụng SDK mặc định cho ứng dụng .NET -->
 	<PropertyGroup>
+		<!-- Đầu ra là file thực thi (EXE) -->
 		<OutputType>Exe</OutputType>
+		<!-- Nhắm mục tiêu framework .NET 8.0 -->
 		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
+		<!-- Bật using ngầm (giảm viết using thủ công) -->
+		<ImplicitUsings>disable</ImplicitUsings>
+		<!-- Bật tính năng Nullability (cảnh báo lỗi nullable) -->
 		<Nullable>enable</Nullable>
+		<!-- Tên không gian gốc (Root Namespace) -->
 		<RootNamespace>NServer</RootNamespace>
-    	<AssemblyName>NETServer</AssemblyName>
-    	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- Tên của Assembly -->
+		<AssemblyName>NETServer</AssemblyName>
+		<!-- Cho phép sử dụng code unsafe -->
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
-	
+
+	<!-- Cấu hình khi chạy ở chế độ Debug -->
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+		<!-- Nhắm đến mọi CPU -->
 		<PlatformTarget>AnyCPU</PlatformTarget>
+		<!-- Tạo debug symbols (file PDB đầy đủ) -->
 		<DebugSymbols>true</DebugSymbols>
+		<!-- Debug loại đầy đủ -->
 		<DebugType>full</DebugType>
+		<!-- Tắt tối ưu hóa để dễ debug -->
 		<Optimize>false</Optimize>
+		<!-- Đường dẫn file đầu ra cho chế độ Debug -->
 		<OutputPath>bin\Debug\</OutputPath>
+		<!-- Định nghĩa các constant cho chế độ Debug -->
 		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<!-- Báo cáo lỗi -->
 		<ErrorReport>prompt</ErrorReport>
-		<WarningLevel>4</WarningLevel>
-  	</PropertyGroup>
-	
-  	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-   		<PlatformTarget>AnyCPU</PlatformTarget>
-   		<DebugType>pdbonly</DebugType>
-   		<Optimize>true</Optimize>
-   		<OutputPath>bin\Release\</OutputPath>
-   		<DefineConstants>TRACE</DefineConstants>
-   		<ErrorReport>prompt</ErrorReport>
+		<!-- Mức cảnh báo (1-4: càng cao càng nghiêm ngặt) -->
 		<WarningLevel>4</WarningLevel>
 	</PropertyGroup>
-	
-  	<ItemGroup>
-  	  <PackageReference Include="Npgsql" Version="8.0.5" />
-  	</ItemGroup>
+
+	<!-- Cấu hình khi chạy ở chế độ Release -->
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+		<!-- Nhắm đến mọi CPU -->
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<!-- Tạo debug symbols nhưng tối ưu hóa hơn -->
+		<DebugType>pdbonly</DebugType>
+		<!-- Bật tối ưu hóa mã -->
+		<Optimize>true</Optimize>
+		<!-- Đường dẫn file đầu ra cho chế độ Release -->
+		<OutputPath>bin\Release\</OutputPath>
+		<!-- Định nghĩa constant cho chế độ Release -->
+		<DefineConstants>TRACE</DefineConstants>
+		<!-- Báo cáo lỗi -->
+		<ErrorReport>prompt</ErrorReport>
+		<!-- Mức cảnh báo nghiêm ngặt -->
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+
+	<!-- Thêm các package tham chiếu -->
+	<ItemGroup>
+		<!-- Npgsql: thư viện kết nối PostgreSQL -->
+		<PackageReference Include="Npgsql" Version="8.0.5" />
+	</ItemGroup>
 </Project>

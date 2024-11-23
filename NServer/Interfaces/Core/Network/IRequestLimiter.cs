@@ -1,4 +1,7 @@
-﻿namespace NServer.Interfaces.Core.Network
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace NServer.Interfaces.Core.Network
 {
     /// <summary>
     /// Interface xử lý giới hạn số lượng yêu cầu của mỗi địa chỉ IP trong một khoảng thời gian nhất định.

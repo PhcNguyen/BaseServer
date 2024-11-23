@@ -1,4 +1,6 @@
-﻿using NServer.Core.Packet.Enums;
+﻿using System;
+
+using NServer.Core.Packet.Enums;
 using NServer.Core.Packet.Utils;
 
 namespace NServer.Core.Packet

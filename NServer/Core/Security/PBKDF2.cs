@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using System;
 using System.Security.Cryptography;
 
 namespace NServer.Core.Security

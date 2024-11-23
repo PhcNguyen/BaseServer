@@ -1,4 +1,7 @@
-﻿using NServer.Core.Network.Buffers;
+﻿using System;
+using System.IO;
+
+using NServer.Core.Network.Buffers;
 
 namespace NServer.Infrastructure.Analyzer
 {

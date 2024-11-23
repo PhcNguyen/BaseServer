@@ -1,4 +1,6 @@
-﻿namespace NServer.Infrastructure.Configuration
+﻿using System;
+
+namespace NServer.Infrastructure.Configuration
 {
     internal static class NetworkConfig
     {

@@ -1,4 +1,6 @@
-﻿namespace NServer.Core.Packet.Enums
+﻿using System;
+
+namespace NServer.Core.Packet.Enums
 {
     [Flags]
     internal enum PacketFlags : byte

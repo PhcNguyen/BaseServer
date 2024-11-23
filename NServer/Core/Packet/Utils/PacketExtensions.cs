@@ -1,5 +1,7 @@
-﻿using NServer.Core.Packet.Enums;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
+
+using NServer.Core.Packet.Enums;
 
 namespace NServer.Core.Packet.Utils
 {

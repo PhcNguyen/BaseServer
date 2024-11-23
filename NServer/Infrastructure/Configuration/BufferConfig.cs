@@ -1,4 +1,6 @@
-﻿namespace NServer.Infrastructure.Configuration
+﻿using System.Collections.Generic;
+
+namespace NServer.Infrastructure.Configuration
 {
     internal class BufferConfig
     {

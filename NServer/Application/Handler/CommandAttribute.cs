@@ -1,7 +1,7 @@
 ﻿namespace NServer.Application.Handler
 {
-    [AttributeUsage(AttributeTargets.Method)]
-    internal class CommandAttribute(Cmd command) : Attribute
+    [System.AttributeUsage(System.AttributeTargets.Method)]
+    internal class CommandAttribute(Cmd command) : System.Attribute
     {
         // Gán giá trị cho thuộc tính Command
         public Cmd Command { get; } = command;  

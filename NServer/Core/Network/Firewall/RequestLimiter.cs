@@ -1,6 +1,11 @@
-﻿using NServer.Interfaces.Core.Network;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Runtime.CompilerServices;
+
+using NServer.Interfaces.Core.Network;
 
 namespace NServer.Core.Network.Firewall
 {
@@ -11,14 +16,13 @@ namespace NServer.Core.Network.Firewall
     {
         private readonly (int MaxRequests, TimeSpan TimeWindow) _requestLimit = requestLimit;
         private readonly int _lockoutDuration = lockoutDuration;
-        private readonly ConcurrentDictionary<string, (List<DateTime> Requests, DateTime? BlockedUntil)> _ipData = new();
+        private readonly ConcurrentDictionary<string, (Queue<DateTime> Requests, DateTime? BlockedUntil)> _ipData = new();
 
         /// <summary>
         /// Kiểm tra xem một địa chỉ IP có được phép gửi yêu cầu hay không, dựa trên số lượng yêu cầu đã thực hiện.
         /// </summary>
         /// <param name="ipAddress">Địa chỉ IP cần kiểm tra.</param>
         /// <returns>True nếu yêu cầu được phép, False nếu bị giới hạn hoặc bị khóa.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsAllowed(string ipAddress)
         {
             if (string.IsNullOrEmpty(ipAddress))
@@ -26,7 +30,7 @@ namespace NServer.Core.Network.Firewall
 
             DateTime currentTime = DateTime.UtcNow;
 
-            // Kiểm tra nếu IP bị khóa
+            // Kiểm tra nếu IP bị khóa và trả về false nếu còn trong thời gian khóa
             if (_ipData.TryGetValue(ipAddress, out var ipInfo) && ipInfo.BlockedUntil.HasValue)
             {
                 if (currentTime < ipInfo.BlockedUntil.Value)
@@ -40,16 +44,19 @@ namespace NServer.Core.Network.Firewall
                 }
             }
 
-            // Lấy hoặc khởi tạo danh sách yêu cầu của IP
-            var requests = ipInfo.Requests ?? [];
+            // Lấy hoặc khởi tạo danh sách yêu cầu của IP nếu không có
+            var requests = ipInfo.Requests ?? new Queue<DateTime>();
 
             // Loại bỏ các yêu cầu đã hết thời gian trong cửa sổ yêu cầu
-            requests.RemoveAll(t => (currentTime - t).TotalSeconds > _requestLimit.TimeWindow.TotalSeconds);
+            while (requests.Count > 0 && (currentTime - requests.Peek()).TotalSeconds > _requestLimit.TimeWindow.TotalSeconds)
+            {
+                requests.Dequeue(); // Loại bỏ yêu cầu cũ nhất
+            }
 
             // Kiểm tra số lượng yêu cầu và cập nhật nếu dưới giới hạn
             if (requests.Count < _requestLimit.MaxRequests)
             {
-                requests.Add(currentTime);
+                requests.Enqueue(currentTime);  // Thêm yêu cầu mới
                 _ipData[ipAddress] = (requests, ipInfo.BlockedUntil); // Cập nhật dữ liệu
                 return true;
             }
@@ -63,7 +70,6 @@ namespace NServer.Core.Network.Firewall
         /// Phương thức xóa các yêu cầu không hợp lệ sau một khoảng thời gian.
         /// </summary>
         /// <param name="cancellationToken">Token để hủy tác vụ.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public async Task ClearInactiveRequests(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -77,7 +83,11 @@ namespace NServer.Core.Network.Firewall
                 {
                     var ipInfo = _ipData[ip];
                     // Xóa yêu cầu hết hạn trong cửa sổ thời gian
-                    ipInfo.Requests.RemoveAll(t => (currentTime - t).TotalSeconds > _requestLimit.TimeWindow.TotalSeconds);
+                    while (ipInfo.Requests.Count > 0 && 
+                        (currentTime - ipInfo.Requests.Peek()).TotalSeconds > _requestLimit.TimeWindow.TotalSeconds)
+                    {
+                        ipInfo.Requests.Dequeue();  // Loại bỏ yêu cầu cũ nhất
+                    }
 
                     // Nếu không còn yêu cầu hợp lệ, xóa IP khỏi dictionary
                     if (ipInfo.Requests.Count == 0)
