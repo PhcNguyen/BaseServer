@@ -1,16 +1,16 @@
-﻿using NServer.Infrastructure.Configuration;
-
-using System.Security.Cryptography;
-using System.Text;
-using NServer.Infrastructure.Helper;
+﻿using NServer.Infrastructure.Helper;
 using NServer.Interfaces.Core.Security;
+using NServer.Infrastructure.Configuration;
+
+using System.Text;
+using System.Security.Cryptography;
 
 namespace NServer.Core.Security
 {
     /// <summary>
     /// Lớp RsaCipher cung cấp các chức năng mã hóa và giải mã sử dụng thuật toán RSA.
     /// </summary>
-    internal class RsaCipher : IRsaCipher
+    internal class RSA2048 : IRSA2048
     {
         private static readonly string ExpiryFilePath = Setting.RsaShelfLifePath;
         private static readonly TimeSpan KeyRotationInterval = Setting.RsaKeyRotationInterval;

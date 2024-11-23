@@ -8,7 +8,7 @@ namespace NServer.Application.Handler
 {
     internal class CommandHandler
     {
-        private static readonly BindingFlags _bindingFlags = (
+        private static readonly BindingFlags BindingFlags = (
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance
         );
 
@@ -25,7 +25,7 @@ namespace NServer.Application.Handler
 
             return assembly.GetTypes()
                            .Where(t => targetNamespaces.Contains(t.Namespace)) // Kiểm tra xem namespace của loại có nằm trong danh sách không
-                           .SelectMany(t => t.GetMethods(_bindingFlags))
+                           .SelectMany(t => t.GetMethods(BindingFlags))
                            .Where(m => m.GetCustomAttribute<CommandAttribute>() != null)
                            .ToDictionary(
                                m => m.GetCustomAttribute<CommandAttribute>()!.Command, // Key: Command từ Attribute
@@ -65,13 +65,13 @@ namespace NServer.Application.Handler
             try
             {
                 // Delegate caching (caching delegate to improve performance)
-                var func = (Func<ISession, byte[], CancellationToken, ValueTask>)method
-                                .CreateDelegate(typeof(Func<ISession, byte[], CancellationToken, ValueTask>),
-                                method.IsStatic ? null : this);
+                var func = (Func<ISession, byte[], Task>)method
+                            .CreateDelegate(typeof(Func<ISession, byte[], Task>),
+                            method.IsStatic ? null : this);
 
                 // ToArray only when necessary (this avoids unnecessary allocation if not needed)
                 var payloadArray = packet.Payload.Span.ToArray();
-                await func(session, payloadArray, cancellationToken);
+                await func(session, payloadArray);
             }
             catch (Exception ex)
             {

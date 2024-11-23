@@ -3,7 +3,7 @@ using NServer.Infrastructure.Configuration;
 
 namespace NServer.Infrastructure.Helper
 {
-    internal class OpenSslHelper
+    internal class OpensslHelper
     {
         private static readonly string OpenSSLPath = "openssl";
 

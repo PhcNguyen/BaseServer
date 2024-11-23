@@ -58,7 +58,7 @@ namespace NServer.Application.Handler.Client
 
             try
             {
-                if (await SqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, PBKDF2H.HashPassword(password)))
+                if (await SqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, PBKDF2.HashPassword(password)))
                 {
                     packet.SetCommand((short)Cmd.SUCCESS);
                     packet.SetPayload("Registration successful.");
@@ -122,7 +122,7 @@ namespace NServer.Application.Handler.Client
                 }
 
                 // Xác thực mật khẩu
-                if (PBKDF2H.VerifyPassword(hashedPassword, password))
+                if (PBKDF2.VerifyPassword(hashedPassword, password))
                 {
                     // Đăng nhập thành công
                     packet.SetCommand((short)Cmd.SUCCESS);
@@ -188,7 +188,7 @@ namespace NServer.Application.Handler.Client
                 }
 
                 // Kiểm tra mật khẩu hiện tại của người dùng
-                if (!PBKDF2H.VerifyPassword(currentPassword, storedPasswordHash))
+                if (!PBKDF2.VerifyPassword(currentPassword, storedPasswordHash))
                 {
                     packet.SetCommand((short)Cmd.ERROR);
                     packet.SetPayload("Current password is incorrect.");
@@ -197,7 +197,7 @@ namespace NServer.Application.Handler.Client
                 }
 
                 // Mã hóa mật khẩu mới
-                string newPasswordHash = PBKDF2H.HashPassword(newPassword);
+                string newPasswordHash = PBKDF2.HashPassword(newPassword);
 
                 // Cập nhật mật khẩu mới vào cơ sở dữ liệu
                 bool updateSuccess = await SqlExecutor.ExecuteAsync(

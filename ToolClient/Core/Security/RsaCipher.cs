@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace NServer.Core.Security
+namespace ToolClient.Core.Security
 {
     internal class RsaCipher
     {

@@ -39,7 +39,7 @@ namespace NServer.Application.Main
             this.Initialization();
         }
 
-        public void Initialization()
+        private void Initialization()
         {
             _ = Task.Run(async () => await _sessionMonitor.MonitorSessionsAsync(_cancellationToken), _cancellationToken);
             _ = Task.Run(async () => await ProcessPacketsAsync(_cancellationToken), _cancellationToken);
@@ -65,7 +65,7 @@ namespace NServer.Application.Main
         /// Quản lý và xử lý các gói tin từ tất cả người dùng.
         /// </summary>
         /// <param name="cancellationToken">Token hủy bỏ cho tác vụ.</param>
-        public async Task ProcessPacketsAsync(CancellationToken cancellationToken)
+        private async Task ProcessPacketsAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -110,8 +110,10 @@ namespace NServer.Application.Main
 
                 try
                 {
+                    Console.WriteLine(1);
                     await _commandHandler.HandleCommand(session, packet, cancellationToken).ConfigureAwait(false);
                     session?.UpdateLastActivityTime();
+                    Console.WriteLine(2);
                 }
                 catch (Exception ex)
                 {

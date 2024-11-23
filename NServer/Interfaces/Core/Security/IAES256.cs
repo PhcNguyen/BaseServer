@@ -4,7 +4,7 @@
     /// A class that provides AES encryption and decryption functionality using a key.
     /// Implements IDisposable to release resources.
     /// </summary>
-    internal interface IAesCipher
+    internal interface IAES256
     {
         /// <summary>
         /// Gets the encryption key used for AES encryption and decryption.

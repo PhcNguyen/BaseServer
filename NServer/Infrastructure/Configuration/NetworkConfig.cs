@@ -15,7 +15,7 @@
         public readonly static int RequestDelayMilliseconds = 50;
 
         // Thời gian phiên làm việc của client trước khi hết hạn (10s)
-        public readonly static TimeSpan ClientSessionTimeout = TimeSpan.FromSeconds(10);
+        public readonly static TimeSpan ClientSessionTimeout = TimeSpan.FromSeconds(30);
 
         // Giới hạn yêu cầu tối đa trong một cửa sổ thời gian (ví dụ: 10 yêu cầu trong 1 giây)
         public readonly static (int MaxRequests, TimeSpan TimeWindow) RateLimit = (10, TimeSpan.FromSeconds(1));

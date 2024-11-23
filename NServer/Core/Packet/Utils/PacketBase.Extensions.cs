@@ -59,7 +59,7 @@ namespace NServer.Core.Packet
             }
 
             // Kiểm tra tính hợp lệ của cờ và command nếu cần
-            if (Flags == PacketFlags.NONE || Command == 0)
+            if (Command == 0)
             {
                 return false;
             }

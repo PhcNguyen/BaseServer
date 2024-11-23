@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 
 namespace NServer.Core.Security
 {
-    internal class PBKDF2H
+    internal class PBKDF2
     {
         private const int SaltSize = 16;       // Kích thước salt (16 bytes)
         private const int KeySize = 32;        // Kích thước key (32 bytes)

@@ -1,12 +1,11 @@
-﻿namespace NServer.Application.Handler
-{
-    [AttributeUsage(AttributeTargets.Method)]
-    internal class CommandAttribute(Cmd command) : Attribute
-    {
-        // Gán giá trị cho thuộc tính Command
-        public Cmd Command { get; } = command;  
-    }
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
+namespace ToolClient.Core.Network
+{
     internal enum Cmd : short
     {
         NONE,

@@ -1,5 +1,6 @@
 ﻿using NServer.Infrastructure.Logging.Enums;
 using NServer.Infrastructure.Logging.Helpers;
+using NServer.Infrastructure.Services;
 
 namespace NServer.Infrastructure.Logging
 {
@@ -8,14 +9,18 @@ namespace NServer.Infrastructure.Logging
     /// </summary>
     public class NLog
     {
+        private static readonly FileManager _fileManager = Singleton.GetInstance<FileManager>();
+
         /// <summary>
         /// Logs a message with a specified level and optional exception.
         /// </summary>
         /// <param name="message">The log message.</param>
         /// <param name="level">The log level.</param>
         /// <param name="exception">An optional exception.</param>
-        private static void Log(LogLevel level, string? message, Exception? exception = null) =>
-            Task.Run(() => FileManager.WriteLogToFile(message, level, exception));
+        private static void Log(LogLevel level, string? message, Exception? exception = null)
+        {
+            _fileManager.WriteLogToFile(message, level, exception);
+        }
 
         /// <summary>
         /// Logs an informational message.

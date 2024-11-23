@@ -5,27 +5,20 @@ namespace NServer.Infrastructure.Logging.Helpers
 {
     internal class FileManager
     {
-        public static string CurrentLogDirectory = Path.Combine(LoggingConfigs.LogFolder, DateTime.Now.ToString("yyMMdd"));
+        private readonly FileLogging _fileLogging;
 
-        internal static readonly Dictionary<LogLevel, string> LogLevelFileMappings = new()
+        public FileManager()
         {
-            { LogLevel.INFO, Path.Combine(CurrentLogDirectory, "info.log") },
-            { LogLevel.ERROR, Path.Combine(CurrentLogDirectory, "error.log") },
-            { LogLevel.WARNING, Path.Combine(CurrentLogDirectory, "warning.log") },
-            { LogLevel.CRITICAL, Path.Combine(CurrentLogDirectory, "critical.log") },
-        };
-
-        public static string DefaultLogFilePath => Path.Combine(CurrentLogDirectory, "default.log");
-
-        static FileManager() => EnsureLogDirectoriesExist();
+            EnsureLogDirectoriesExist();
+            _fileLogging = new FileLogging();
+        }
 
         public static void RefreshLogDirectory()
         {
-            CurrentLogDirectory = Path.Combine(LoggingConfigs.LogFolder, DateTime.Now.ToString("yyMMdd"));
 
-            if (!Directory.Exists(CurrentLogDirectory))
+            if (!Directory.Exists(Config.CurrentLogDirectory))
             {
-                Directory.CreateDirectory(CurrentLogDirectory);
+                Directory.CreateDirectory(Config.CurrentLogDirectory);
             }
         }
 
@@ -36,22 +29,25 @@ namespace NServer.Infrastructure.Logging.Helpers
                 Directory.CreateDirectory(LoggingConfigs.LogFolder);
             }
 
-            if (!Directory.Exists(CurrentLogDirectory))
+            if (!Directory.Exists(Config.CurrentLogDirectory))
             {
-                Directory.CreateDirectory(CurrentLogDirectory);
+                Directory.CreateDirectory(Config.CurrentLogDirectory);
             }
         }
 
-        internal static void WriteLogToFile(string? message, LogLevel level, Exception? exception = null)
+        public void Start() => _fileLogging.Start();
+
+        public void Dispose() => _fileLogging.Dispose();
+
+        public void WriteLogToFile(string? message, LogLevel level, Exception? exception = null)
         {
             NLogEntry logging = new(level, message, exception);
-            FileLogging.QueueLog(logging.ToStrings(), level);
+            _fileLogging.QueueLog(logging.ToStrings(), level);
 
             if (LoggingConfigs.ConsoleLogging)
             {
                 Console.WriteLine(message);
             }
         }
-
     }
 }

@@ -9,7 +9,7 @@ namespace NServer.Application.Threading
     internal class Server
     {
         private int _isRunning;
-        private bool _isInMaintenanceMode = false;
+        private bool _isInMaintenanceMode;
         private readonly int _maxConnections;
         private readonly Socket _listenerSocket;
         private readonly Controller _sessionController;
@@ -18,6 +18,7 @@ namespace NServer.Application.Threading
         public Server()
         {
             _isRunning = 0;
+            _isInMaintenanceMode = false;
             _cancellationTokenSource = new CancellationTokenSource();
             _maxConnections = Setting.MaxConnections;
             _sessionController = new Controller(_cancellationTokenSource.Token);
@@ -31,8 +32,8 @@ namespace NServer.Application.Threading
             socket.Blocking = Setting.Blocking;
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, Setting.KeepAlive);
             socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, Setting.ReuseAddress);
-            socket.ReceiveTimeout = Setting.ReceiveTimeout;
-            socket.SendTimeout = Setting.SendTimeout;
+            // socket.ReceiveTimeout = Setting.ReceiveTimeout;
+            // socket.SendTimeout = Setting.SendTimeout;
         }
 
         public void StartServer()

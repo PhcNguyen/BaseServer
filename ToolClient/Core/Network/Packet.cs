@@ -1,4 +1,4 @@
-﻿namespace NClient.Core.Network
+﻿namespace ToolClient.Core.Network
 {
     [Flags]
     internal enum PacketFlags : byte

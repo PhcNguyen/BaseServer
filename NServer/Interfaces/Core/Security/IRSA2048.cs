@@ -2,7 +2,7 @@
 
 namespace NServer.Interfaces.Core.Security
 {
-    internal interface IRsaCipher
+    internal interface IRSA2048
     {
         /// <summary>
         /// Thuộc tính khóa riêng của RSA.

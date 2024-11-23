@@ -21,6 +21,11 @@ namespace NServer.Application.Main
                     {
                         await CloseConnectionAsync(session);
                     }
+
+                    if (session.IsSocketDisposed())
+                    {
+                        await CloseConnectionAsync(session);
+                    }
                 }
 
                 await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
@@ -33,8 +38,6 @@ namespace NServer.Application.Main
         /// <param name="session">Phiên làm việc cần đóng kết nối.</param>
         public async Task CloseConnectionAsync(ISession session)
         {
-            if (session == null) return;
-
             try
             {
                 // Xóa session khỏi manager

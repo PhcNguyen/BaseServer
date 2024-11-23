@@ -1,6 +1,7 @@
-﻿using NServer.Interfaces.Core.Network;
-using NServer.Infrastructure.Helper;
+﻿using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
+using NServer.Interfaces.Core.Network;
+using NServer.Core.Network.SocketAsync;
 using NServer.Infrastructure.Configuration;
 
 using System.Net.Sockets;
@@ -45,6 +46,13 @@ namespace NServer.Core.Network
         /// </summary>
         public Socket Socket => _socket;
 
+        // <summary>
+        /// NSocket của phiên làm việc.
+        /// </summary>
+        public NSocket SocketAsync => _socketAsync;
+
+        INSocket ISession.SocketAsync => _socketAsync;
+
         /// <summary>
         /// Khởi tạo phiên làm việc của khách hàng.
         /// </summary>
@@ -71,6 +79,24 @@ namespace NServer.Core.Network
         /// </summary>
         /// <returns>Trả về true nếu phiên làm việc hết thời gian, ngược lại false.</returns>
         public bool IsSessionTimedOut() => _activityTimer.Elapsed > _timeout;
+
+        /// <summary>
+        /// Kiểm tra xem socket có bị dispose chưa.
+        /// </summary>
+        /// <returns>Trả về true nếu socket đã bị dispose, ngược lại false.</returns>
+        public bool IsSocketDisposed()
+        {
+            try
+            {
+                // Kiểm tra trạng thái kết nối và dispose của socket
+                return _socket == null || !_socket.Connected || _disposed || _socketAsync.Disposed;
+            }
+            catch (ObjectDisposedException)
+            {
+                // Socket đã bị dispose
+                return true;
+            }
+        }
 
         /// <summary>
         /// Kết nối phiên làm việc.
@@ -157,6 +183,7 @@ namespace NServer.Core.Network
         public void Dispose()
         {
             if (_disposed) return;
+
             _socketAsync.Dispose();
             _disposed = true;
             _socket.Dispose();
