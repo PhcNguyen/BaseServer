@@ -1,15 +1,17 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using NServer.Interfaces.Core.Network;
+﻿using System.Collections.Generic;
+using System.Collections.Concurrent;
+using NServer.Core.Interfaces.Network;
+using NServer.Infrastructure.Configuration;
+using System;
 
 namespace NServer.Core.Network.Firewall
 {
     /// <summary>
     /// Lớp xử lý giới hạn số lượng kết nối đồng thời từ mỗi địa chỉ IP.
     /// </summary>
-    internal class ConnLimiter(int maxConnectionsPerIp) : IConnLimiter
+    internal class ConnLimiter : IConnLimiter
     {
-        private readonly int _maxConnectionsPerIp = maxConnectionsPerIp;
+        private readonly int _maxConnectionsPerIp = Setting.MaxConnectionsPerIpAddress;
         private readonly ConcurrentDictionary<string, int> _ipConnectionCounts = new();
 
         /// <summary>
@@ -20,8 +22,9 @@ namespace NServer.Core.Network.Firewall
         public bool IsConnectionAllowed(string ipAddress)
         {
             if (string.IsNullOrEmpty(ipAddress)) return false;
+            if (this.GetCurrentConnectionCount(ipAddress) >= _maxConnectionsPerIp) return false;
 
-            // Cập nhật số lượng kết nối của IP trong dictionary
+                // Cập nhật số lượng kết nối của IP trong dictionary
             int newConnectionCount = _ipConnectionCounts.AddOrUpdate(
                 ipAddress,
                 1,  // Initialize to 1 if the IP is not found
@@ -39,6 +42,8 @@ namespace NServer.Core.Network.Firewall
         public bool ConnectionClosed(string ipAddress)
         {
             if (string.IsNullOrEmpty(ipAddress)) return false;
+
+            // Giảm số kết nối và logging lại
             _ipConnectionCounts.AddOrUpdate(ipAddress, 0, (key, currentCount) =>
             {
                 int newCount = currentCount - 1;
@@ -46,10 +51,10 @@ namespace NServer.Core.Network.Firewall
                 {
                     return 0;  // Remove the entry
                 }
+
                 return newCount;
             });
 
-            // If the count reaches zero, the entry will be removed automatically
             return true;
         }
 
@@ -58,9 +63,7 @@ namespace NServer.Core.Network.Firewall
         /// </summary>
         /// <param name="ipAddress">Địa chỉ IP cần lấy số lượng kết nối.</param>
         /// <returns>Số lượng kết nối hiện tại.</returns>
-        public int GetCurrentConnectionCount(string ipAddress)
-        {
-            return _ipConnectionCounts.GetValueOrDefault(ipAddress, 0);
-        }
+        public int GetCurrentConnectionCount(string ipAddress) =>
+            _ipConnectionCounts.GetValueOrDefault(ipAddress, 0);
     }
 }

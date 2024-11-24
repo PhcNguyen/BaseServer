@@ -1,4 +1,4 @@
-﻿using NServer.Interfaces.Core.Database;
+﻿using NServer.Core.Interfaces.Database;
 
 namespace NServer.Core.Database.Postgre
 {

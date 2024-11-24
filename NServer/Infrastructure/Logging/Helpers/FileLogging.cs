@@ -51,7 +51,7 @@ namespace NServer.Infrastructure.Logging.Helpers
                     }
                 }
                 catch (OperationCanceledException) { /* Thoát khi bị hủy */ }
-                catch (Exception ex) { NLog.Error($"Error processing log queue: {ex.Message}"); }
+                catch (Exception ) { /* Thoát khi bị Error */ }
             }
         }
 
@@ -62,19 +62,30 @@ namespace NServer.Infrastructure.Logging.Helpers
             // Lấy file path từ LogLevel
             string filePath = GetFilePath(level);
 
-            // Sử dụng StreamWriter để ghi log vào file
-            using var writer = new StreamWriter(
-                new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite),
-                Encoding.UTF8, bufferSize: 8192, leaveOpen: false  // Tăng kích thước buffer
-            );
-
-            foreach (var log in _currentBatch)
+            try
             {
-                await writer.WriteLineAsync(log);  // Ghi bất đồng bộ
-            }
+                // Tạo FileStream và sử dụng StreamWriter để ghi log vào file
+                // Đảm bảo buffer size được tối ưu cho hiệu suất
+                using var writer = new StreamWriter(
+                    new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite),
+                    Encoding.UTF8, bufferSize: 8192, leaveOpen: false
+                );
 
-            _currentBatch.Clear();  // Dọn dẹp sau khi ghi
+                // Ghi tất cả các log trong batch bất đồng bộ
+                foreach (var log in _currentBatch)
+                {
+                    await writer.WriteLineAsync(log);  // Ghi từng dòng log bất đồng bộ
+                }
+
+                _currentBatch.Clear();  // Dọn dẹp sau khi ghi log thành công
+            }
+            catch (Exception ex)
+            {
+                // Xử lý lỗi ghi log (ví dụ như file bị khoá hoặc không thể truy cập)
+                NLog.Instance.Error($"Error while flushing logs: {ex.Message}");
+            }
         }
+
 
         public void Start()
         {

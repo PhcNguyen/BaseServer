@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using NServer.Core.Packet;
+using NServer.Core.Packets;
 using NServer.Core.Database;
 using NServer.Core.Security;
 using NServer.Core.Database.Postgre;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
-using NServer.Interfaces.Core.Network;
+using NServer.Core.Interfaces.Session;
 
 namespace NServer.Application.Handler.Client
 {
@@ -16,9 +16,9 @@ namespace NServer.Application.Handler.Client
         private static readonly SqlExecutor _sqlExecutor = new(new NpgsqlFactory());
 
         [Command(Cmd.REGISTER)]
-        public static async Task Register(ISession session, byte[] data)
+        public static async Task Register(ISessionClient session, byte[] data)
         {
-            Packets packet = new();
+            Packet packet = new();
             string result = ConverterHelper.ToString(data);
             string[] parts = result.Split('|');
 
@@ -27,7 +27,7 @@ namespace NServer.Application.Handler.Client
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("Invalid registration data format.");
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
                 return;
             }
 
@@ -39,7 +39,7 @@ namespace NServer.Application.Handler.Client
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("Invalid email format.");
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
                 return;
             }
 
@@ -48,7 +48,7 @@ namespace NServer.Application.Handler.Client
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("Password does not meet the required criteria.");
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
                 return;
             }
 
@@ -58,7 +58,7 @@ namespace NServer.Application.Handler.Client
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("This email was used.");
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
                 return;
             }
 
@@ -69,31 +69,31 @@ namespace NServer.Application.Handler.Client
                     packet.SetCommand((short)Cmd.SUCCESS);
                     packet.SetPayload("Registration successful.");
 
-                    session.Send(packet.ToByteArray());
+                    await session.Send(packet.ToByteArray());
                 }
                 else
                 {
                     packet.SetCommand((short)Cmd.ERROR);
                     packet.SetPayload("Registration failed. Please try again.");
 
-                    session.Send(packet.ToByteArray());
+                    await session.Send(packet.ToByteArray());
                 }
             }
             catch (Exception ex)
             {
-                NLog.Error($"Registration failed for {email}: {ex.Message}");
+                NLog.Instance.Error($"Registration failed for {email}: {ex.Message}");
 
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("An error occurred during registration.");
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
             }
         }
 
         [Command(Cmd.LOGIN)]
-        public static async Task Login(ISession session, byte[] data)
+        public static async Task Login(ISessionClient session, byte[] data)
         {
-            Packets packet = new();
+            Packet packet = new();
             string result = ConverterHelper.ToString(data);
             string[] parts = result.Split('|');
 
@@ -102,7 +102,7 @@ namespace NServer.Application.Handler.Client
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("Invalid login data format.");
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
                 return;
             }
 
@@ -123,7 +123,7 @@ namespace NServer.Application.Handler.Client
                     packet.SetCommand((short)Cmd.ERROR);
                     packet.SetPayload("Account not found.");
 
-                    session.Send(packet.ToByteArray());
+                    await session.Send(packet.ToByteArray());
                     return;
                 }
 
@@ -134,7 +134,7 @@ namespace NServer.Application.Handler.Client
                     packet.SetCommand((short)Cmd.SUCCESS);
                     packet.SetPayload("Login successful.");
 
-                    session.Send(packet.ToByteArray());
+                    await session.Send(packet.ToByteArray());
                 }
                 else
                 {
@@ -142,27 +142,27 @@ namespace NServer.Application.Handler.Client
                     packet.SetCommand((short)Cmd.ERROR);
                     packet.SetPayload("Incorrect password.");
 
-                    session.Send(packet.ToByteArray());
+                    await session.Send(packet.ToByteArray());
                 }
             }
             catch (Exception ex)
             {
                 // Ghi log lỗi
-                NLog.Error($"Login failed for {email}: {ex.Message}");
+                NLog.Instance.Error($"Login failed for {email}: {ex.Message}");
 
                 // Phản hồi chung chung để tránh tiết lộ thông tin nhạy cảm
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("An error occurred during login. Please try again later.");
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
             }
         }
 
 
         [Command(Cmd.UPDATE_PASSWORD)]
-        public static async Task UpdatePassword(ISession session, byte[] data)
+        public static async Task UpdatePassword(ISessionClient session, byte[] data)
         {
-            Packets packet = new();
+            Packet packet = new();
             string result = ConverterHelper.ToString(data);
             string[] parts = result.Split('|');
 
@@ -170,7 +170,7 @@ namespace NServer.Application.Handler.Client
             {
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("Invalid data format. Please provide email, current password, and new password.");
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
                 return;
             }
 
@@ -189,7 +189,7 @@ namespace NServer.Application.Handler.Client
                 {
                     packet.SetCommand((short)Cmd.ERROR);
                     packet.SetPayload("Account not found.");
-                    session.Send(packet.ToByteArray());
+                    await session.Send(packet.ToByteArray());
                     return;
                 }
 
@@ -198,7 +198,7 @@ namespace NServer.Application.Handler.Client
                 {
                     packet.SetCommand((short)Cmd.ERROR);
                     packet.SetPayload("Current password is incorrect.");
-                    session.Send(packet.ToByteArray());
+                    await session.Send(packet.ToByteArray());
                     return;
                 }
 
@@ -221,15 +221,15 @@ namespace NServer.Application.Handler.Client
                     packet.SetPayload("Failed to change password. Please try again.");
                 }
 
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
             }
             catch (Exception ex)
             {
-                NLog.Error($"Password change failed for {email}: {ex.Message}");
+                NLog.Instance.Error($"Password change failed for {email}: {ex.Message}");
 
                 packet.SetCommand((short)Cmd.ERROR);
                 packet.SetPayload("An error occurred while changing the password.");
-                session.Send(packet.ToByteArray());
+                await session.Send(packet.ToByteArray());
             }
         }
     }

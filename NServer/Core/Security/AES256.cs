@@ -4,7 +4,7 @@ using System.Buffers;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 
-using NServer.Interfaces.Core.Security;
+using NServer.Core.Interfaces.Security;
 
 namespace NServer.Core.Security
 {
@@ -19,7 +19,7 @@ namespace NServer.Core.Security
         /// </summary>
         public byte[] Key { get; private set; }
 
-        private bool _disposed = false;
+        private bool isDisposed = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AES256"/> class with a specified key.
@@ -232,13 +232,13 @@ namespace NServer.Core.Security
         /// <param name="disposing">Indicates whether the method was called directly or from a finalizer.</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (!isDisposed)
             {
                 if (disposing)
                 {
                     // Release managed resources if necessary
                 }
-                _disposed = true;
+                isDisposed = true;
             }
         }
 

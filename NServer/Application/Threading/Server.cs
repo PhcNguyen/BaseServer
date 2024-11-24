@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Net;
-using System.Threading;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
+using NServer.Core.Network;
 using NServer.Application.Main;
-using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Configuration;
 
 namespace NServer.Application.Threading
 {
@@ -14,59 +14,41 @@ namespace NServer.Application.Threading
     {
         private int _isRunning;
         private bool _isInMaintenanceMode;
-        private readonly int _maxConnections;
-        private readonly Socket _listenerSocket;
-        private readonly Controller _sessionController;
+        
+        private readonly NetworkListener _networkListener;
+        private readonly SessionController _sessionController;
         private readonly CancellationTokenSource _cancellationTokenSource;
 
         public Server()
         {
             _isRunning = 0;
             _isInMaintenanceMode = false;
+
+            _networkListener = new NetworkListener();
             _cancellationTokenSource = new CancellationTokenSource();
-            _maxConnections = Setting.MaxConnections;
-            _sessionController = new Controller(_cancellationTokenSource.Token);
-            _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-
-            ConfigureSocket(_listenerSocket);
-        }
-
-        private static void ConfigureSocket(Socket socket)
-        {
-            socket.Blocking = Setting.Blocking;
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, Setting.KeepAlive);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, Setting.ReuseAddress);
-            // socket.ReceiveTimeout = Setting.ReceiveTimeout;
-            // socket.SendTimeout = Setting.SendTimeout;
+            _sessionController = new SessionController(_cancellationTokenSource.Token);
         }
 
         public void StartServer()
         {
             if (Interlocked.CompareExchange(ref _isRunning, 1, 0) == 1)
             {
-                NLog.Warning("Server is already running.");
+                NLog.Instance.Warning("Server is already running.");
                 return;
             }
 
             var token = _cancellationTokenSource.Token;
+            _networkListener.StartListening(ipAddress: null, port: Setting.Port);
 
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    var localEndPoint = new IPEndPoint(
-                        string.IsNullOrEmpty(Setting.IPAddress) ? IPAddress.Any : IPAddress.Parse(Setting.IPAddress),
-                        Setting.Port);
-
-                    _listenerSocket.Bind(localEndPoint);
-                    _listenerSocket.Listen(_maxConnections);
-
-                    NLog.Info($"Server started and listening on {localEndPoint}");
                     await AcceptClientConnectionsAsync(token);
                 }
                 catch (Exception ex)
                 {
-                    NLog.Error(ex);
+                    NLog.Instance.Error(ex);
                     StopServer();
                 }
             }, token);
@@ -78,71 +60,59 @@ namespace NServer.Application.Threading
             {
                 if (token.IsCancellationRequested)
                 {
-                    NLog.Warning("Server stopping due to cancellation request.");
-                    break;
+                    NLog.Instance.Warning("Server stopping due to cancellation request.");
+                    return;
                 }
 
                 if (_isInMaintenanceMode)
                 {
-                    NLog.Warning("Server in maintenance mode.");
+                    NLog.Instance.Warning("Server in maintenance mode.");
                     await Task.Delay(5000, token);
-                    continue;
-                }
-
-                if (_sessionController.ActiveSessions() >= _maxConnections)
-                {
-                    NLog.Warning("Maximum connections reached.");
-                    await Task.Delay(10000, token); // Delay để giảm tải vòng lặp
                     continue;
                 }
 
                 try
                 {
-                    var acceptSocket = await Task.Factory.FromAsync(
-                        _listenerSocket.BeginAccept,
-                        _listenerSocket.EndAccept,
-                        null).ConfigureAwait(false);
+                    Socket? acceptSocket = await _networkListener.AcceptClientAsync(token);
+                    if (acceptSocket == null) continue;
 
-                    ConfigureSocket(acceptSocket); // Cấu hình socket của client
                     await _sessionController.AcceptClientAsync(acceptSocket);
                 }
                 catch (SocketException ex)
                 {
-                    NLog.Error($"Socket error: {ex.Message}");
+                    NLog.Instance.Error($"Socket error: {ex.Message}");
                 }
                 catch (Exception ex)
                 {
-                    NLog.Error($"Unexpected error: {ex.Message}");
+                    NLog.Instance.Error($"Unexpected error: {ex.Message}");
                 }
             }
-        }
-
-        public void SetMaintenanceMode(bool isMaintenance)
-        {
-            _isInMaintenanceMode = isMaintenance;
-            NLog.Info(isMaintenance
-                ? "Server is now in maintenance mode."
-                : "Server has exited maintenance mode.");
         }
 
         public void StopServer()
         {
             if (Interlocked.CompareExchange(ref _isRunning, 0, 1) == 0)
             {
-                NLog.Warning("Server is not running.");
+                NLog.Instance.Warning("Server is not running.");
                 return;
             }
 
             _cancellationTokenSource.Cancel();
-            _listenerSocket.Close();
-            NLog.Info("Server has stopped successfully.");
+            _networkListener.StopListening();
+            NLog.Instance.Info("Server stopped successfully.");
         }
 
         public void ResetServer()
         {
             StopServer();
             StartServer();
-            NLog.Info("Server has been reset successfully.");
+            NLog.Instance.Info("Server reset successfully.");
+        }
+
+        public void SetMaintenanceMode(bool isMaintenance)
+        {
+            _isInMaintenanceMode = isMaintenance;
+            NLog.Instance.Info(isMaintenance ? "Server is now in maintenance mode." : "Server has exited maintenance mode.");
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
-using NServer.Interfaces.Core.Security;
+using NServer.Core.Interfaces.Security;
 using NServer.Infrastructure.Configuration;
 
 namespace NServer.Core.Security

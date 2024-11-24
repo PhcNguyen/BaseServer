@@ -11,7 +11,14 @@ namespace NServer.Infrastructure.Logging
     /// </summary>
     public class NLog
     {
+        private static readonly Lazy<NLog> _instance = new(() => new NLog());
         private static readonly FileManager _fileManager = Singleton.GetInstance<FileManager>();
+
+        // Đảm bảo chỉ có một instance duy nhất của NLog
+        public static NLog Instance => _instance.Value;
+
+        // Private constructor để ngăn chặn việc tạo instance bên ngoài.
+        private NLog() { }
 
         /// <summary>
         /// Logs a message with a specified level and optional exception.
@@ -19,7 +26,7 @@ namespace NServer.Infrastructure.Logging
         /// <param name="message">The log message.</param>
         /// <param name="level">The log level.</param>
         /// <param name="exception">An optional exception.</param>
-        private static void Log(LogLevel level, string? message, Exception? exception = null)
+        private void Log(LogLevel level, string? message, Exception? exception = null)
         {
             _fileManager.WriteLogToFile(message, level, exception);
         }
@@ -27,31 +34,31 @@ namespace NServer.Infrastructure.Logging
         /// <summary>
         /// Logs an informational message.
         /// </summary>
-        public static void Info(string message) => Log(LogLevel.INFO, message);
+        public void Info(string message) => Log(LogLevel.INFO, message);
 
         /// <summary>
         /// Logs an error message.
         /// </summary>
-        public static void Error(string message) => Log(LogLevel.ERROR, message);
+        public void Error(string message) => Log(LogLevel.ERROR, message);
 
         /// <summary>
         /// Logs an error message with an exception.
         /// </summary>
-        public static void Error(Exception exception) =>
+        public void Error(Exception exception) =>
             Log(LogLevel.ERROR, null, exception);
 
-        public static void Error(string message, Exception exception) => 
+        public void Error(string message, Exception exception) => 
             Log(LogLevel.ERROR, message, exception);
 
         /// <summary>
         /// Logs a warning message.
         /// </summary>
-        public static void Warning(string message) => Log(LogLevel.WARNING, message);
+        public void Warning(string message) => Log(LogLevel.WARNING, message);
 
         /// <summary>
         /// Logs a warning message with an exception.
         /// </summary>
-        public static void Warning(Exception exception) =>
+        public void Warning(Exception exception) =>
             Log(LogLevel.WARNING, null, exception);
     }
 }

@@ -4,8 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-
-using NServer.Interfaces.Core.Network;
+using NServer.Core.Interfaces.Network;
 
 namespace NServer.Core.Network.Firewall
 {
