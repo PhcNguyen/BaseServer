@@ -1,4 +1,4 @@
-﻿using NServer.Core.Session;
+﻿using NServer.Infrastructure.Services;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
@@ -6,7 +6,7 @@ namespace NServer.Core.Interfaces.Session
 {
     internal interface ISessionClient
     {
-        SessionID Id { get; }
+        ID36 Id { get; }
         byte[] Key { get; }
         string IpAddress { get; }
         Socket Socket { get; }

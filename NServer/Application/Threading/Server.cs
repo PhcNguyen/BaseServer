@@ -7,6 +7,9 @@ using NServer.Core.Network;
 using NServer.Application.Main;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Configuration;
+using NServer.Core.Network.Firewall;
+using NServer.Infrastructure.Services;
+using NServer.Infrastructure.Helper;
 
 namespace NServer.Application.Threading
 {
@@ -18,6 +21,8 @@ namespace NServer.Application.Threading
         private readonly NetworkListener _networkListener;
         private readonly SessionController _sessionController;
         private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly RequestLimiter _requestLimiter = Singleton.GetInstance<RequestLimiter>(() => 
+            new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration));
 
         public Server()
         {
@@ -74,7 +79,14 @@ namespace NServer.Application.Threading
                 try
                 {
                     Socket? acceptSocket = await _networkListener.AcceptClientAsync(token);
+
                     if (acceptSocket == null) continue;
+                    if (!_requestLimiter.IsAllowed(IPAddressHelper.GetClientIP(acceptSocket))) 
+                    {
+                        Console.WriteLine($"Ban {acceptSocket.SocketType}");
+                        acceptSocket.Close();
+                        continue;
+                    }
 
                     await _sessionController.AcceptClientAsync(acceptSocket);
                 }

@@ -24,7 +24,7 @@ namespace NServer.Core.Session
         private bool _isDisposed;
         private readonly string _clientIp;
 
-        private readonly SessionID _id;
+        private readonly ID36 _id;
         private readonly Socket _socket;
         private readonly TimeSpan _timeout;
         private readonly Stopwatch _activityTimer;
@@ -52,7 +52,7 @@ namespace NServer.Core.Session
         /// <summary>
         /// ID của phiên làm việc.
         /// </summary>
-        public SessionID Id => _id;
+        public ID36 Id => _id;
 
         /// <summary>
         /// Socket của phiên làm việc.
@@ -68,12 +68,12 @@ namespace NServer.Core.Session
             _socket = socket;
             _clientIp = IPAddressHelper.GetClientIP(_socket);
 
-            _id = SessionID.NewId();
+            _id = ID36.NewId();
             _timeout = Setting.Timeout;
             _activityTimer = Stopwatch.StartNew();
 
             _socketWriter = new SocketWriter(_socket);
-            _socketReader = new SocketReader(_socket, this.ProcessReceivedData);
+            _socketReader = new SocketReader(_socket, this.ProcessReceived);
         }
 
         /// <summary>
@@ -177,25 +177,9 @@ namespace NServer.Core.Session
             }
         }
 
-        private void ProcessReceivedData(byte[] data)
+        private void ProcessReceived(byte[] data)
         {
-            if (data.Length < 8)
-            {
-                return;
-            }
-
-            try
-            {
-                Packet packet = PacketExtensions.FromByteArray(data);
-
-                packet.SetID(_id);
-
-                _packetReceiver.AddPacket(packet);
-            }
-            catch (Exception ex)
-            {
-                NLog.Instance.Error($"{_id} - Error processing packet: {ex.Message}");
-            }
+            _packetReceiver.AddPacket(_id, data);
         }
 
         public async Task<bool> Send(object data)

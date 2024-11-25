@@ -1,4 +1,5 @@
 ﻿using NServer.Core.Packets.Utils;
+using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Packets
 {
@@ -9,7 +10,7 @@ namespace NServer.Core.Packets
     {
         public PacketReceiver() : base() { }
 
-        public bool AddPacket(byte[]? packet)
+        public bool AddPacket(ID36 id, byte[]? packet)
         {
             try
             {
@@ -19,9 +20,11 @@ namespace NServer.Core.Packets
                 {
                     return false;
                 }
-                    
 
-                EnqueuePacket(PacketExtensions.FromByteArray(packet));
+                Packet rpacket = PacketExtensions.FromByteArray(packet);
+                rpacket.SetID(id);
+
+                EnqueuePacket(rpacket);
 
                 return true;
             }

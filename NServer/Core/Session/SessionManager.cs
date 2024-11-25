@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 
 using NServer.Core.Interfaces.Session;
+using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Session
 {
     internal class SessionManager
     {
-        public readonly ConcurrentDictionary<SessionID, ISessionClient> ActiveSessions = new();
+        public readonly ConcurrentDictionary<ID36, ISessionClient> ActiveSessions = new();
         private int _sessionCount = 0;
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace NServer.Core.Session
         /// <summary>
         /// Lấy session theo ID.
         /// </summary>
-        public ISessionClient? GetSession(SessionID sessionId)
+        public ISessionClient? GetSession(ID36 sessionId)
         {
             ActiveSessions.TryGetValue(sessionId, out var session);
             return session;
@@ -54,7 +55,7 @@ namespace NServer.Core.Session
         /// <summary>
         /// Kiểm tra xem session có tồn tại không.
         /// </summary>
-        public bool TryGetSession(SessionID sessionId, out ISessionClient? session)
+        public bool TryGetSession(ID36 sessionId, out ISessionClient? session)
         {
             return ActiveSessions.TryGetValue(sessionId, out session);
         }
@@ -62,7 +63,7 @@ namespace NServer.Core.Session
         /// <summary>
         /// Xóa session theo ID.
         /// </summary>
-        public bool RemoveSession(SessionID sessionId)
+        public bool RemoveSession(ID36 sessionId)
         {
             bool isRemoved = ActiveSessions.TryRemove(sessionId, out _);
 
@@ -86,7 +87,7 @@ namespace NServer.Core.Session
         /// <summary>
         /// Lấy số lượng session hiện tại.
         /// </summary>
-        public int GetSessionCount()
+        public int Count()
         {
             return _sessionCount;  // Trả về số lượng session từ biến đếm
         }

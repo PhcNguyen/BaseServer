@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Buffers;
-using NServer.Core.Session;
 using NServer.Core.Packets.Enums;
 using NServer.Core.Packets.Utils;
+using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Packets
 {
@@ -22,7 +22,7 @@ namespace NServer.Core.Packets
         /// </summary>
         public readonly DateTimeOffset Timestamp = DateTimeOffset.UtcNow;
 
-        public SessionID Id { get; protected set; }
+        public ID36 Id { get; protected set; }
 
         /// <summary>
         /// Cờ trạng thái của gói tin.

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Text;
-
-using NServer.Core.Session;
 using NServer.Core.Packets.Enums;
+using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Packets
 {
@@ -52,7 +51,7 @@ namespace NServer.Core.Packets
         /// <summary>
         /// Phương thức để thêm ID 
         /// </summary>
-        public void SetID(SessionID id) => Id = id;
+        public void SetID(ID36 id) => Id = id;
 
         /// <summary>
         /// Phương thức để thêm cờ trạng thái

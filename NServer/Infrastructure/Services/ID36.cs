@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Security.Cryptography;
 
-namespace NServer.Core.Session
+namespace NServer.Infrastructure.Services
 {
     /// <summary>
     /// Lớp đại diện cho một ID phiên duy nhất.
@@ -11,7 +11,7 @@ namespace NServer.Core.Session
     /// Khởi tạo một phiên ID mới.
     /// </remarks>
     /// <param name="value">Giá trị của ID.</param>
-    public readonly struct SessionID(uint value)
+    public readonly struct ID36(uint value)
     {
         private const string Alphabet = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const int Base = 36;
@@ -23,14 +23,14 @@ namespace NServer.Core.Session
         /// Tạo ID mới từ một số nguyên ngẫu nhiên và số đếm tăng dần.
         /// </summary>
         /// <returns>ID gọn nhẹ.</returns>
-        public static SessionID NewId()
+        public static ID36 NewId()
         {
             var buffer = new byte[4];
             RandomNumberGenerator.Fill(buffer);
             uint randomValue = BitConverter.ToUInt32(buffer, 0);
 
             uint uniqueValue = Interlocked.Increment(ref _counter) + randomValue;
-            return new SessionID(uniqueValue);
+            return new ID36(uniqueValue);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace NServer.Core.Session
         /// </summary>
         /// <param name="input">Chuỗi cần chuyển đổi.</param>
         /// <returns>ID gọn nhẹ.</returns>
-        public static SessionID Parse(string input)
+        public static ID36 Parse(string input)
         {
             uint value = 0;
 
@@ -72,7 +72,7 @@ namespace NServer.Core.Session
                 value = (uint)(value * Base + charIndex);
             }
 
-            return new SessionID(value);
+            return new ID36(value);
         }
 
         /// <summary>

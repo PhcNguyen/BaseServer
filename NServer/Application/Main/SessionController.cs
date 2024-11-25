@@ -50,7 +50,7 @@ namespace NServer.Application.Main
             _ = Task.Run(async () => await HandleIncomingPacketsAsync(_cancellationToken), _cancellationToken);
         }
 
-        public int ActiveSessions() => _sessionManager.GetSessionCount();
+        public int ActiveSessions() => _sessionManager.Count();
 
         /// <summary>
         /// Chấp nhận kết nối từ client mới.
@@ -60,9 +60,14 @@ namespace NServer.Application.Main
         {
             SessionClient session = new(clientSocket);
 
+            if (_sessionManager.TryGetSession(session.Id, out _))
+            {
+                session.Dispose();
+                return;
+            }
+
             if (session.Authentication())
             {
-                // Thêm hoặc cập nhật session
                 _sessionManager.AddSession(session);
 
                 await session.Connect();
