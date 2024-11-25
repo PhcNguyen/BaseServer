@@ -6,6 +6,38 @@
     internal struct PacketMetadata
     {
         /// <summary>
+        /// Size of the length (4 bytes).
+        /// </summary>
+        public const int LENGHTSIZE = sizeof(int);
+
+        /// <summary>
+        /// Size of the flags (1 byte).
+        /// </summary>
+        public const int FLAGSSIZE = sizeof(byte);
+
+        /// <summary>
+        /// Size of the command (2 bytes).
+        /// </summary>
+        public const int COMMANDSIZE = sizeof(sbyte);
+
+        /// <summary>
+        /// Size of the type (1 bytes).
+        /// </summary>
+        public const int TYPESIZE = sizeof(byte);
+
+        /// <summary>
+        /// Size of the checksum (4 bytes).
+        /// </summary>
+        public const int CHECKSUMSIZE = sizeof(int);
+
+        /// <summary>
+        /// Total size of the header in bytes.
+        /// </summary>
+        public const int HEADERSIZE = LENGHTSIZE + FLAGSSIZE + COMMANDSIZE + TYPESIZE;
+
+
+
+        /// <summary>
         /// Offset for the length field (4 bytes).
         /// </summary>
         public const int LENGHTOFFSET = 0;
@@ -21,11 +53,13 @@
         public const int COMMANDOFFSET = 5;
 
         /// <summary>
-        /// Total size of the header in bytes.
+        /// Offset for the type field (1 bytes).
         /// </summary>
-        public const int HEADERSIZE = sizeof(byte) + sizeof(short) + sizeof(int);
+        public const int TYPEOFFSET = 3;
 
-        public const int PAYLOADOFFSET = HEADERSIZE;
+        /// <summary>
+        /// The offset for the payload data, starts after the header.
+        /// </summary>
+        public const int PAYLOADOFFSET = HEADERSIZE + 1;
     }
-
 }

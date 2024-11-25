@@ -23,7 +23,7 @@ namespace NServer.Application.Main
         private readonly SemaphoreSlim _semaphore = new(100); // Giới hạn số lượng task đồng thời
 
         private readonly MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
-        private readonly PacketContainer _packetContainer = Singleton.GetInstance<PacketContainer>();
+        private readonly PacketReceiver _packetReceiver = Singleton.GetInstance<PacketReceiver>();
 
         private readonly CancellationToken _cancellationToken;
         private readonly SessionMonitor _sessionMonitor;
@@ -81,7 +81,7 @@ namespace NServer.Application.Main
             while (!cancellationToken.IsCancellationRequested)
             {
                 // Lấy 50 gói tin một lần
-                var packetsBatch = _packetContainer.GetPacketsBatch(50);
+                var packetsBatch = _packetReceiver.DequeueBatch(50);
 
                 // Tạo danh sách các tác vụ xử lý cho mỗi gói tin
                 var tasks = packetsBatch.Select(async packet =>
@@ -110,7 +110,7 @@ namespace NServer.Application.Main
                 await Task.WhenAll(tasks);
 
                 // Nếu có gói tin, nhường quyền điều khiển ngay lập tức
-                if (_packetContainer.GetQueueLength() > 0)
+                if (_packetReceiver.Count() > 0)
                 {
                     await Task.Yield(); // Nhường quyền điều khiển ngay lập tức
                 }
@@ -124,7 +124,6 @@ namespace NServer.Application.Main
         /// <summary>
         /// Xử lý các gói tin trong một kênh cho người dùng.
         /// </summary>
-        /// <param name="userId">ID của người dùng cần xử lý.</param>
         /// <param name="cancellationToken">Token hủy bỏ cho tác vụ.</param>
         private async Task HandlePacketsAsync(Packet packet, CancellationToken cancellationToken)
         {

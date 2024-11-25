@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 using NServer.Core.Packets.Enums;
 
@@ -34,17 +35,53 @@ namespace NServer.Core.Packets.Utils
 
             byte flags = span[PacketMetadata.FLAGSOFFSET];
             short command = BitConverter.ToInt16(span[PacketMetadata.COMMANDOFFSET..]);
-            byte[] payload = span[(PacketMetadata.HEADERSIZE + 1)..length].ToArray();
+            byte[] payload = span[(PacketMetadata.PAYLOADOFFSET)..length].ToArray();
 
             // Tạo Packet từ dữ liệu
-            return new Packet(flags, command, payload);    
+            return new Packet(flags, command, payload);
+        }
+
+        /// <summary>
+        /// Tính toán checksum của dữ liệu.
+        /// </summary>
+        public static int CalculateChecksum(ReadOnlySpan<byte> data)
+        {
+            // Sử dụng SHA256 trên Span để tránh sao chép bộ nhớ không cần thiết
+            byte[] hashBytes = SHA256.HashData(data);
+            return BitConverter.ToInt32(hashBytes, 0);  // Chuyển đổi 4 byte đầu tiên thành checksum
+        }
+
+        /// <summary>
+        /// Kiểm tra tính hợp lệ của checksum.
+        /// </summary>
+        public static bool VerifyChecksum(byte[] data)
+        {
+            if (data == null || data.Length < PacketMetadata.HEADERSIZE)
+            {
+                throw new ArgumentException("Invalid data length.", nameof(data));
+            }
+
+            var span = data.AsSpan();
+
+            // Đọc Length và kiểm tra
+            int length = BitConverter.ToInt32(span[0..sizeof(int)]);
+            if (length > data.Length || length < PacketMetadata.HEADERSIZE)
+            {
+                throw new ArgumentException("Invalid packet length.", nameof(data));
+            }
+
+            // Kiểm tra checksum
+            ReadOnlySpan<byte> dataWithoutChecksum = span[..(length - PacketMetadata.CHECKSUMSIZE)];
+            int expectedChecksum = BitConverter.ToInt32(span[(length - PacketMetadata.CHECKSUMSIZE)..]);
+
+            int actualChecksum = CalculateChecksum(dataWithoutChecksum);
+
+            return expectedChecksum == actualChecksum;  // Trả về true nếu checksum hợp lệ
         }
 
         /// <summary>
         /// Lấy chiều dài của gói tin từ header.
         /// </summary>
-        /// <param name="packet">Mảng byte của gói tin.</param>
-        /// <returns>Chiều dài của gói tin.</returns>
         public static int GetPacketLength(byte[] packet)
         {
             return BitConverter.ToInt32(packet, PacketMetadata.LENGHTOFFSET);
@@ -53,8 +90,6 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Lấy cờ (flags) từ gói tin.
         /// </summary>
-        /// <param name="packet">Mảng byte của gói tin.</param>
-        /// <returns>Giá trị cờ (flags).</returns>
         public static byte GetPacketFlags(byte[] packet)
         {
             return packet[PacketMetadata.FLAGSOFFSET];
@@ -63,8 +98,6 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Lấy lệnh (command) từ gói tin.
         /// </summary>
-        /// <param name="packet">Mảng byte của gói tin.</param>
-        /// <returns>Giá trị lệnh (command).</returns>
         public static short GetPacketCommand(byte[] packet)
         {
             return BitConverter.ToInt16(packet, PacketMetadata.COMMANDOFFSET);
@@ -73,8 +106,6 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Kiểm tra xem gói tin có hợp lệ hay không.
         /// </summary>
-        /// <param name="packet">Mảng byte của gói tin.</param>
-        /// <returns>True nếu hợp lệ, ngược lại là False.</returns>
         public static bool IsValidPacket(byte[] packet)
         {
             if (packet.Length < PacketMetadata.HEADERSIZE) return false;
@@ -86,8 +117,6 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Xác định độ ưu tiên của gói tin dựa trên cờ (flags).
         /// </summary>
-        /// <param name="packet">Gói tin chứa cờ.</param>
-        /// <returns>Mức độ ưu tiên (4: cao nhất, 0: không ưu tiên).</returns>
         public static int DeterminePriority(Packet packet) => packet.Flags switch
         {
             PacketFlags f when f.HasFlag(PacketFlags.ISURGENT) => 4, // Khẩn cấp
@@ -100,12 +129,6 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Lấy danh sách các cờ trạng thái hiện tại của gói tin.
         /// </summary>
-        /// <param name="filter">
-        /// Tùy chọn bộ lọc để kiểm tra các cờ (null để không lọc).
-        /// </param>
-        /// <returns>
-        /// Danh sách các cờ trạng thái được thiết lập.
-        /// </returns>
         public static IEnumerable<PacketFlags> CombinedFlags(this Packet packet, Func<PacketFlags, bool>? filter = null)
         {
             for (int i = 0; i < sizeof(PacketFlags) * 8; i++)

@@ -98,6 +98,19 @@ namespace NServer.Application.Threading
             }
 
             _cancellationTokenSource.Cancel();
+
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await _sessionController.DisconnectAllClientsAsync();
+                }
+                catch (Exception ex)
+                {
+                    NLog.Instance.Error($"Error during disconnecting clients: {ex.Message}");
+                }
+            });
+
             _networkListener.StopListening();
             NLog.Instance.Info("Server stopped successfully.");
         }

@@ -9,7 +9,7 @@ namespace NServer.Core.Packets
     /// <summary>
     /// Lớp cơ sở cho tất cả các gói tin mạng.
     /// </summary>
-    internal abstract partial class PacketBase
+    internal abstract partial class BasePacket
     {
         private Memory<byte> _payload;
         private int _payloadLength;
@@ -60,19 +60,25 @@ namespace NServer.Core.Packets
         /// <returns>Mảng byte của gói tin.</returns>
         public virtual byte[] ToByteArray()
         {
+            // Tính toán chiều dài gói tin, bao gồm cả phần checksum
+            int totalLength = Length + PacketMetadata.CHECKSUMSIZE;
+
             byte[] packet = ArrayPool<byte>.Shared.Rent(Length);
 
             try
             {
-                var span = packet.AsSpan(0, Length);
+                var span = packet.AsSpan(0, totalLength);
 
                 // Header
-                BitConverter.TryWriteBytes(span[..], Length);
+                BitConverter.TryWriteBytes(span[..], Length); // Ghi chiều dài gói tin
                 span[PacketMetadata.FLAGSOFFSET] = (byte)Flags;
                 BitConverter.TryWriteBytes(span[PacketMetadata.COMMANDOFFSET..], Command);
 
                 // Payload
-                Payload.Span.CopyTo(span[_headerSize..]);
+                Payload.Span.CopyTo(span[PacketMetadata.PAYLOADOFFSET..]);
+
+                int checksum = PacketExtensions.CalculateChecksum(span[..(totalLength - PacketMetadata.CHECKSUMSIZE)].ToArray());
+                BitConverter.TryWriteBytes(span[(totalLength - PacketMetadata.CHECKSUMSIZE)..], checksum);
 
                 return span.ToArray();
             }

@@ -32,7 +32,7 @@ namespace NServer.Core.Session
         private readonly SocketReader _socketReader;
 
         private readonly ConnLimiter _connLimiter = Singleton.GetInstance<ConnLimiter>();
-        private readonly PacketContainer _packetGlobal = Singleton.GetInstance<PacketContainer>();
+        private readonly PacketReceiver _packetReceiver = Singleton.GetInstance<PacketReceiver>();
 
         /// <summary>
         /// Trạng thái kết nối của phiên làm việc.
@@ -187,15 +187,10 @@ namespace NServer.Core.Session
             try
             {
                 Packet packet = PacketExtensions.FromByteArray(data);
-                if (packet == null || !packet.IsValid())
-                {
-                    // NLog.Warning($"{_sessionId} - Invalid packet received. Ignoring.");
-                    return;
-                }
 
                 packet.SetID(_id);
 
-                _packetGlobal.AddPacket(packet);
+                _packetReceiver.AddPacket(packet);
             }
             catch (Exception ex)
             {

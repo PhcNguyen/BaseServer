@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Text;
 
-using NServer.Core.Packets.Enums;
-using NServer.Core.Packets.Utils;
 using NServer.Core.Session;
+using NServer.Core.Packets.Enums;
 
 namespace NServer.Core.Packets
 {
-    internal partial class PacketBase
+    internal partial class BasePacket
     {
         /// <summary>
         /// Phương thức để đặt lại gói tin về trạng thái ban đầu.
@@ -48,26 +47,6 @@ namespace NServer.Core.Packets
             };
 
             return System.Text.Json.JsonSerializer.Serialize(json);
-        }
-
-        /// <summary>
-        /// Kiểm tra tính hợp lệ của gói tin.
-        /// </summary>
-        /// <returns>True nếu gói tin hợp lệ, ngược lại trả về False.</returns>
-        public bool IsValid()
-        {
-            if (_payload.Length == 0 || Length < PacketMetadata.HEADERSIZE)
-            {
-                return false;
-            }
-
-            // Kiểm tra tính hợp lệ của cờ và command nếu cần
-            if (Command == 0)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
