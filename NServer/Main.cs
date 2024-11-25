@@ -26,17 +26,9 @@ namespace NServer
 
             Console.ReadKey();
 
-            // Chuyển server về chế độ bảo trì
-            serverEngine.SetMaintenanceMode(true);
-
-            // Thoát chế độ bảo trì
-            serverEngine.SetMaintenanceMode(false);
-
-            // Reset lại server
-            serverEngine.ResetServer();
-
-            // Dừng server
             serverEngine.StopServer();
+
+            Console.ReadKey();
 
             MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
 

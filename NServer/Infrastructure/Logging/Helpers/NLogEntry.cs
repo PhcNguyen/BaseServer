@@ -20,7 +20,7 @@ namespace NServer.Infrastructure.Logging.Helpers
         {
             var log = new StringBuilder(256);
 
-            log.AppendFormat("{0:yy/MM/dd HH:mm:ss} {1}", Timestamp, Level);
+            log.AppendFormat("{0:yy/MM/dd HH:mm:ss} - {1}", Timestamp, Level);
 
             if (!string.IsNullOrEmpty(Message))
             {

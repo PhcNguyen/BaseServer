@@ -5,16 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-
-using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Logging.Enums;
 
 namespace NServer.Infrastructure.Logging.Helpers
 {
     internal class FileLogging : IDisposable
     {
-        private readonly BlockingCollection<(string Message, LogLevel Level)> _logQueue = new();
-        private readonly List<string> _currentBatch = new(LoggingConfigs.BatchSize);
+        private readonly BlockingCollection<(string Message, LogLevel Level)> _logQueue = [];
+        private readonly List<string> _currentBatch = new(Config.BatchSize);
         private CancellationTokenSource _cancellationTokenSource = new();
         private Timer? _flushTimer;
         private Task? _logTask;
@@ -44,7 +42,7 @@ namespace NServer.Infrastructure.Logging.Helpers
                         _currentBatch.Add(logItem.Message);
 
                         // Nếu đạt đến kích thước batch thì ghi log vào file
-                        if (_currentBatch.Count >= LoggingConfigs.BatchSize)
+                        if (_currentBatch.Count >= Config.BatchSize)
                         {
                             await FlushAsync(logItem.Level);  // Sử dụng LogLevel từ item trong queue
                         }
@@ -96,8 +94,8 @@ namespace NServer.Infrastructure.Logging.Helpers
             _flushTimer = new Timer(
                 async _ => await FlushAsync(LogLevel.INFO),
                 null,
-                LoggingConfigs.InitialFlushDelay,
-                LoggingConfigs.FlushInterval
+                Config.InitialFlushDelay,
+                Config.FlushInterval
             );
         }
 

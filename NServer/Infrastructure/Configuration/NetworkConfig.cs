@@ -19,8 +19,8 @@ namespace NServer.Infrastructure.Configuration
         // Thời gian phiên làm việc của client trước khi hết hạn (5s)
         public readonly static TimeSpan ClientSessionTimeout = TimeSpan.FromSeconds(5);
 
-        // Giới hạn yêu cầu tối đa trong một cửa sổ thời gian (ví dụ: 2 yêu cầu trong 1 giây)
-        public readonly static (int MaxRequests, TimeSpan TimeWindow) RateLimit = (2, TimeSpan.FromSeconds(1));
+        // Giới hạn yêu cầu tối đa trong một cửa sổ thời gian (ví dụ: 10 yêu cầu trong 0.1 giây)
+        public readonly static (int MaxRequests, TimeSpan TimeWindow) RateLimit = (10, TimeSpan.FromSeconds(0.1));
 
         // Thời gian khóa kết nối khi vượt quá giới hạn yêu cầu (300 giây)
         public readonly static int ConnectionLockoutDuration = 300;
@@ -29,7 +29,7 @@ namespace NServer.Infrastructure.Configuration
         public readonly static int MaxConnectionsPerIpAddress = 20;
 
         // Tốc độ chậm (ví dụ: 512 KB/s, 1 MB/s) - Tốc độ cao (ví dụ: 5 MB/s, 10 MB/s)
-        public readonly static int BytesPerSecond = 1048576; 
+        public readonly static int BytesPerSecond = 1048576 / 2; 
 
         // Chế độ không chặn
         public readonly static bool Blocking = false;

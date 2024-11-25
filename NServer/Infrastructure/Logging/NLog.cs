@@ -2,7 +2,6 @@
 
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Logging.Enums;
-using NServer.Infrastructure.Logging.Helpers;
 
 namespace NServer.Infrastructure.Logging
 {
@@ -11,8 +10,8 @@ namespace NServer.Infrastructure.Logging
     /// </summary>
     public class NLog
     {
+        private readonly FileManager _fileManager = Singleton.GetInstance<FileManager>();
         private static readonly Lazy<NLog> _instance = new(() => new NLog());
-        private static readonly FileManager _fileManager = Singleton.GetInstance<FileManager>();
 
         // Đảm bảo chỉ có một instance duy nhất của NLog
         public static NLog Instance => _instance.Value;
@@ -47,7 +46,7 @@ namespace NServer.Infrastructure.Logging
         public void Error(Exception exception) =>
             Log(LogLevel.ERROR, null, exception);
 
-        public void Error(string message, Exception exception) => 
+        public void Error(string message, Exception exception) =>
             Log(LogLevel.ERROR, message, exception);
 
         /// <summary>

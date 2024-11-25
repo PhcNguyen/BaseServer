@@ -8,5 +8,7 @@ namespace NServer.Core.Packets
     internal class PacketSender : BasePacketContainer
     {
         public PacketSender() : base() { }
+
+        public void AddPacket(Packet packet) => EnqueuePacket(packet);
     }
 }

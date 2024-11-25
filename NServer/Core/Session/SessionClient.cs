@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 
 using NServer.Core.Network;
-using NServer.Core.Packets;
 using NServer.Core.Packets.Utils;
 using NServer.Core.Network.Firewall;
 using NServer.Core.Interfaces.Session;
@@ -13,6 +12,7 @@ using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Configuration;
+using NServer.Core.Packets;
 
 namespace NServer.Core.Session
 {

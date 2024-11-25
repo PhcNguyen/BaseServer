@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
-
-using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Logging.Enums;
+using NServer.Infrastructure.Logging.Helpers;
 
-namespace NServer.Infrastructure.Logging.Helpers
+namespace NServer.Infrastructure.Logging
 {
     internal class FileManager
     {
@@ -27,9 +26,9 @@ namespace NServer.Infrastructure.Logging.Helpers
 
         private static void EnsureLogDirectoriesExist()
         {
-            if (!Directory.Exists(LoggingConfigs.LogFolder))
+            if (!Directory.Exists(Config.LogFolder))
             {
-                Directory.CreateDirectory(LoggingConfigs.LogFolder);
+                Directory.CreateDirectory(Config.LogFolder);
             }
 
             if (!Directory.Exists(Config.CurrentLogDirectory))
@@ -45,11 +44,14 @@ namespace NServer.Infrastructure.Logging.Helpers
         public void WriteLogToFile(string? message, LogLevel level, Exception? exception = null)
         {
             NLogEntry logging = new(level, message, exception);
-            _fileLogging.QueueLog(logging.ToStrings(), level);
 
-            if (LoggingConfigs.ConsoleLogging)
+            string? mess = logging.ToStrings();
+
+            _fileLogging.QueueLog(mess, level);
+
+            if (Config.ConsoleLogging)
             {
-                Console.WriteLine(message);
+                Console.WriteLine(mess);
             }
         }
     }

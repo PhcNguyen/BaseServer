@@ -9,7 +9,6 @@ namespace NServer.Core.Packets.Utils
     /// </summary>
     internal abstract class BasePacketContainer : IDisposable
     {
-        // Hàng đợi gói tin
         private readonly ConcurrentQueue<Packet> _packetQueue = new();
 
         /// <summary>
@@ -18,6 +17,7 @@ namespace NServer.Core.Packets.Utils
         /// <param name="packet">Gói tin cần thêm.</param>
         protected void EnqueuePacket(Packet packet)
         {
+            if (packet == null) throw new ArgumentNullException(nameof(packet), "Packet cannot be null.");
             _packetQueue.Enqueue(packet);
         }
 
@@ -27,11 +27,7 @@ namespace NServer.Core.Packets.Utils
         /// <returns>Gói tin cần xử lý hoặc null nếu hàng đợi trống.</returns>
         public Packet? DequeuePacket()
         {
-            if (_packetQueue.TryDequeue(out var packet))
-            {
-                return packet;
-            }
-            return null; // Không có gói tin trong hàng đợi
+            return _packetQueue.TryDequeue(out var packet) ? packet : null;
         }
 
         /// <summary>
@@ -41,17 +37,21 @@ namespace NServer.Core.Packets.Utils
         /// <returns>Danh sách gói tin.</returns>
         public List<Packet> DequeueBatch(int batchSize)
         {
+            if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
+
             var batch = new List<Packet>(batchSize);
             while (batch.Count < batchSize && _packetQueue.TryDequeue(out var packet))
             {
                 batch.Add(packet);
             }
+
             return batch;
         }
 
         /// <summary>
         /// Kiểm tra số lượng gói tin hiện tại trong hàng đợi.
         /// </summary>
+        /// <returns>Số lượng gói tin trong hàng đợi.</returns>
         public int Count()
         {
             return _packetQueue.Count;
