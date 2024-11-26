@@ -13,6 +13,8 @@ namespace NServer.Core.Database
             { SqlCommand.SELECT_ACCOUNT, "SELECT * FROM account WHERE email = @params0" },
             { SqlCommand.SELECT_ACCOUNT_COUNT, "SELECT COUNT(*) FROM account WHERE email = @param0" },
             { SqlCommand.SELECT_ACCOUNT_PASSWORD, "SELECT password FROM account WHERE email = @param0" },
+            { SqlCommand.UPDATE_LAST_LOGIN, "UPDATE account SET last_login = NOW() WHERE email = @params0"},
+            { SqlCommand.SELECT_LAST_LOGIN, "SELECT last_login FROM account WHERE email = @params0" },
         };
 
         public static string Get(SqlCommand command)

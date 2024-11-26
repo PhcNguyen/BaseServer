@@ -7,22 +7,36 @@ using NServer.Core.Interfaces.Session;
 
 namespace NServer.Core.Session
 {
-    internal class SessionMonitor(SessionManager sessionManager)
+    /// <summary>
+    /// Giám sát và quản lý trạng thái của các phiên làm việc.
+    /// <para>
+    /// Lớp này chịu trách nhiệm giám sát các phiên làm việc, kiểm tra trạng thái kết nối của các phiên làm việc và đóng các kết nối không hợp lệ hoặc đã hết thời gian.
+    /// </para>
+    /// </summary>
+    /// <remarks>
+    /// Khởi tạo một đối tượng giám sát phiên làm việc với bộ quản lý phiên và mã thông báo hủy.
+    /// </remarks>
+    /// <param name="sessionManager">Quản lý các phiên làm việc.</param>
+    /// <param name="cancellationToken">Mã thông báo hủy để kiểm soát việc dừng giám sát.</param>
+    internal class SessionMonitor(ISessionManager sessionManager, CancellationToken cancellationToken)
+                : ISessionMonitor
     {
-        private readonly SessionManager _sessionManager = sessionManager;
+        private readonly ISessionManager _sessionManager = sessionManager;
+        private readonly CancellationToken _cancellationToken = cancellationToken;
 
         /// <summary>
-        /// Giám sát kết nối các phiên làm việc.
+        /// Giám sát các phiên làm việc không đồng bộ, kiểm tra và đóng các kết nối không hợp lệ.
         /// </summary>
-        public async Task MonitorSessionsAsync(CancellationToken cancellationToken)
+        /// <returns>Task đại diện cho tác vụ giám sát phiên làm việc.</returns>
+        public async Task MonitorSessionsAsync()
         {
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancellationToken.IsCancellationRequested)
             {
                 foreach (ISessionClient session in _sessionManager.GetAllSessions())
                 {
                     try
                     {
-                        if (session.IsSessionTimedOut() || session.IsSocketDisposed())
+                        if (session.IsSessionTimedOut() || session.IsSocketInvalid())
                         {
                             await CloseConnectionAsync(session);
                         }
@@ -33,19 +47,21 @@ namespace NServer.Core.Session
                     }
                 }
 
-                await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+                await Task.Delay(2000, _cancellationToken).ConfigureAwait(false);
             }
         }
 
         /// <summary>
-        /// Đóng kết nối phiên làm việc.
+        /// Đóng kết nối của một phiên làm việc nếu kết nối không hợp lệ hoặc đã hết thời gian.
         /// </summary>
+        /// <param name="session">Phiên làm việc cần đóng kết nối.</param>
+        /// <returns>Task đại diện cho tác vụ đóng kết nối.</returns>
         public async Task CloseConnectionAsync(ISessionClient session)
         {
             try
             {
                 _sessionManager.RemoveSession(session.Id);
-                await session.Disconnect();
+                await session.DisconnectAsync();
             }
             catch (Exception ex)
             {

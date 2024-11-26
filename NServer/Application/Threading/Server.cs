@@ -3,14 +3,14 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-using NServer.Core.Network;
 using NServer.Application.Main;
+using NServer.Core.Network;
 using NServer.Core.Network.Firewall;
+using NServer.Core.Network.BufferPool;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Configuration;
-using NServer.Core.Network.BufferPool;
 
 namespace NServer.Application.Threading
 {
@@ -23,8 +23,7 @@ namespace NServer.Application.Threading
         private Controller _controller;
         private readonly SocketListener _networkListener;
 
-        private CancellationTokenSource _cancellationTokenSource;
-
+        private CancellationTokenSource _cts;
         private readonly MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
         private readonly RequestLimiter _requestLimiter = Singleton.GetInstance<RequestLimiter>(() =>
             new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration));
@@ -36,15 +35,15 @@ namespace NServer.Application.Threading
             _isInMaintenanceMode = false;
 
             _multiSizeBuffer.AllocateBuffers();
+            _cts = new CancellationTokenSource();
             _networkListener = new SocketListener();
-            _cancellationTokenSource = new CancellationTokenSource();
-            _controller = new Controller(_cancellationTokenSource.Token);
+            _controller = new Controller(_cts.Token);
         }
 
         private void InitializeComponents()
         {
-            _cancellationTokenSource = new CancellationTokenSource();
-            _controller = new Controller(_cancellationTokenSource.Token);
+            _cts = new CancellationTokenSource();
+            _controller = new Controller(_cts.Token);
         }
 
         public void StartServer()
@@ -55,7 +54,7 @@ namespace NServer.Application.Threading
                 return;
             }
 
-            if (_networkListener.IsSocketBound)
+            if (_networkListener.IsListening)
             {
                 NLog.Instance.Warning("Socket is already bound. Cannot start the server.");
                 return;
@@ -64,7 +63,7 @@ namespace NServer.Application.Threading
             // Khởi tạo lại các thành phần
             InitializeComponents();
 
-            var token = _cancellationTokenSource.Token;
+            var token = _cts.Token;
 
             _networkListener.StartListening(ipAddress: null, port: Setting.Port);
 
@@ -143,7 +142,7 @@ namespace NServer.Application.Threading
                 return;
             }
 
-            _cancellationTokenSource.Cancel();
+            _cts.Cancel();
 
             Task.Run(async () =>
             {
@@ -217,7 +216,7 @@ namespace NServer.Application.Threading
                 return;
 
             // Hủy bỏ các tài nguyên được quản lý
-            _cancellationTokenSource?.Cancel();
+            _cts?.Cancel();
             _networkListener?.Dispose();
 
             _disposed = true;

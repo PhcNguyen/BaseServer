@@ -4,18 +4,21 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
+using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Configuration;
 
 namespace NServer.Core.Network
 {
+    /// <summary>
+    /// SocketListener là lớp quản lý việc lắng nghe kết nối TCP đến server.
+    /// </summary>
     internal class SocketListener : IDisposable
     {
         private Socket _listenerSocket;
         private readonly int _maxConnections = Setting.MaxConnections;
 
-        public bool IsListening => _listenerSocket?.IsBound ?? false;
-        public bool IsSocketBound => _listenerSocket.IsBound;
+        public bool IsListening => _listenerSocket?.IsBound == true;
 
         public SocketListener()
         {
@@ -23,14 +26,11 @@ namespace NServer.Core.Network
             ConfigureSocket(_listenerSocket);
         }
 
-        private static void ConfigureSocket(Socket socket)
-        {
-            socket.Blocking = Setting.Blocking;
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, Setting.KeepAlive);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, Setting.ReuseAddress);  
-        }
-
+        /// <summary>
+        /// Bắt đầu lắng nghe các kết nối đến.
+        /// </summary>
+        /// <param name="ipAddress">Địa chỉ IP để lắng nghe, nếu null thì sử dụng tất cả địa chỉ.</param>
+        /// <param name="port">Cổng để lắng nghe.</param>
         public void StartListening(string? ipAddress, int port)
         {
             if (_listenerSocket.IsBound)
@@ -47,7 +47,7 @@ namespace NServer.Core.Network
 
             try
             {
-                IPAddress parsedIPAddress = string.IsNullOrEmpty(ipAddress) ? IPAddress.Any : ParseIPAddress(ipAddress);
+                IPAddress parsedIPAddress = string.IsNullOrEmpty(ipAddress) ? IPAddress.Any : IPAddressHelper.ParseIPAddress(ipAddress);
                 var localEndPoint = new IPEndPoint(parsedIPAddress, port);
 
                 _listenerSocket.Bind(localEndPoint);
@@ -69,6 +69,9 @@ namespace NServer.Core.Network
             }
         }
 
+        /// <summary>
+        /// Dừng việc lắng nghe và đóng socket.
+        /// </summary>
         public void StopListening()
         {
             if (!_listenerSocket.IsBound)
@@ -96,6 +99,9 @@ namespace NServer.Core.Network
             }
         }
 
+        /// <summary>
+        /// Đặt lại listener, đóng socket và giải phóng tài nguyên.
+        /// </summary>
         public void ResetListener()
         {
             StopListening();  // Gọi StopListening để đảm bảo socket đã đóng đúng cách.
@@ -104,24 +110,16 @@ namespace NServer.Core.Network
             // Khởi tạo lại socket listener để có thể sử dụng lại
             _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             ConfigureSocket(_listenerSocket);
-            NLog.Instance.Info("SocketListener has been reset.");
         }
 
-        public async Task<Socket?> AcceptClientAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Chấp nhận kết nối client một cách bất đồng bộ.
+        /// </summary>
+        public async Task<Socket?> AcceptClientAsync(CancellationToken _token)
         {
             try
             {
-                var acceptTask = Task.Factory.FromAsync(_listenerSocket.BeginAccept, _listenerSocket.EndAccept, null);
-
-                if (await Task.WhenAny(acceptTask, Task.Delay(Timeout.Infinite, cancellationToken)).ConfigureAwait(false) == acceptTask)
-                {
-                    return acceptTask.Result;  // Kết nối thành công
-                }
-                else
-                {
-                    NLog.Instance.Info("AcceptClientAsync operation was cancelled due to cancellation token.");
-                    return null;  // Nếu task bị hủy do token
-                }
+                return await _listenerSocket.AcceptAsync(_token);
             }
             catch (ObjectDisposedException)
             {
@@ -145,11 +143,14 @@ namespace NServer.Core.Network
             }
         }
 
+        /// <summary>
+        /// Giải phóng tài nguyên khi không còn cần thiết.
+        /// </summary>
         public void Dispose()
         {
             try
             {
-                _listenerSocket.Dispose();
+                _listenerSocket?.Dispose();
             }
             catch (Exception ex)
             {
@@ -157,14 +158,15 @@ namespace NServer.Core.Network
             }
         }
 
-        private static IPAddress ParseIPAddress(string ipAddress)
+        /// <summary>
+        /// Cấu hình các tùy chọn cho socket.
+        /// </summary>
+        private static void ConfigureSocket(Socket socket)
         {
-            if (!IPAddress.TryParse(ipAddress, out var parsedIPAddress))
-            {
-                NLog.Instance.Error($"Invalid IP address format: {ipAddress}");
-                throw new ArgumentException("The provided IP address is not valid.", nameof(ipAddress));
-            }
-            return parsedIPAddress;
+            socket.Blocking = Setting.Blocking; // Kiểm soát chế độ blocking.
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true); // Cho phép tái sử dụng địa chỉ.
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, Setting.KeepAlive); // Tùy chọn giữ kết nối sống.
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, Setting.ReuseAddress); // Tùy chọn tái sử dụng địa chỉ.
         }
     }
 }

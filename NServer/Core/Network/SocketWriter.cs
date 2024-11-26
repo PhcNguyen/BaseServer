@@ -4,76 +4,110 @@ using System.Threading.Tasks;
 
 namespace NServer.Core.Network
 {
-    internal class SocketWriter : IDisposable
+    /// <summary>
+    /// Lớp này quản lý việc gửi dữ liệu bất đồng bộ qua socket.
+    /// </summary>
+    internal class SocketWriter(Socket socket) : IAsyncDisposable
     {
-        private readonly Socket _socket;
-        private readonly SocketAsyncEventArgs _sendEventArgs;
+        private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        private readonly SocketAsyncEventArgs _sendEventArgs = new();
+        private bool _disposed = false;
 
-        public SocketWriter(Socket socket)
+        /// <summary>
+        /// Gửi dữ liệu bất đồng bộ qua socket.
+        /// </summary>
+        /// <param name="data">Dữ liệu cần gửi qua socket.</param>
+        /// <returns>Trả về true nếu gửi thành công, ngược lại trả về false.</returns>
+        public async Task<bool> SendAsync(byte[] data)
         {
-            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-            _sendEventArgs = new SocketAsyncEventArgs();
-            _sendEventArgs.Completed += OnSendCompleted!;
-        }
-
-        public async Task WriteAsync(byte[] data)
-        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
             ArgumentNullException.ThrowIfNull(data);
 
-            // Đặt bộ đệm cho dữ liệu sẽ gửi
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             _sendEventArgs.SetBuffer(data, 0, data.Length);
+            _sendEventArgs.Completed += CompletedHandler;
 
-            // Gửi dữ liệu bất đồng bộ và đợi kết quả
-            var sendResult = await SendAsync(_socket, _sendEventArgs);
-
-            if (sendResult)
+            try
             {
-                Console.WriteLine("Data sent successfully.");
+                if (!_socket.SendAsync(_sendEventArgs))
+                {
+                    HandleSendCompletion(tcs, _sendEventArgs.SocketError);
+                }
+                else
+                {
+                    return await tcs.Task;
+                }
+            }
+            finally
+            {
+                _sendEventArgs.Completed -= CompletedHandler;
+            }
+
+            return true;
+
+            void CompletedHandler(object? sender, SocketAsyncEventArgs e) =>
+                HandleSendCompletion(tcs, e.SocketError);
+        }
+
+        /// <summary>
+        /// Xử lý kết quả gửi dữ liệu.
+        /// </summary>
+        /// <param name="tcs">TaskCompletionSource dùng để hoàn thành tác vụ bất đồng bộ.</param>
+        /// <param name="socketError">Lỗi socket sau khi gửi dữ liệu.</param>
+        private static void HandleSendCompletion(TaskCompletionSource<bool> tcs, SocketError socketError)
+        {
+            if (socketError == SocketError.Success)
+            {
+                tcs.TrySetResult(true);
             }
             else
             {
-                Console.WriteLine($"Socket error: {_sendEventArgs.SocketError}");
+                tcs.TrySetException(new SocketException((int)socketError));
             }
         }
 
-        private async Task<bool> SendAsync(Socket socket, SocketAsyncEventArgs e)
+        /// <summary>
+        /// Giải phóng tài nguyên bất đồng bộ khi đối tượng không còn sử dụng.
+        /// </summary>
+        public async ValueTask DisposeAsync()
         {
-            var tcs = new TaskCompletionSource<bool>();
+            if (_disposed) return;
 
-            // Đăng ký sự kiện Completed để gọi lại khi gửi xong
-            void completedHandler(object sender, SocketAsyncEventArgs args)
+            _disposed = true;
+
+            try
             {
-                // Hủy đăng ký sự kiện sau khi hoàn thành
-                e.Completed -= completedHandler!;
-                tcs.SetResult(args.SocketError == SocketError.Success);
+                await Task.Run(() =>
+                {
+                    _sendEventArgs.Dispose();
+                    _socket.Dispose();
+                }).ConfigureAwait(false);
             }
-
-            e.Completed += completedHandler!;
-
-            // Gửi dữ liệu bất đồng bộ
-            if (!socket.SendAsync(e))
+            catch (Exception ex)
             {
-                // Nếu không phải bất đồng bộ, gọi ngay kết quả
-                tcs.SetResult(e.SocketError == SocketError.Success);
-            }
-
-            return await tcs.Task;
-        }
-
-        private void OnSendCompleted(object sender, SocketAsyncEventArgs e)
-        {
-            // Xử lý lỗi nếu có
-            if (e.SocketError != SocketError.Success)
-            {
-                Console.WriteLine($"Socket error: {e.SocketError}");
+                Console.WriteLine($"Error during async dispose: {ex.Message}");
             }
         }
 
+        /// <summary>
+        /// Giải phóng tài nguyên đồng bộ khi đối tượng không còn sử dụng.
+        /// </summary>
         public void Dispose()
         {
-            // Giải phóng tài nguyên và hủy đăng ký sự kiện
-            _sendEventArgs.Completed -= OnSendCompleted!;
-            _sendEventArgs.Dispose();
+            if (_disposed) return;
+
+            _disposed = true;
+
+            try
+            {
+                _sendEventArgs.Dispose();
+                _socket.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during dispose: {ex.Message}");
+            }
         }
     }
 }

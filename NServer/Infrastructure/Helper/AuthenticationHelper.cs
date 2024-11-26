@@ -4,8 +4,13 @@ using System.Linq;
 
 namespace NServer.Infrastructure.Helper
 {
-    internal class ValidatorHelper
+    internal class AuthenticationHelper
     {
+        public static bool ValidateInput(string[] parts, int expectedLength)
+        {
+            return parts.Length == expectedLength;
+        }
+
         /// <summary>
         /// Kiểm tra định dạng email có hợp lệ không.
         /// </summary>

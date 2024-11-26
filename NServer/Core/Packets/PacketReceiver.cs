@@ -1,6 +1,7 @@
 ﻿using NServer.Core.Packets.Utils;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
+using System;
 
 namespace NServer.Core.Packets
 {
@@ -9,6 +10,8 @@ namespace NServer.Core.Packets
     /// </summary>
     internal class PacketReceiver : BasePacketContainer
     {
+        public event Action? PacketAdded;
+
         public PacketReceiver() : base() { }
 
         public bool AddPacket(ID36 id, byte[]? packet)
@@ -35,6 +38,9 @@ namespace NServer.Core.Packets
                 rpacket.SetID(id);
 
                 EnqueuePacket(rpacket);
+
+                // Kích hoạt sự kiện thông báo gói tin mới được thêm vào
+                PacketAdded?.Invoke();
 
                 return true;
             }

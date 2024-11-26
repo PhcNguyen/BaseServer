@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net.Sockets;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 using NServer.Core.Network;
@@ -16,9 +17,12 @@ using NServer.Infrastructure.Configuration;
 namespace NServer.Core.Session
 {
     /// <summary>
-    /// Lớp quản lý một phiên làm việc của khách hàng.
+    /// Quản lý phiên làm việc của khách hàng.
+    /// <para>
+    /// Lớp này chịu trách nhiệm kết nối, xác thực, gửi/nhận dữ liệu và quản lý trạng thái của phiên làm việc từ phía khách hàng.
+    /// </para>
     /// </summary>
-    internal class SessionClient : ISessionClient, IDisposable
+    internal class SessionClient : ISessionClient, IAsyncDisposable
     {
         private bool _isDisposed;
         private readonly string _clientIp;
@@ -32,14 +36,15 @@ namespace NServer.Core.Session
 
         private readonly ConnLimiter _connLimiter = Singleton.GetInstance<ConnLimiter>();
         private readonly PacketReceiver _packetReceiver = Singleton.GetInstance<PacketReceiver>();
+        private readonly CancellationTokenSource _cts = new();
 
         /// <summary>
-        /// Trạng thái kết nối của phiên làm việc.
+        /// Kiểm tra trạng thái kết nối của phiên làm việc.
         /// </summary>
         public bool IsConnected { get; private set; }
 
         /// <summary>
-        /// Khóa phiên làm việc.
+        /// Khóa phiên làm việc (dành cho mã hóa hoặc xác thực).
         /// </summary>
         public byte[] Key { get; set; } = [];
 
@@ -49,171 +54,178 @@ namespace NServer.Core.Session
         public string IpAddress => _clientIp;
 
         /// <summary>
-        /// ID của phiên làm việc.
+        /// ID duy nhất của phiên làm việc.
         /// </summary>
         public ID36 Id => _id;
 
         /// <summary>
-        /// Socket của phiên làm việc.
+        /// Socket kết nối của khách hàng.
         /// </summary>
         public Socket Socket => _socket;
 
         /// <summary>
-        /// Khởi tạo phiên làm việc của khách hàng.
+        /// Khởi tạo phiên làm việc với socket cho sẵn.
         /// </summary>
-        /// <param name="socket">Socket kết nối của phiên làm việc.</param>
+        /// <param name="socket">Socket của khách hàng.</param>
         public SessionClient(Socket socket)
         {
-            _isDisposed = false;
-            _socket = socket;
+            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _clientIp = IPAddressHelper.GetClientIP(_socket);
-
             _id = ID36.NewId();
             _timeout = Setting.Timeout;
             _activityTimer = Stopwatch.StartNew();
 
             _socketWriter = new SocketWriter(_socket);
-            _socketReader = new SocketReader(_socket, this.ProcessReceived);
+            _socketReader = new SocketReader(_socket, ProcessReceived);
         }
 
         /// <summary>
-        /// Cập nhật thời gian hoạt động cuối cùng của phiên làm việc.
+        /// Cập nhật thời gian hoạt động của phiên làm việc.
         /// </summary>
         public void UpdateLastActivityTime() => _activityTimer.Restart();
 
         /// <summary>
-        /// Kiểm tra xem phiên làm việc có bị hết thời gian không.
+        /// Kiểm tra xem phiên làm việc có hết thời gian chờ không.
         /// </summary>
-        /// <returns>Trả về true nếu phiên làm việc hết thời gian, ngược lại false.</returns>
+        /// <returns>True nếu phiên làm việc đã hết thời gian chờ, ngược lại False.</returns>
         public bool IsSessionTimedOut() => _activityTimer.Elapsed > _timeout;
 
         /// <summary>
-        /// Kiểm tra xem socket có bị dispose chưa.
+        /// Kiểm tra xem socket có hợp lệ hay không.
         /// </summary>
-        /// <returns>Trả về true nếu socket đã bị dispose, ngược lại false.</returns>
-        public bool IsSocketDisposed()
-        {
-            try
-            {
-                // Kiểm tra trạng thái kết nối và dispose của socket
-                return !_socket.Connected
-                    || _isDisposed
-                    || _socket == null
-                    || _socketReader.Disposed;
-            }
-            catch (ObjectDisposedException)
-            {
-                // Socket đã bị dispose
-                return true;
-            }
-        }
-
-        public bool Authentication()
-        {
-            if (_connLimiter.IsConnectionAllowed(_clientIp)) return true;
-            return false;
-        }
+        public bool IsSocketInvalid() => !_socket.Connected || _isDisposed || _socketReader.Disposed;
 
         /// <summary>
-        /// Kết nối phiên làm việc.
+        /// Xác thực phiên làm việc dựa trên địa chỉ IP.
         /// </summary>
-        public async Task Connect()
+        /// <returns>True nếu phiên làm việc được phép kết nối, ngược lại False.</returns>
+        public bool Authentication() => _connLimiter.IsConnectionAllowed(_clientIp);
+
+        /// <summary>
+        /// Kết nối và bắt đầu xử lý dữ liệu từ khách hàng.
+        /// </summary>
+        public async Task ConnectAsync()
         {
             try
             {
                 IsConnected = true;
-                if (string.IsNullOrEmpty(_clientIp) || !_socket.Connected)
+
+                if (string.IsNullOrEmpty(_clientIp) || IsSocketInvalid())
                 {
                     NLog.Instance.Warning("Client address is invalid or Socket is not connected.");
-                    await Disconnect();
+                    await DisconnectAsync();
                     return;
                 }
 
                 NLog.Instance.Info($"Session {_id} connected to {_clientIp}");
 
-                _socketReader.Receive();
+                // Bắt đầu đọc gói tin không đồng bộ
+                _socketReader.Receive(_cts.Token);
             }
-            catch (TimeoutException tex)
+            catch (Exception ex) when (ex is TimeoutException or IOException)
             {
-                NLog.Instance.Error($"Timeout while establishing connection for {_clientIp}: {tex.Message}");
-                await Disconnect();
-            }
-            catch (IOException ioex)
-            {
-                NLog.Instance.Error($"I/O error while setting up client stream for {_clientIp}: {ioex.Message}");
-                await Disconnect();
+                NLog.Instance.Error($"Connection error for {_clientIp}: {ex.Message}");
+                await DisconnectAsync();
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Unexpected error while connecting client {_clientIp}: {ex.Message}");
-                await Disconnect();
+                NLog.Instance.Error($"Unexpected error for {_clientIp}: {ex.Message}");
+                await DisconnectAsync();
             }
         }
 
         /// <summary>
         /// Ngắt kết nối phiên làm việc.
         /// </summary>
-        public async Task Disconnect()
+        public async Task DisconnectAsync()
         {
             if (!IsConnected) return;
 
+            IsConnected = false;
+
             try
             {
-                IsConnected = false;
-
-                await Task.Run(() => Dispose());
-
+                _cts.Cancel();
+                await DisposeAsync();
                 _connLimiter.ConnectionClosed(_clientIp);
-
                 NLog.Instance.Info($"Session {_id} disconnected from {_clientIp}");
-            }
-            catch (ObjectDisposedException ex)
-            {
-                NLog.Instance.Warning($"Attempted to dispose already disposed objects: {ex.Message}");
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error(ex);
+                NLog.Instance.Error($"Error during disconnect: {ex.Message}");
             }
-        }
-
-        private void ProcessReceived(byte[] data) =>
-            _packetReceiver.AddPacket(_id, data);
-
-        public async Task<bool> Send(object data)
-        {
-            if (!_socket.Connected) return false;
-            switch (data)
-            {
-                case byte[] byteArray:
-                    await _socketWriter.WriteAsync(byteArray);
-                    break;
-                case string str:
-                    await _socketWriter.WriteAsync(ConverterHelper.ToBytes(str));
-                    break;
-                case Packet packet:
-                    byte[] packetBytes = packet.ToByteArray(); 
-                    await _socketWriter.WriteAsync(packetBytes);
-                    break;
-                default:
-                    throw new ArgumentException("Unsupported data type.");
-            }
-
-            return true;
         }
 
         /// <summary>
-        /// Giải phóng tài nguyên được sử dụng bởi <see cref="SessionClient"/>.
+        /// Xử lý gói tin nhận được từ khách hàng.
         /// </summary>
-        public void Dispose()
+        private void ProcessReceived(byte[] data)
+        {
+            if (!_packetReceiver.AddPacket(_id, data))
+            {
+                NLog.Instance.Warning($"Failed to process received data for session {_id}");
+            }
+        }
+
+        /// <summary>
+        /// Gửi dữ liệu cho khách hàng.
+        /// </summary>
+        /// <param name="data">Dữ liệu cần gửi, có thể là mảng byte, chuỗi hoặc gói tin.</param>
+        /// <returns>True nếu gửi thành công, ngược lại False.</returns>
+        public async Task<bool> SendAsync(object data)
+        {
+            if (this.IsSocketInvalid()) return false;
+
+            try
+            {
+                switch (data)
+                {
+                    case byte[] byteArray:
+                        await _socketWriter.SendAsync(byteArray);
+                        break;
+                    case string str:
+                        await _socketWriter.SendAsync(ConverterHelper.ToBytes(str));
+                        break;
+                    case Packet packet:
+                        await _socketWriter.SendAsync(packet.ToByteArray());
+                        break;
+                    default:
+                        throw new ArgumentException("Unsupported data type.");
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                NLog.Instance.Error($"Error sending data: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Giải phóng tài nguyên của phiên làm việc.
+        /// </summary>
+        public async ValueTask DisposeAsync()
         {
             if (_isDisposed) return;
 
-            _socketWriter.Dispose();
-            _socketReader.Dispose();
-            _isDisposed = true;
-            _socket.Dispose();
-            GC.SuppressFinalize(this);
+            try
+            {
+                _cts.Cancel();
+                await _socketWriter.DisposeAsync();
+                await _socketReader.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                NLog.Instance.Error($"Error disposing session: {ex.Message}");
+            }
+            finally
+            {
+                _socket.Dispose();
+                _cts.Dispose();
+                _isDisposed = true;
+                GC.SuppressFinalize(this);
+            }
         }
     }
 }

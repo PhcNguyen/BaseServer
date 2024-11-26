@@ -7,45 +7,42 @@ using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Session
 {
-    internal class SessionManager
+    /// <summary>
+    /// Quản lý các phiên làm việc của khách hàng.
+    /// <para>
+    /// Lớp này chịu trách nhiệm quản lý, thêm, xóa và lấy các session hiện tại của người dùng.
+    /// </para>
+    /// </summary>
+    internal class SessionManager : ISessionManager
     {
+        // Lưu trữ tất cả các session hiện tại trong một ConcurrentDictionary.
         private readonly ConcurrentDictionary<ID36, ISessionClient> _activeSessions = new();
+
+        // Biến đếm số lượng session hiện tại.
         private int _sessionCount = 0;
 
         /// <summary>
         /// Thêm session mới vào danh sách và cập nhật số lượng session.
         /// </summary>
+        /// <param name="session">Phiên làm việc cần thêm.</param>
+        /// <returns>Trả về <c>true</c> nếu session được thêm thành công, ngược lại là <c>false</c>.</returns>
         public bool AddSession(ISessionClient session)
         {
-            // Kiểm tra và thêm session nếu chưa tồn tại
             bool isNewSession = _activeSessions.TryAdd(session.Id, session);
 
             if (isNewSession)
             {
-                // Cập nhật số lượng session khi thêm mới
                 Interlocked.Increment(ref _sessionCount);
             }
-            return isNewSession;
-        }
 
-        /// <summary>
-        /// Cập nhật session đã tồn tại vào danh sách.
-        /// </summary>
-        public bool UpdateSession(ISessionClient session)
-        {
-            // Cập nhật session nếu đã tồn tại trong danh sách
-            bool isUpdated = _activeSessions.ContainsKey(session.Id);
-            if (isUpdated)
-            {
-                // Nếu session đã tồn tại, cập nhật lại session
-                _activeSessions[session.Id] = session;
-            }
-            return isUpdated;
+            return isNewSession;
         }
 
         /// <summary>
         /// Lấy session theo ID.
         /// </summary>
+        /// <param name="sessionId">ID của session cần tìm.</param>
+        /// <returns>Trả về phiên làm việc nếu tìm thấy, nếu không trả về <c>null</c>.</returns>
         public ISessionClient? GetSession(ID36 sessionId)
         {
             _activeSessions.TryGetValue(sessionId, out var session);
@@ -53,13 +50,23 @@ namespace NServer.Core.Session
         }
 
         /// <summary>
+        /// Thử lấy session theo ID.
+        /// </summary>
+        /// <param name="sessionId">ID của session cần tìm.</param>
+        /// <param name="session">Session tìm thấy nếu có, hoặc <c>null</c> nếu không có.</param>
+        /// <returns>Trả về <c>true</c> nếu tìm thấy session, ngược lại là <c>false</c>.</returns>
+        public bool TryGetSession(ID36 sessionId, out ISessionClient? session) =>
+            _activeSessions.TryGetValue(sessionId, out session);
+
+        /// <summary>
         /// Xóa session theo ID.
         /// </summary>
+        /// <param name="sessionId">ID của session cần xóa.</param>
+        /// <returns>Trả về <c>true</c> nếu xóa thành công, ngược lại là <c>false</c>.</returns>
         public bool RemoveSession(ID36 sessionId)
         {
             bool isRemoved = _activeSessions.TryRemove(sessionId, out _);
 
-            // Nếu xóa thành công, giảm số lượng session
             if (isRemoved)
             {
                 Interlocked.Decrement(ref _sessionCount);
@@ -69,8 +76,9 @@ namespace NServer.Core.Session
         }
 
         /// <summary>
-        /// Lấy danh sách tất cả các session.
+        /// Lấy danh sách tất cả các session hiện tại.
         /// </summary>
+        /// <returns>Trả về danh sách các session hiện tại.</returns>
         public IEnumerable<ISessionClient> GetAllSessions()
         {
             return _activeSessions.Values;
@@ -79,9 +87,10 @@ namespace NServer.Core.Session
         /// <summary>
         /// Lấy số lượng session hiện tại.
         /// </summary>
+        /// <returns>Số lượng session hiện tại.</returns>
         public int Count()
         {
-            return _sessionCount;  // Trả về số lượng session từ biến đếm
+            return _sessionCount;  
         }
     }
 }

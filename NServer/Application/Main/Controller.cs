@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
@@ -14,11 +15,10 @@ namespace NServer.Application.Main
     /// </summary>
     internal class Controller
     {
-        private readonly SessionManager _sessionManager = Singleton.GetInstance<SessionManager>();
-
         private readonly CancellationToken _cancellationToken;
-        private readonly PacketProcessor _packetProcessor;
+        private readonly SessionManager _sessionManager;
         private readonly SessionMonitor _sessionMonitor;
+        private readonly Container _container;
 
         /// <summary>
         /// Khởi tạo một <see cref="Controller"/> mới.
@@ -27,20 +27,40 @@ namespace NServer.Application.Main
         public Controller(CancellationToken cancellationToken)
         {
             _cancellationToken = cancellationToken;
-            
-            _sessionManager = new SessionManager();
-            _sessionMonitor = new SessionMonitor(_sessionManager);
-            _packetProcessor = new PacketProcessor(_sessionManager, _cancellationToken);
 
-            this.Initialization();
+            _container = new Container(_cancellationToken);
+            _sessionManager = Singleton.GetInstance<SessionManager>();
+            _sessionMonitor = new SessionMonitor(_sessionManager, _cancellationToken);
+
+            Initialization();
         }
 
+        /// <summary>
+        /// Khởi tạo các tác vụ ban đầu.
+        /// </summary>
         private void Initialization()
         {
-            _ = Task.Run(async () => await _sessionMonitor.MonitorSessionsAsync(_cancellationToken), _cancellationToken);
-            _packetProcessor.StartProcessing();
+            Task monitorSessionsTask = _sessionMonitor.MonitorSessionsAsync();
+            Task processIncomingPacketsTask = _container.ProcessIncomingPackets();
+            Task processOutgoingPacketsTask = _container.ProcessOutgoingPackets();
+
+            // Chờ cho tất cả các tác vụ hoàn thành
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.WhenAll(monitorSessionsTask, processIncomingPacketsTask, processOutgoingPacketsTask).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    NLog.Instance.Error($"Error during initialization: {ex.Message}");
+                }
+            }, _cancellationToken);
         }
 
+        /// <summary>
+        /// Lấy số lượng phiên đang hoạt động.
+        /// </summary>
         public int ActiveSessions() => _sessionManager.Count();
 
         /// <summary>
@@ -55,11 +75,11 @@ namespace NServer.Application.Main
             {
                 _sessionManager.AddSession(session);
 
-                await session.Connect();
+                await session.ConnectAsync().ConfigureAwait(false);
                 return;
             }
 
-            session.Dispose();
+            await session.DisposeAsync().ConfigureAwait(false);
         }
 
         /// <summary>
@@ -69,7 +89,7 @@ namespace NServer.Application.Main
         {
             var closeTasks = _sessionManager.GetAllSessions()
                 .Where(session => session.IsConnected)
-                .Select(async session => await _sessionMonitor.CloseConnectionAsync(session))
+                .Select(async session => await _sessionMonitor.CloseConnectionAsync(session).ConfigureAwait(false))
                 .ToList(); // Chuyển sang List để kiểm soát số lượng task đồng thời
 
             while (closeTasks.Count != 0)

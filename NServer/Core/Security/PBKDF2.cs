@@ -3,18 +3,26 @@ using System.Security.Cryptography;
 
 namespace NServer.Core.Security
 {
+    /// <summary>
+    /// Cung cấp các phương thức để mã hóa và xác thực mật khẩu bằng PBKDF2 với thuật toán SHA256.
+    /// </summary>
     internal class PBKDF2
     {
-        private const int SaltSize = 16;       // Kích thước salt (16 bytes)
-        private const int KeySize = 32;        // Kích thước key (32 bytes)
+        private const int SaltSize = 16;       // Kích thước của salt (16 bytes)
+        private const int KeySize = 32;        // Kích thước của key (32 bytes)
         private const int Iterations = 100000; // Số vòng lặp
 
-        // Hàm tạo hash từ mật khẩu
+        /// <summary>
+        /// Mã hóa mật khẩu bằng PBKDF2 với salt ngẫu nhiên và thuật toán SHA256.
+        /// </summary>
+        /// <param name="password">Mật khẩu cần mã hóa.</param>
+        /// <returns>Chuỗi chứa salt và mật khẩu đã mã hóa, ngăn cách bằng dấu '|'.</returns>
+        /// <exception cref="ArgumentException">Ném ra nếu mật khẩu là null hoặc rỗng.</exception>
         public static string HashPassword(string password)
         {
             if (string.IsNullOrWhiteSpace(password))
             {
-                throw new ArgumentException("Password cannot be null or empty.", nameof(password));
+                throw new ArgumentException("Mật khẩu không thể null hoặc rỗng.", nameof(password));
             }
 
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
@@ -25,7 +33,12 @@ namespace NServer.Core.Security
             return Convert.ToBase64String(salt) + "|" + Convert.ToBase64String(hash);
         }
 
-        // Hàm xác thực mật khẩu
+        /// <summary>
+        /// Xác thực mật khẩu bằng cách so sánh mật khẩu đã mã hóa với mật khẩu đầu vào.
+        /// </summary>
+        /// <param name="hashedPassword">Mật khẩu đã mã hóa (salt và hash).</param>
+        /// <param name="inputPassword">Mật khẩu đầu vào cần xác thực.</param>
+        /// <returns>True nếu mật khẩu đúng, false nếu sai.</returns>
         public static bool VerifyPassword(string hashedPassword, string inputPassword)
         {
             var parts = hashedPassword.Split('|');

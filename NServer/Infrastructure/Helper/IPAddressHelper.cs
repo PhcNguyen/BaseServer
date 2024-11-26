@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Linq;
 using System.Net.Sockets;
+using NServer.Infrastructure.Logging;
+using System;
 
 namespace NServer.Infrastructure.Helper
 {
@@ -24,6 +26,16 @@ namespace NServer.Infrastructure.Helper
         public static string[] GetAllLocalIPs() => ExtractAllLocalIPs();
         public static string GetClientIP(TcpClient client) => ExtractClientIP(client.Client);
         public static string GetClientIP(Socket socket) => ExtractClientIP(socket);
+
+        public static IPAddress ParseIPAddress(string ipAddress)
+        {
+            if (!IPAddress.TryParse(ipAddress, out var parsedIPAddress))
+            {
+                NLog.Instance.Error($"Invalid IP address format: {ipAddress}");
+                throw new ArgumentException("The provided IP address is not valid.", nameof(ipAddress));
+            }
+            return parsedIPAddress;
+        }
 
         // Private helpers
         private static string ExtractLocalIP(AddressFamily family)

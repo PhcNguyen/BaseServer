@@ -12,12 +12,14 @@ namespace NServer.Core.Interfaces.Session
         Socket Socket { get; }
         bool IsConnected { get; }
 
-        Task Connect();
-        Task Disconnect();
-        Task<bool> Send(object data);
+        Task ConnectAsync();
+        Task DisconnectAsync();
+        Task<bool> SendAsync(object data);
+        ValueTask DisposeAsync();
+
         void UpdateLastActivityTime();
         bool IsSessionTimedOut();
-        bool IsSocketDisposed();
+        bool IsSocketInvalid();
     }
 }
 

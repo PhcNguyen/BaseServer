@@ -1,4 +1,5 @@
 ﻿using NServer.Core.Packets.Utils;
+using System;
 
 namespace NServer.Core.Packets
 {
@@ -7,8 +8,16 @@ namespace NServer.Core.Packets
     /// </summary>
     internal class PacketSender : BasePacketContainer
     {
+        public event Action? PacketAdded;
+
         public PacketSender() : base() { }
 
-        public void AddPacket(Packet packet) => EnqueuePacket(packet);
+        public void AddPacket(Packet packet)
+        {
+            EnqueuePacket(packet);
+
+            // Kích hoạt sự kiện thông báo gói tin mới được thêm vào
+            PacketAdded?.Invoke();
+        }
     }
 }

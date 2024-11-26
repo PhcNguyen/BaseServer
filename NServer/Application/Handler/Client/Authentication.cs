@@ -14,116 +14,117 @@ namespace NServer.Application.Handler.Client
     {
         private static readonly SqlExecutor _sqlExecutor = new(new NpgsqlFactory());
 
-        public static Packet Response(Cmd command, string message)
-        {
-            var packet = new Packet();
-            packet.SetCommand((short)command);
-            packet.SetPayload(message);
-            return packet;
-        }
+        [Command(Cmd.PING)]
+        public static async Task<Packet> Ping(byte[] data) =>
+            await Task.FromResult(Utils.Response(Cmd.PONG, "Server is alive."));
+
+        [Command(Cmd.CLOSE)]
+        public static async Task<Packet> Close(byte[] data) =>
+            await Task.FromResult(Utils.EmptyPacket);
 
         [Command(Cmd.REGISTER)]
         public static async Task<Packet> Register(byte[] data)
         {
-            var result = ConverterHelper.ToString(data);
-            var parts = result.Split('|');
+            string[] input = ConverterHelper.ToString(data).Split('|');
 
-            if (parts.Length != 2)
-                return Response(Cmd.ERROR, "Invalid registration data format.");
+            if (!AuthenticationHelper.ValidateInput(input, 2))
+                return Utils.Response(Cmd.ERROR, "Invalid registration data format.");
 
-            string email = parts[0];
-            string password = parts[1];
+            string email = input[0].Trim();
+            string password = input[1].Trim();
 
-            if (!ValidatorHelper.IsEmailValid(email))
-                return Response(Cmd.ERROR, "Invalid email format.");
-
-            if (!ValidatorHelper.IsPasswordValid(password))
-                return Response(Cmd.ERROR, "Password does not meet the required criteria.");
-
-            int accountCount = await _sqlExecutor.ExecuteScalarAsync<int>(SqlCommand.SELECT_ACCOUNT_COUNT, email);
-            if (accountCount > 0)
-                return Response(Cmd.ERROR, "This email was used.");
+            if (!AuthenticationHelper.IsEmailValid(email) || !AuthenticationHelper.IsPasswordValid(password))
+                return Utils.Response(Cmd.ERROR, "Invalid email or weak password.");
 
             try
             {
                 bool success = await _sqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, PBKDF2.HashPassword(password));
                 return success
-                    ? Response(Cmd.SUCCESS, "Registration successful.")
-                    : Response(Cmd.ERROR, "Registration failed. Please try again.");
+                    ? Utils.Response(Cmd.SUCCESS, "Registration successful.")
+                    : Utils.Response(Cmd.ERROR, "Registration failed.");
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Registration failed for {email}: {ex.Message}");
-                return Response(Cmd.ERROR, "An error occurred during registration.");
+                if (ex.Message.Contains("duplicate key")) // PostgreSQL báo lỗi trùng lặp
+                    return Utils.Response(Cmd.ERROR, "This email is already registered.");
+
+                NLog.Instance.Error($"Registration failed: {ex.Message}");
+                return Utils.Response(Cmd.ERROR, "An error occurred during registration.");
             }
         }
 
         [Command(Cmd.LOGIN)]
         public static async Task<Packet> Login(byte[] data)
         {
-            var result = ConverterHelper.ToString(data);
-            var parts = result.Split('|');
+            string[] input = ConverterHelper.ToString(data).Split('|');
 
-            if (parts.Length != 2)
-                return Response(Cmd.ERROR, "Invalid login data format.");
+            if (!AuthenticationHelper.ValidateInput(input, 2))
+                return Utils.Response(Cmd.ERROR, "Invalid login data format.");
 
-            string email = parts[0].Trim();
-            string password = parts[1].Trim();
+            string email = input[0].Trim();
+            string password = input[1].Trim();
+
+            if (!AuthenticationHelper.IsEmailValid(email))
+                return Utils.Response(Cmd.ERROR, "Invalid email or password.");
 
             try
             {
                 string hashedPassword = await _sqlExecutor.ExecuteScalarAsync<string>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
+
                 if (string.IsNullOrEmpty(hashedPassword))
-                    return Response(Cmd.ERROR, "Account not found.");
+                    return Utils.Response(Cmd.ERROR, "Invalid email or password.");
 
-                bool isPasswordValid = PBKDF2.VerifyPassword(hashedPassword, password);
-                var responseMessage = isPasswordValid ? "Login successful." : "Incorrect password.";
-                var responseCmd = isPasswordValid ? Cmd.SUCCESS : Cmd.ERROR;
+                DateTime? lastLogin = await _sqlExecutor.ExecuteScalarAsync<DateTime?>(SqlCommand.SELECT_LAST_LOGIN, email);
 
-                return Response(responseCmd, responseMessage);
+                if (lastLogin.HasValue && (DateTime.UtcNow - lastLogin.Value).TotalSeconds < 10)
+                    return Utils.Response(Cmd.ERROR, "You must wait 10 seconds before trying again.");
+
+                if (!PBKDF2.VerifyPassword(hashedPassword, password))
+                {
+                    // Tăng cường bảo mật: Chặn brute-force
+                    await _sqlExecutor.ExecuteAsync(SqlCommand.UPDATE_LAST_LOGIN, email); // Cập nhật lần đăng nhập sai
+                    return Utils.Response(Cmd.ERROR, "Invalid email or password.");
+                }
+
+                return Utils.Response(Cmd.SUCCESS, "Login successful.");
             }
             catch (Exception ex)
             {
                 NLog.Instance.Error($"Login failed for {email}: {ex.Message}");
-                return Response(Cmd.ERROR, "An error occurred during login. Please try again later.");
+                return Utils.Response(Cmd.ERROR, "An error occurred during login.");
             }
         }
 
         [Command(Cmd.UPDATE_PASSWORD)]
         public static async Task<Packet> UpdatePassword(byte[] data)
         {
-            var result = ConverterHelper.ToString(data);
-            var parts = result.Split('|');
+            string[] input = ConverterHelper.ToString(data).Split('|');
 
-            if (parts.Length != 3)
-                return Response(Cmd.ERROR, "Invalid data format. Please provide email, current password, and new password.");
+            if (!AuthenticationHelper.ValidateInput(input, 3))
+                return Utils.Response(Cmd.ERROR, "Invalid data format.");
 
-            string email = parts[0];
-            string currentPassword = parts[1];
-            string newPassword = parts[2];
+            string email = input[0].Trim();
+            string currentPassword = input[1].Trim();
+            string newPassword = input[2].Trim();
+
+            if (!AuthenticationHelper.IsPasswordValid(newPassword))
+                return Utils.Response(Cmd.ERROR, "New password is too weak.");
 
             try
             {
-                string? storedPasswordHash = await _sqlExecutor.ExecuteScalarAsync<string?>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
-
-                if (storedPasswordHash == null)
-                    return Response(Cmd.ERROR, "Account not found.");
-
+                string storedPasswordHash = await _sqlExecutor.ExecuteScalarAsync<string>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
                 if (!PBKDF2.VerifyPassword(currentPassword, storedPasswordHash))
-                    return Response(Cmd.ERROR, "Current password is incorrect.");
+                    return Utils.Response(Cmd.ERROR, "Incorrect current password.");
 
-                string newPasswordHash = PBKDF2.HashPassword(newPassword);
-
-                bool updateSuccess = await _sqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, newPasswordHash);
-
+                bool updateSuccess = await _sqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, PBKDF2.HashPassword(newPassword));
                 return updateSuccess
-                    ? Response(Cmd.SUCCESS, "Password changed successfully.")
-                    : Response(Cmd.ERROR, "Failed to change password. Please try again.");
+                    ? Utils.Response(Cmd.SUCCESS, "Password updated successfully.")
+                    : Utils.Response(Cmd.ERROR, "Failed to update password.");
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Password change failed for {email}: {ex.Message}");
-                return Response(Cmd.ERROR, "An error occurred while changing the password.");
+                NLog.Instance.Error($"Password update failed for {email}: {ex.Message}");
+                return Utils.Response(Cmd.ERROR, "An error occurred during password update.");
             }
         }
     }
