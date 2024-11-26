@@ -17,7 +17,6 @@ namespace NServer.Core.Network
 
         private byte[] _buffer;
         private bool _disposed = false;
-        private bool _isReceiving = false; // Biến cờ để kiểm tra xem có đang nhận dữ liệu hay không
 
         public bool Disposed => _disposed;
 
@@ -37,12 +36,10 @@ namespace NServer.Core.Network
         private void StartReceiving()
         {
             // Nếu đang nhận dữ liệu, không gọi lại
-            if (_isReceiving || _disposed) return;
+            if (_disposed) return;
 
             try
             {
-                _isReceiving = true; // Đánh dấu là đang nhận dữ liệu
-
                 if (!_socket.ReceiveAsync(_receiveEventArgs))
                 {
                     // Nếu không phải bất đồng bộ, xử lý ngay
@@ -65,6 +62,7 @@ namespace NServer.Core.Network
             {
                 if (e.SocketError != SocketError.Success)
                 {
+                    HandleError($"Socket error: {e.SocketError}");
                     Dispose();
                     return;
                 }
@@ -77,6 +75,7 @@ namespace NServer.Core.Network
 
                     if (dataSize > _buffer.Length)
                     {
+                        // Điều chỉnh kích thước bộ đệm nếu cần thiết
                         _buffer = _multiSizeBuffer.RentBuffer(dataSize);
                         _receiveEventArgs.SetBuffer(_buffer, 0, _buffer.Length);
                     }
@@ -84,19 +83,13 @@ namespace NServer.Core.Network
                     _processReceivedData(e.Buffer.Take(bytesRead).ToArray());
                 }
 
-                await Task.Yield(); // Nhường quyền điều khiển để tránh đệ quy sâu
-
-                // Sau khi nhận xong, gọi lại StartReceiving nếu không có lỗi
-                StartReceiving();
+                // Tiếp tục nhận dữ liệu
+                await Task.Yield(); // Nhường quyền điều khiển để tránh đệ quy quá sâu
+                StartReceiving(); // Đảm bảo gọi lại StartReceiving
             }
             catch (Exception ex)
             {
-                // Đảm bảo rằng lỗi sẽ được bắt và xử lý
-                Console.WriteLine($"Error in OnReceiveCompleted: {ex.Message}");
-            }
-            finally
-            {
-                _isReceiving = false; // Đánh dấu là không còn đang nhận nữa
+                HandleError($"Error in OnReceiveCompleted: {ex.Message}");
             }
         }
 

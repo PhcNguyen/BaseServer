@@ -35,6 +35,11 @@ namespace NServer.Core.Packets
         public short Command { get; protected set; } = 0;
 
         /// <summary>
+        /// Type để xác định loại gói tin.
+        /// </summary>
+        public byte Type { get; protected set; } = 0;
+
+        /// <summary>
         /// Dữ liệu chính của gói tin.
         /// </summary>
         public Memory<byte> Payload
@@ -73,6 +78,7 @@ namespace NServer.Core.Packets
                 BitConverter.TryWriteBytes(span[..], Length); // Ghi chiều dài gói tin
                 span[PacketMetadata.FLAGSOFFSET] = (byte)Flags;
                 BitConverter.TryWriteBytes(span[PacketMetadata.COMMANDOFFSET..], Command);
+                span[PacketMetadata.TYPEOFFSET] = (byte)Type;
 
                 // Payload
                 Payload.Span.CopyTo(span[PacketMetadata.PAYLOADOFFSET..]);

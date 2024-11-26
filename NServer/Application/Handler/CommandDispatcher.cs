@@ -15,19 +15,23 @@ namespace NServer.Application.Handler
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance
         );
 
-        private static readonly Lazy<Dictionary<Cmd, MethodInfo>> CommandCache = new(() =>
-            LoadMethodsWithCommandAttribute(
-            [
-                "NServer.Application.Handler.Client",
-                "NServer.Application.Handler.Server"
-            ])
+        private static readonly Dictionary<Cmd, MethodInfo> CommandCache = LoadMethodsWithCommandAttribute(
+            new string[] { "NServer.Application.Handler.Client", "NServer.Application.Handler.Server" }
         );
 
         private static readonly Dictionary<Cmd, Func<byte[], Task<Packet>>> CommandDelegateCache = new();
 
-        private static Dictionary<Cmd, MethodInfo> CommandCacheValue => CommandCache.Value;
-
-        private static Dictionary<Cmd, Func<byte[], Task<Packet>>> CommandDelegateCacheValue => CommandDelegateCache;
+        // Đảm bảo rằng các phương thức được load ngay khi ứng dụng bắt đầu
+        static CommandDispatcher()
+        {
+            // Tải tất cả các delegate vào bộ nhớ khi ứng dụng khởi động
+            foreach (var command in CommandCache)
+            {
+                // Tạo delegate cho mỗi phương thức và cache lại
+                var func = CreateCommandDelegate(command.Value);
+                CommandDelegateCache[command.Key] = func;
+            }
+        }
 
         private static Dictionary<Cmd, MethodInfo> LoadMethodsWithCommandAttribute(string[] targetNamespaces)
         {
@@ -57,7 +61,7 @@ namespace NServer.Application.Handler
 
             var command = (Cmd)packet.Command;
 
-            if (!CommandCacheValue.TryGetValue(command, out var method))
+            if (!CommandCache.TryGetValue(command, out var method))
             {
                 newPacket.SetPayload($"Unknown command: {command}");
                 return newPacket;
@@ -65,17 +69,16 @@ namespace NServer.Application.Handler
 
             try
             {
-                // Kiểm tra nếu delegate đã được cache
-                if (!CommandDelegateCacheValue.TryGetValue(command, out var func))
+                // Lấy delegate từ cache đã được load trước
+                if (!CommandDelegateCache.TryGetValue(command, out var func))
                 {
                     NLog.Instance.Info($"Creating delegate for command: {command}");
                     func = CreateCommandDelegate(method);
                     CommandDelegateCache[command] = func;
                 }
 
-                // Gọi phương thức qua delegate
-                var payloadArray = packet.Payload.Span.ToArray();
-                var result = await func(payloadArray);
+                byte[] payloadArray = packet.Payload.Span.ToArray();
+                Packet result = await func(payloadArray);
 
                 result.SetID(packet.Id);
                 return result;
@@ -90,25 +93,21 @@ namespace NServer.Application.Handler
 
         private static Func<byte[], Task<Packet>> CreateCommandDelegate(MethodInfo method)
         {
-            // Kiểm tra kiểu trả về của phương thức có phải là Task<Packet>
             if (method.ReturnType != typeof(Task<Packet>))
             {
                 throw new ArgumentException("Method must return Task<Packet>", nameof(method));
             }
 
-            // Kiểm tra kiểu tham số đầu vào có phải là byte[]
             var parameters = method.GetParameters();
             if (parameters.Length != 1 || parameters[0].ParameterType != typeof(byte[]))
             {
                 throw new ArgumentException("Method must have a single parameter of type byte[]", nameof(method));
             }
 
-            // Tạo delegate với kiểu trả về Task<Packet>
             return (Func<byte[], Task<Packet>>)method.CreateDelegate(
                 typeof(Func<byte[], Task<Packet>>),
                 method.IsStatic ? null : new CommandDispatcher()
             );
         }
-
     }
 }

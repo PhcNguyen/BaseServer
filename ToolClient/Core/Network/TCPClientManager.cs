@@ -77,7 +77,7 @@
                 if (_tcpClient != null && _tcpClient.IsConnect)
                 {
                     byte[] pingPacket = System.Text.Encoding.UTF8.GetBytes("pong");
-                    Packet packet = new((byte)0, (sbyte)1, pingPacket);
+                    Packet packet = new((byte)0, (sbyte)1, (byte)0, pingPacket);
                     _tcpClient.SendData(packet.ToByteArray());
                 }
             }

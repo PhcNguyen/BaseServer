@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using NServer.Infrastructure.Logging;
 
 namespace NServer.Infrastructure.Services
 {
@@ -22,20 +23,28 @@ namespace NServer.Infrastructure.Services
         /// <returns>Một danh sách kết quả từ các tác vụ.</returns>
         public async Task ExecuteTasksAsync(IEnumerable<Func<Task>> tasks, CancellationToken cancellationToken)
         {
+            // Lọc ra các task null (nếu có)
+            tasks = tasks.Where(task => task != null).ToList();
+
             var taskList = tasks.Select(async task =>
             {
-                await _semaphore.WaitAsync(cancellationToken); // Chờ nếu vượt quá giới hạn
+                await _semaphore.WaitAsync(cancellationToken);
                 try
                 {
                     await task();
                 }
+                catch (Exception ex)
+                {
+                    NLog.Instance.Error($"Task execution failed: {ex.Message}");
+                }
                 finally
                 {
-                    _semaphore.Release(); // Giải phóng semaphore
+                    _semaphore.Release();
                 }
             });
 
-            await Task.WhenAll(taskList); // Chờ tất cả tác vụ hoàn thành
+            // Chờ tất cả các tác vụ hoàn thành
+            await Task.WhenAll(taskList);
         }
     }
 }

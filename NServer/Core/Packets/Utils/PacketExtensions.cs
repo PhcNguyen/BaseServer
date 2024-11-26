@@ -71,7 +71,7 @@ namespace NServer.Core.Packets.Utils
             }
 
             // Kiểm tra checksum
-            ReadOnlySpan<byte> dataWithoutChecksum = span[..(length - PacketMetadata.CHECKSUMSIZE)];
+            ReadOnlySpan<byte> dataWithoutChecksum = span[..(length)];
             int expectedChecksum = BitConverter.ToInt32(span[(length - PacketMetadata.CHECKSUMSIZE)..]);
 
             int actualChecksum = CalculateChecksum(dataWithoutChecksum);

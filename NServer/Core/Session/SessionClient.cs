@@ -5,14 +5,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 
 using NServer.Core.Network;
-using NServer.Core.Packets.Utils;
+using NServer.Core.Packets;
 using NServer.Core.Network.Firewall;
 using NServer.Core.Interfaces.Session;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Configuration;
-using NServer.Core.Packets;
 
 namespace NServer.Core.Session
 {
@@ -65,6 +64,7 @@ namespace NServer.Core.Session
         /// <param name="socket">Socket kết nối của phiên làm việc.</param>
         public SessionClient(Socket socket)
         {
+            _isDisposed = false;
             _socket = socket;
             _clientIp = IPAddressHelper.GetClientIP(_socket);
 
@@ -177,10 +177,8 @@ namespace NServer.Core.Session
             }
         }
 
-        private void ProcessReceived(byte[] data)
-        {
+        private void ProcessReceived(byte[] data) =>
             _packetReceiver.AddPacket(_id, data);
-        }
 
         public async Task<bool> Send(object data)
         {
@@ -192,6 +190,10 @@ namespace NServer.Core.Session
                     break;
                 case string str:
                     await _socketWriter.WriteAsync(ConverterHelper.ToBytes(str));
+                    break;
+                case Packet packet:
+                    byte[] packetBytes = packet.ToByteArray(); 
+                    await _socketWriter.WriteAsync(packetBytes);
                     break;
                 default:
                     throw new ArgumentException("Unsupported data type.");

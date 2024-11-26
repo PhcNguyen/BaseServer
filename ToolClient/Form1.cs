@@ -90,7 +90,7 @@ namespace ToolClient
             PacketFlags selectedFlags = (PacketFlags)comboFlags.SelectedItem;
             Cmd cmd = (Cmd)comboCmd.SelectedItem;
 
-            var packet = new Packet((byte)selectedFlags, (sbyte)cmd, ConverterHelper.ToBytes(TextPayload.Text));
+            var packet = new Packet((byte)selectedFlags, (sbyte)cmd, 0, ConverterHelper.ToBytes(TextPayload.Text));
             _tcpClientManager.SendData(packet.ToByteArray());
         }
     }

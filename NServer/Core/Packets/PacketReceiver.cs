@@ -1,4 +1,5 @@
 ﻿using NServer.Core.Packets.Utils;
+using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Packets
@@ -14,10 +15,19 @@ namespace NServer.Core.Packets
         {
             try
             {
-                if (packet == null
-                    || PacketExtensions.IsValidPacket(packet)
-                    || PacketExtensions.VerifyChecksum(packet))
+                if (packet == null)
                 {
+                    NLog.Instance.Warning("Packet");
+                    return false;
+                }
+                if (PacketExtensions.IsValidPacket(packet))
+                {
+                    NLog.Instance.Warning("Packet Faild");
+                    return false;
+                }
+
+                if (PacketExtensions.VerifyChecksum(packet)) {
+                    NLog.Instance.Warning("Packet Faild 2");
                     return false;
                 }
 

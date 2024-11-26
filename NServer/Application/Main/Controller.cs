@@ -30,15 +30,15 @@ namespace NServer.Application.Main
             
             _sessionManager = new SessionManager();
             _sessionMonitor = new SessionMonitor(_sessionManager);
-            _packetProcessor = new PacketProcessor(_cancellationToken);
+            _packetProcessor = new PacketProcessor(_sessionManager, _cancellationToken);
 
             this.Initialization();
         }
 
         private void Initialization()
         {
-            _packetProcessor.StartProcessing();
             _ = Task.Run(async () => await _sessionMonitor.MonitorSessionsAsync(_cancellationToken), _cancellationToken);
+            _packetProcessor.StartProcessing();
         }
 
         public int ActiveSessions() => _sessionManager.Count();
@@ -50,12 +50,6 @@ namespace NServer.Application.Main
         public async Task AcceptClientAsync(Socket clientSocket)
         {
             SessionClient session = new(clientSocket);
-
-            if (_sessionManager.TryGetSession(session.Id, out _))
-            {
-                session.Dispose();
-                return;
-            }
 
             if (session.Authentication())
             {

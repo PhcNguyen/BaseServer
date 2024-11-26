@@ -9,7 +9,7 @@ namespace NServer.Core.Session
 {
     internal class SessionManager
     {
-        public readonly ConcurrentDictionary<ID36, ISessionClient> ActiveSessions = new();
+        private readonly ConcurrentDictionary<ID36, ISessionClient> _activeSessions = new();
         private int _sessionCount = 0;
 
         /// <summary>
@@ -18,7 +18,7 @@ namespace NServer.Core.Session
         public bool AddSession(ISessionClient session)
         {
             // Kiểm tra và thêm session nếu chưa tồn tại
-            bool isNewSession = ActiveSessions.TryAdd(session.Id, session);
+            bool isNewSession = _activeSessions.TryAdd(session.Id, session);
 
             if (isNewSession)
             {
@@ -34,11 +34,11 @@ namespace NServer.Core.Session
         public bool UpdateSession(ISessionClient session)
         {
             // Cập nhật session nếu đã tồn tại trong danh sách
-            bool isUpdated = ActiveSessions.ContainsKey(session.Id);
+            bool isUpdated = _activeSessions.ContainsKey(session.Id);
             if (isUpdated)
             {
                 // Nếu session đã tồn tại, cập nhật lại session
-                ActiveSessions[session.Id] = session;
+                _activeSessions[session.Id] = session;
             }
             return isUpdated;
         }
@@ -48,16 +48,8 @@ namespace NServer.Core.Session
         /// </summary>
         public ISessionClient? GetSession(ID36 sessionId)
         {
-            ActiveSessions.TryGetValue(sessionId, out var session);
+            _activeSessions.TryGetValue(sessionId, out var session);
             return session;
-        }
-
-        /// <summary>
-        /// Kiểm tra xem session có tồn tại không.
-        /// </summary>
-        public bool TryGetSession(ID36 sessionId, out ISessionClient? session)
-        {
-            return ActiveSessions.TryGetValue(sessionId, out session);
         }
 
         /// <summary>
@@ -65,7 +57,7 @@ namespace NServer.Core.Session
         /// </summary>
         public bool RemoveSession(ID36 sessionId)
         {
-            bool isRemoved = ActiveSessions.TryRemove(sessionId, out _);
+            bool isRemoved = _activeSessions.TryRemove(sessionId, out _);
 
             // Nếu xóa thành công, giảm số lượng session
             if (isRemoved)
@@ -81,7 +73,7 @@ namespace NServer.Core.Session
         /// </summary>
         public IEnumerable<ISessionClient> GetAllSessions()
         {
-            return ActiveSessions.Values;
+            return _activeSessions.Values;
         }
 
         /// <summary>

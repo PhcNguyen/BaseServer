@@ -18,7 +18,7 @@ namespace NServer.Core.Session
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                foreach (var session in _sessionManager.GetAllSessions())
+                foreach (ISessionClient session in _sessionManager.GetAllSessions())
                 {
                     try
                     {
