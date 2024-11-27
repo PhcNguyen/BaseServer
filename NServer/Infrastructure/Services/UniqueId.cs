@@ -11,7 +11,7 @@ namespace NServer.Infrastructure.Services
     /// Khởi tạo một phiên ID mới.
     /// </remarks>
     /// <param name="value">Giá trị của ID.</param>
-    public readonly struct ID36(uint value)
+    public readonly struct UniqueId(uint value)
     {
         private const string Alphabet = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         private const int Base = 36;
@@ -23,14 +23,14 @@ namespace NServer.Infrastructure.Services
         /// Tạo ID mới từ một số nguyên ngẫu nhiên và số đếm tăng dần.
         /// </summary>
         /// <returns>ID gọn nhẹ.</returns>
-        public static ID36 NewId()
+        public static UniqueId NewId()
         {
             var buffer = new byte[4];
             RandomNumberGenerator.Fill(buffer);
             uint randomValue = BitConverter.ToUInt32(buffer, 0);
 
             uint uniqueValue = Interlocked.Increment(ref _counter) + randomValue;
-            return new ID36(uniqueValue);
+            return new UniqueId(uniqueValue);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace NServer.Infrastructure.Services
         /// </summary>
         /// <param name="input">Chuỗi cần chuyển đổi.</param>
         /// <returns>ID gọn nhẹ.</returns>
-        public static ID36 Parse(string input)
+        public static UniqueId Parse(string input)
         {
             uint value = 0;
 
@@ -72,7 +72,7 @@ namespace NServer.Infrastructure.Services
                 value = (uint)(value * Base + charIndex);
             }
 
-            return new ID36(value);
+            return new UniqueId(value);
         }
 
         /// <summary>

@@ -51,7 +51,7 @@ namespace NServer.Core.Packets
         /// <summary>
         /// Phương thức để thêm ID 
         /// </summary>
-        public void SetID(ID36 id) => Id = id;
+        public void SetID(UniqueId id) => Id = id;
 
         /// <summary>
         /// Phương thức để thêm cờ trạng thái

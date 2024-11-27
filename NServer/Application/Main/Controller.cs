@@ -15,10 +15,11 @@ namespace NServer.Application.Main
     /// </summary>
     internal class Controller
     {
-        private readonly CancellationToken _cancellationToken;
-        private readonly SessionManager _sessionManager;
+        private readonly SessionManager _sessionManager = Singleton.GetInstance<SessionManager>();
+
+        private readonly CancellationToken _token;
         private readonly SessionMonitor _sessionMonitor;
-        private readonly Container _container;
+        private readonly PacketContainer _packetContainer;
 
         /// <summary>
         /// Khởi tạo một <see cref="Controller"/> mới.
@@ -26,13 +27,12 @@ namespace NServer.Application.Main
         /// <param name="cancellationToken">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
         public Controller(CancellationToken cancellationToken)
         {
-            _cancellationToken = cancellationToken;
+            _token = cancellationToken;
 
-            _container = new Container(_cancellationToken);
-            _sessionManager = Singleton.GetInstance<SessionManager>();
-            _sessionMonitor = new SessionMonitor(_sessionManager, _cancellationToken);
+            _packetContainer = new PacketContainer(_token);
+            _sessionMonitor = new SessionMonitor(_sessionManager, _token);
 
-            Initialization();
+            this.Initialization();
         }
 
         /// <summary>
@@ -41,8 +41,8 @@ namespace NServer.Application.Main
         private void Initialization()
         {
             Task monitorSessionsTask = _sessionMonitor.MonitorSessionsAsync();
-            Task processIncomingPacketsTask = _container.ProcessIncomingPackets();
-            Task processOutgoingPacketsTask = _container.ProcessOutgoingPackets();
+            Task processIncomingPacketsTask = _packetContainer.ProcessIncomingPackets();
+            Task processOutgoingPacketsTask = _packetContainer.ProcessOutgoingPackets();
 
             // Chờ cho tất cả các tác vụ hoàn thành
             Task.Run(async () =>
@@ -55,7 +55,7 @@ namespace NServer.Application.Main
                 {
                     NLog.Instance.Error($"Error during initialization: {ex.Message}");
                 }
-            }, _cancellationToken);
+            }, _token);
         }
 
         /// <summary>

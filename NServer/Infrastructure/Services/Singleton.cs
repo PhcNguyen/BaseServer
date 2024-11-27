@@ -37,7 +37,7 @@ namespace NServer.Infrastructure.Services
         }
 
         /// <summary>
-        /// Lấy instance của một class singleton với hàm khởi tạo tùy chọn. 
+        /// Lấy instance của một class singleton với hàm khởi tạo tùy chọn.
         /// </summary>
         /// <typeparam name="T">Loại của class cần lấy instance.</typeparam>
         /// <param name="initializer">Hàm khởi tạo tùy chọn.</param>
@@ -59,6 +59,16 @@ namespace NServer.Infrastructure.Services
         }
 
         /// <summary>
+        /// Đăng ký một instance cụ thể của một class vào Singleton.
+        /// </summary>
+        /// <typeparam name="T">Loại của class cần đăng ký.</typeparam>
+        /// <param name="instance">Instance cụ thể cần đăng ký.</param>
+        public static void Register<T>(T instance) where T : class
+        {
+            _instances[typeof(T)] = instance ?? throw new ArgumentNullException(nameof(instance));
+        }
+
+        /// <summary>
         /// Reset instance của class singleton và gọi Dispose nếu cần.
         /// </summary>
         /// <typeparam name="T">Loại của class cần reset instance.</typeparam>
@@ -77,7 +87,7 @@ namespace NServer.Infrastructure.Services
         {
             foreach (var instance in _instances.Values)
             {
-                if (instance is Lazy<object> lazy && lazy.Value is IDisposable disposable)
+                if (instance is IDisposable disposable)
                 {
                     disposable.Dispose();
                 }

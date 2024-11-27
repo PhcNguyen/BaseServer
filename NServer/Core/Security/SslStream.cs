@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Net.Security;
 using System.Threading.Tasks;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -14,7 +13,7 @@ namespace NServer.Core.Security
     /// <summary>
     /// Cung cấp các phương thức để thiết lập và quản lý kết nối SSL cho server.
     /// </summary>
-    internal class SslSecurity : IStreamSecurity
+    internal class SslStream : ISslStream
     {
         /// <summary>
         /// Thiết lập kết nối SSL cho client.
@@ -43,7 +42,7 @@ namespace NServer.Core.Security
         {
             try
             {
-                var sslStream = new SslStream(baseStream, leaveInnerStreamOpen: false);
+                var sslStream = new System.Net.Security.SslStream(baseStream, leaveInnerStreamOpen: false);
 
                 await sslStream.AuthenticateAsServerAsync(
                     serverCertificate: new X509Certificate2(Setting.SslPfxCertificatePath, Setting.SslPassword),

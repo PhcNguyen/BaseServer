@@ -22,7 +22,7 @@ namespace NServer.Core.Packets
         /// </summary>
         public readonly DateTimeOffset Timestamp = DateTimeOffset.UtcNow;
 
-        public ID36 Id { get; protected set; }
+        public UniqueId Id { get; protected set; }
 
         /// <summary>
         /// Cờ trạng thái của gói tin.

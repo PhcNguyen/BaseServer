@@ -1,4 +1,4 @@
-﻿namespace NServer.Application.Handler
+﻿namespace NServer.Application.Handlers
 {
     [System.AttributeUsage(System.AttributeTargets.Method)]
     internal class CommandAttribute(Cmd command) : System.Attribute

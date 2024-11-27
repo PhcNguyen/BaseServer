@@ -27,7 +27,7 @@ namespace NServer.Core.Session
         private bool _isDisposed;
         private readonly string _clientIp;
 
-        private readonly ID36 _id;
+        private readonly UniqueId _id;
         private readonly Socket _socket;
         private readonly TimeSpan _timeout;
         private readonly Stopwatch _activityTimer;
@@ -56,7 +56,7 @@ namespace NServer.Core.Session
         /// <summary>
         /// ID duy nhất của phiên làm việc.
         /// </summary>
-        public ID36 Id => _id;
+        public UniqueId Id => _id;
 
         /// <summary>
         /// Socket kết nối của khách hàng.
@@ -71,7 +71,7 @@ namespace NServer.Core.Session
         {
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
             _clientIp = IPAddressHelper.GetClientIP(_socket);
-            _id = ID36.NewId();
+            _id = UniqueId.NewId();
             _timeout = Setting.Timeout;
             _activityTimer = Stopwatch.StartNew();
 

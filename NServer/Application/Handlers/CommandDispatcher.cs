@@ -6,8 +6,9 @@ using System.Collections.Generic;
 
 using NServer.Core.Packets;
 using NServer.Infrastructure.Logging;
+using NServer.Core.Interfaces.Packets;
 
-namespace NServer.Application.Handler
+namespace NServer.Application.Handlers
 {
     internal class CommandDispatcher
     {
@@ -16,7 +17,7 @@ namespace NServer.Application.Handler
         );
 
         private static readonly Dictionary<Cmd, MethodInfo> CommandCache = LoadMethodsWithCommandAttribute(
-            new string[] { "NServer.Application.Handler.Client", "NServer.Application.Handler.Server" }
+            new string[] { "NServer.Application.Handler.Client" }
         );
 
         private static readonly Dictionary<Cmd, Func<byte[], Task<Packet>>> CommandDelegateCache = new();
@@ -47,7 +48,7 @@ namespace NServer.Application.Handler
                            );
         }
 
-        public static async Task<Packet> HandleCommand(Packet packet)
+        public static async Task<IPacket> HandleCommand(IPacket packet)
         {
             var newPacket = new Packet();
             newPacket.SetID(packet.Id);

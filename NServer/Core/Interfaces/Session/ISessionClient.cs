@@ -6,7 +6,7 @@ namespace NServer.Core.Interfaces.Session
 {
     internal interface ISessionClient
     {
-        ID36 Id { get; }
+        UniqueId Id { get; }
         byte[] Key { get; }
         string IpAddress { get; }
         Socket Socket { get; }

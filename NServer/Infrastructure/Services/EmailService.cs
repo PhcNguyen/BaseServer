@@ -7,7 +7,7 @@ using NServer.Infrastructure.Logging;
 
 namespace NServer.Infrastructure.Services
 {
-    internal class EmailSender(string smtpServer, int smtpPort, string fromAddress, string fromPassword, bool useSsl = true)
+    internal class EmailService(string smtpServer, int smtpPort, string fromAddress, string fromPassword, bool useSsl = true)
     {
         private readonly string _smtpServer = smtpServer;
         private readonly int _smtpPort = smtpPort;

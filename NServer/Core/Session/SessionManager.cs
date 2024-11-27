@@ -16,7 +16,7 @@ namespace NServer.Core.Session
     internal class SessionManager : ISessionManager
     {
         // Lưu trữ tất cả các session hiện tại trong một ConcurrentDictionary.
-        private readonly ConcurrentDictionary<ID36, ISessionClient> _activeSessions = new();
+        private readonly ConcurrentDictionary<UniqueId, ISessionClient> _activeSessions = new();
 
         // Biến đếm số lượng session hiện tại.
         private int _sessionCount = 0;
@@ -43,7 +43,7 @@ namespace NServer.Core.Session
         /// </summary>
         /// <param name="sessionId">ID của session cần tìm.</param>
         /// <returns>Trả về phiên làm việc nếu tìm thấy, nếu không trả về <c>null</c>.</returns>
-        public ISessionClient? GetSession(ID36 sessionId)
+        public ISessionClient? GetSession(UniqueId sessionId)
         {
             _activeSessions.TryGetValue(sessionId, out var session);
             return session;
@@ -55,7 +55,7 @@ namespace NServer.Core.Session
         /// <param name="sessionId">ID của session cần tìm.</param>
         /// <param name="session">Session tìm thấy nếu có, hoặc <c>null</c> nếu không có.</param>
         /// <returns>Trả về <c>true</c> nếu tìm thấy session, ngược lại là <c>false</c>.</returns>
-        public bool TryGetSession(ID36 sessionId, out ISessionClient? session) =>
+        public bool TryGetSession(UniqueId sessionId, out ISessionClient? session) =>
             _activeSessions.TryGetValue(sessionId, out session);
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace NServer.Core.Session
         /// </summary>
         /// <param name="sessionId">ID của session cần xóa.</param>
         /// <returns>Trả về <c>true</c> nếu xóa thành công, ngược lại là <c>false</c>.</returns>
-        public bool RemoveSession(ID36 sessionId)
+        public bool RemoveSession(UniqueId sessionId)
         {
             bool isRemoved = _activeSessions.TryRemove(sessionId, out _);
 

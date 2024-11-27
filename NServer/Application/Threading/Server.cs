@@ -4,13 +4,20 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NServer.Application.Main;
+
 using NServer.Core.Network;
+using NServer.Core.Session;
 using NServer.Core.Network.Firewall;
+using NServer.Core.Interfaces.Session;
 using NServer.Core.Network.BufferPool;
+
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Configuration;
+using NServer.Core.Interfaces.Packets;
+using NServer.Core.Packets;
+
 
 namespace NServer.Application.Threading
 {
@@ -38,6 +45,15 @@ namespace NServer.Application.Threading
             _cts = new CancellationTokenSource();
             _networkListener = new SocketListener();
             _controller = new Controller(_cts.Token);
+
+            RegisterSingleton();
+        }
+
+        private static void RegisterSingleton()
+        {
+            Singleton.Register<IPacketSender>(new PacketSender());
+            Singleton.Register<IPacketReceiver>(new PacketReceiver());
+            Singleton.Register<ISessionManager>(new SessionManager());
         }
 
         private void InitializeComponents()

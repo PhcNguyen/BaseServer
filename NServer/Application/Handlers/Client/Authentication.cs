@@ -8,7 +8,7 @@ using NServer.Core.Database.Postgre;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 
-namespace NServer.Application.Handler.Client
+namespace NServer.Application.Handlers.Client
 {
     internal class Authentication
     {

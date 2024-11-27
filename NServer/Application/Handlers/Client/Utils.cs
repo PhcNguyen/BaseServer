@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NServer.Core.Packets;
 
-namespace NServer.Application.Handler.Client
+namespace NServer.Application.Handlers.Client
 {
     internal class Utils
     {

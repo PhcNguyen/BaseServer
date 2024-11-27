@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
+using NServer.Core.Interfaces.Packets;
+
 namespace NServer.Core.Packets.Utils
 {
     /// <summary>
@@ -9,13 +11,13 @@ namespace NServer.Core.Packets.Utils
     /// </summary>
     internal abstract class BasePacketContainer : IDisposable
     {
-        private readonly ConcurrentQueue<Packet> _packetQueue = new();
+        private readonly ConcurrentQueue<IPacket> _packetQueue = new();
 
         /// <summary>
         /// Thêm gói tin vào hàng đợi.
         /// </summary>
         /// <param name="packet">Gói tin cần thêm.</param>
-        protected void EnqueuePacket(Packet packet)
+        protected void EnqueuePacket(IPacket packet)
         {
             if (packet == null) throw new ArgumentNullException(nameof(packet), "Packet cannot be null.");
             _packetQueue.Enqueue(packet);
@@ -25,7 +27,7 @@ namespace NServer.Core.Packets.Utils
         /// Lấy một gói tin tiếp theo từ hàng đợi để xử lý.
         /// </summary>
         /// <returns>Gói tin cần xử lý hoặc null nếu hàng đợi trống.</returns>
-        public Packet? DequeuePacket()
+        public IPacket? DequeuePacket()
         {
             return _packetQueue.TryDequeue(out var packet) ? packet : null;
         }
@@ -35,11 +37,11 @@ namespace NServer.Core.Packets.Utils
         /// </summary>
         /// <param name="batchSize">Số lượng gói tin cần lấy trong một lô.</param>
         /// <returns>Danh sách gói tin.</returns>
-        public List<Packet> DequeueBatch(int batchSize)
+        public List<IPacket> DequeueBatch(int batchSize)
         {
             if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
 
-            var batch = new List<Packet>(batchSize);
+            var batch = new List<IPacket>(batchSize);
             while (batch.Count < batchSize && _packetQueue.TryDequeue(out var packet))
             {
                 batch.Add(packet);
