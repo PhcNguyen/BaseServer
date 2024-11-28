@@ -1,9 +1,9 @@
 ﻿using System;
 
-using NServer.Infrastructure.Services;
-using NServer.Infrastructure.Logging.Enums;
+using Base.Infrastructure.Services;
+using Base.Infrastructure.Logging.Enums;
 
-namespace NServer.Infrastructure.Logging
+namespace Base.Infrastructure.Logging
 {
     /// <summary>
     /// Provides logging functionalities with different levels.

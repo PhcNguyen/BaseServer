@@ -2,11 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Configuration;
-using NServer.Core.Interfaces.Database;
+using Base.Infrastructure.Logging;
+using Base.Infrastructure.Configuration;
+using Base.Core.Interfaces.Database;
 
-namespace NServer.Core.Database.Postgre
+namespace Base.Core.Database.Postgre
 {
     internal class NpgsqlConnection : IDatabaseConnection
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
-using NServer.Infrastructure.Logging.Enums;
-using NServer.Infrastructure.Logging.Helpers;
+using Base.Infrastructure.Logging.Enums;
+using Base.Infrastructure.Logging.Helpers;
 
-namespace NServer.Infrastructure.Logging
+namespace Base.Infrastructure.Logging
 {
     internal class FileManager
     {

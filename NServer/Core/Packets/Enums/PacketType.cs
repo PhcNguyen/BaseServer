@@ -1,10 +1,12 @@
-﻿namespace NServer.Core.Packets.Enums
+﻿namespace Base.Core.Packets.Enums
 {
     /// <summary>
     /// Enum định nghĩa các loại gói tin trong hệ thống.
     /// </summary>
     internal enum PacketType : byte
     {
+        NONE,
+
         /// <summary>
         /// Gói tin chứa thông điệp chat.
         /// </summary>

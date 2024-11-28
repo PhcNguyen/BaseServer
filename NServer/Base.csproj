@@ -10,16 +10,15 @@
 		<!-- Bật tính năng Nullability (cảnh báo lỗi nullable) -->
 		<Nullable>enable</Nullable>
 		<!-- Tên không gian gốc (Root Namespace) -->
-		<RootNamespace>NServer</RootNamespace>
+		<RootNamespace>Base</RootNamespace>
 		<!-- Tên của Assembly -->
-		<AssemblyName>NETServer</AssemblyName>
+		<AssemblyName>Base</AssemblyName>
 		<!-- Cho phép sử dụng code unsafe -->
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<!-- Cấu hình khi chạy ở chế độ Debug -->
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<!-- Nhắm đến mọi CPU -->
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<!-- Tạo debug symbols (file PDB đầy đủ) -->
 		<DebugSymbols>true</DebugSymbols>
@@ -52,7 +51,7 @@
 		<!-- Báo cáo lỗi -->
 		<ErrorReport>prompt</ErrorReport>
 		<!-- Mức cảnh báo nghiêm ngặt -->
-		<WarningLevel>4</WarningLevel>
+		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
 
 	<!-- Thêm các package tham chiếu -->

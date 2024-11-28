@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using NServer.Core.Interfaces.Network;
+using Base.Core.Interfaces.Network;
 
-namespace NServer.Core.Network.Firewall
+namespace Base.Core.Network.Firewall
 {
     /// <summary>
     /// Lớp xử lý giới hạn số lượng yêu cầu từ mỗi địa chỉ IP trong một cửa sổ thời gian.

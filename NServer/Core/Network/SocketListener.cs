@@ -4,11 +4,11 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-using NServer.Infrastructure.Helper;
-using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Configuration;
+using Base.Infrastructure.Helper;
+using Base.Infrastructure.Logging;
+using Base.Infrastructure.Configuration;
 
-namespace NServer.Core.Network
+namespace Base.Core.Network
 {
     /// <summary>
     /// SocketListener là lớp quản lý việc lắng nghe kết nối TCP đến server.
@@ -47,7 +47,7 @@ namespace NServer.Core.Network
 
             try
             {
-                IPAddress parsedIPAddress = string.IsNullOrEmpty(ipAddress) ? IPAddress.Any : IPAddressHelper.ParseIPAddress(ipAddress);
+                IPAddress parsedIPAddress = string.IsNullOrEmpty(ipAddress) ? IPAddress.Any : NetworkHelper.ParseIPAddress(ipAddress);
                 var localEndPoint = new IPEndPoint(parsedIPAddress, port);
 
                 _listenerSocket.Bind(localEndPoint);

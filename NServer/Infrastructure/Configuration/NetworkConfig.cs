@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NServer.Infrastructure.Configuration
+namespace Base.Infrastructure.Configuration
 {
     internal static class NetworkConfig
     {

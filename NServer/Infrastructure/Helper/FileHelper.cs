@@ -2,9 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace NServer.Infrastructure.Helper
+namespace Base.Infrastructure.Helper
 {
-    internal static class FileIOHelper
+    internal static class FileHelper
     {
         /// <summary>
         /// Ghi nội dung vào tệp văn bản. 

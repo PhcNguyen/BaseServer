@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Network
+namespace Base.Core.Network
 {
     /// <summary>
     /// Lớp này quản lý việc gửi dữ liệu bất đồng bộ qua socket.

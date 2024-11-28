@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using NServer.Core.Packets;
-using NServer.Core.Database;
-using NServer.Core.Security;
-using NServer.Core.Database.Postgre;
-using NServer.Infrastructure.Helper;
-using NServer.Infrastructure.Logging;
+using Base.Core.Packets;
+using Base.Core.Database;
+using Base.Core.Security;
+using Base.Core.Packets.Utils;
+using Base.Core.Database.Postgre;
+using Base.Infrastructure.Helper;
+using Base.Infrastructure.Logging;
 
-namespace NServer.Application.Handlers.Client
+namespace Base.Application.Handlers.Client
 {
     internal class Authentication
     {
@@ -27,13 +28,13 @@ namespace NServer.Application.Handlers.Client
         {
             string[] input = ConverterHelper.ToString(data).Split('|');
 
-            if (!AuthenticationHelper.ValidateInput(input, 2))
+            if (!ValidationHelper.ValidateInput(input, 2))
                 return Utils.Response(Cmd.ERROR, "Invalid registration data format.");
 
             string email = input[0].Trim();
             string password = input[1].Trim();
 
-            if (!AuthenticationHelper.IsEmailValid(email) || !AuthenticationHelper.IsPasswordValid(password))
+            if (!ValidationHelper.IsEmailValid(email) || !ValidationHelper.IsPasswordValid(password))
                 return Utils.Response(Cmd.ERROR, "Invalid email or weak password.");
 
             try
@@ -58,13 +59,13 @@ namespace NServer.Application.Handlers.Client
         {
             string[] input = ConverterHelper.ToString(data).Split('|');
 
-            if (!AuthenticationHelper.ValidateInput(input, 2))
+            if (!ValidationHelper.ValidateInput(input, 2))
                 return Utils.Response(Cmd.ERROR, "Invalid login data format.");
 
             string email = input[0].Trim();
             string password = input[1].Trim();
 
-            if (!AuthenticationHelper.IsEmailValid(email))
+            if (!ValidationHelper.IsEmailValid(email))
                 return Utils.Response(Cmd.ERROR, "Invalid email or password.");
 
             try
@@ -76,8 +77,8 @@ namespace NServer.Application.Handlers.Client
 
                 DateTime? lastLogin = await _sqlExecutor.ExecuteScalarAsync<DateTime?>(SqlCommand.SELECT_LAST_LOGIN, email);
 
-                if (lastLogin.HasValue && (DateTime.UtcNow - lastLogin.Value).TotalSeconds < 10)
-                    return Utils.Response(Cmd.ERROR, "You must wait 10 seconds before trying again.");
+                if (lastLogin.HasValue && (DateTime.UtcNow - lastLogin.Value).TotalSeconds < 20)
+                    return Utils.Response(Cmd.ERROR, "You must wait 20 seconds before trying again.");
 
                 if (!PBKDF2.VerifyPassword(hashedPassword, password))
                 {
@@ -100,23 +101,26 @@ namespace NServer.Application.Handlers.Client
         {
             string[] input = ConverterHelper.ToString(data).Split('|');
 
-            if (!AuthenticationHelper.ValidateInput(input, 3))
+            if (!ValidationHelper.ValidateInput(input, 3))
                 return Utils.Response(Cmd.ERROR, "Invalid data format.");
 
             string email = input[0].Trim();
             string currentPassword = input[1].Trim();
             string newPassword = input[2].Trim();
 
-            if (!AuthenticationHelper.IsPasswordValid(newPassword))
+            if (!ValidationHelper.IsPasswordValid(newPassword))
                 return Utils.Response(Cmd.ERROR, "New password is too weak.");
 
             try
             {
                 string storedPasswordHash = await _sqlExecutor.ExecuteScalarAsync<string>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
+
                 if (!PBKDF2.VerifyPassword(currentPassword, storedPasswordHash))
                     return Utils.Response(Cmd.ERROR, "Incorrect current password.");
 
-                bool updateSuccess = await _sqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, PBKDF2.HashPassword(newPassword));
+                bool updateSuccess = await _sqlExecutor.ExecuteAsync(
+                    SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, PBKDF2.HashPassword(newPassword));
+
                 return updateSuccess
                     ? Utils.Response(Cmd.SUCCESS, "Password updated successfully.")
                     : Utils.Response(Cmd.ERROR, "Failed to update password.");

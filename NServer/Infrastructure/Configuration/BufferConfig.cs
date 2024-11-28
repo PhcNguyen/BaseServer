@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NServer.Infrastructure.Configuration
+namespace Base.Infrastructure.Configuration
 {
     internal class BufferConfig
     {

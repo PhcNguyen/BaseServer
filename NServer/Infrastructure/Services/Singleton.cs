@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-namespace NServer.Infrastructure.Services
+namespace Base.Infrastructure.Services
 {
     /// <summary>
     /// Lớp Singleton dùng để quản lý và khởi tạo các instance duy nhất của các class.
@@ -42,9 +42,13 @@ namespace NServer.Infrastructure.Services
         /// <typeparam name="T">Loại của class cần lấy instance.</typeparam>
         /// <param name="initializer">Hàm khởi tạo tùy chọn.</param>
         /// <returns>Instance duy nhất của class.</returns>
+        /// <exception cref="ArgumentNullException">Ném ra nếu hàm khởi tạo trả về null.</exception>
         public static T GetInstance<T>(Func<T>? initializer = null) where T : class
         {
-            return (T)_instances.GetOrAdd(typeof(T), _ => initializer?.Invoke() ?? Activator.CreateInstance<T>());
+            var instance = (T)_instances.GetOrAdd(typeof(T), _ => initializer?.Invoke() ?? Activator.CreateInstance<T>());
+            if (instance == null)
+                throw new ArgumentNullException(nameof(instance), "Initializer function returned null.");
+            return instance;
         }
 
         /// <summary>
@@ -53,9 +57,13 @@ namespace NServer.Infrastructure.Services
         /// <typeparam name="T">Loại của class cần lấy instance.</typeparam>
         /// <param name="args">Các tham số khởi tạo.</param>
         /// <returns>Instance duy nhất của class.</returns>
+        /// <exception cref="ArgumentNullException">Ném ra nếu instance được khởi tạo là null.</exception>
         public static T GetInstance<T>(params object[] args) where T : class
         {
-            return (T)_instances.GetOrAdd(typeof(T), _ => (T)Activator.CreateInstance(typeof(T), args)!);
+            var instance = (T)_instances.GetOrAdd(typeof(T), _ => (T)Activator.CreateInstance(typeof(T), args)!);
+            if (instance == null)
+                throw new ArgumentNullException(nameof(instance), "Instance created with parameters is null.");
+            return instance;
         }
 
         /// <summary>
@@ -63,9 +71,40 @@ namespace NServer.Infrastructure.Services
         /// </summary>
         /// <typeparam name="T">Loại của class cần đăng ký.</typeparam>
         /// <param name="instance">Instance cụ thể cần đăng ký.</param>
+        /// <exception cref="ArgumentNullException">Ném ra nếu instance là null.</exception>
         public static void Register<T>(T instance) where T : class
         {
-            _instances[typeof(T)] = instance ?? throw new ArgumentNullException(nameof(instance));
+            _instances[typeof(T)] = instance ?? throw new ArgumentNullException(nameof(instance), "Instance cannot be null.");
+        }
+
+        /// <summary>
+        /// Đăng ký một interface và lớp cài đặt tương ứng trong Singleton.
+        /// </summary>
+        /// <typeparam name="TInterface">Interface cần đăng ký.</typeparam>
+        /// <typeparam name="TImplementation">Lớp cài đặt của interface.</typeparam>
+        public static void Register<TInterface, TImplementation>()
+            where TInterface : class
+            where TImplementation : class, TInterface, new()
+        {
+            _instances[typeof(TInterface)] = new TImplementation();
+        }
+
+        /// <summary>
+        /// Lấy instance của một interface từ Singleton.
+        /// </summary>
+        /// <typeparam name="TInterface">Interface cần lấy instance.</typeparam>
+        /// <returns>Instance của interface.</returns>
+        /// <exception cref="InvalidOperationException">Ném ra nếu instance chưa được đăng ký.</exception>
+        public static TInterface GetInstanceOfInterface<TInterface>() where TInterface : class
+        {
+            // Kiểm tra nếu instance đã được đăng ký
+            if (!_instances.ContainsKey(typeof(TInterface)))
+            {
+                throw new InvalidOperationException($"No instance registered for {typeof(TInterface).FullName}.");
+            }
+
+            return _instances[typeof(TInterface)] as TInterface
+                   ?? throw new InvalidOperationException($"Instance registered for {typeof(TInterface).FullName} is null.");
         }
 
         /// <summary>

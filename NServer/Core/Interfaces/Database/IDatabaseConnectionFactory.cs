@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Database
+namespace Base.Core.Interfaces.Database
 {
     internal interface IDatabaseConnectionFactory
     {

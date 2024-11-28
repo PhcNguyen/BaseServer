@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace NServer.Infrastructure.Helper
+namespace Base.Infrastructure.Helper
 {
     /// <summary>
     /// Provides helper methods for converting between byte arrays and different data types.
@@ -60,10 +60,8 @@ namespace NServer.Infrastructure.Helper
             int numberChars = hex.Length;
             byte[] bytes = new byte[numberChars / 2];
 
-            // Tối ưu hóa vòng lặp để không dùng Substring
             for (int i = 0; i < numberChars; i += 2)
             {
-                // Chuyển 2 ký tự hex thành một byte
                 bytes[i / 2] = (byte)((GetHexValue(hex[i]) << 4) + GetHexValue(hex[i + 1]));
             }
             return bytes;
@@ -82,11 +80,9 @@ namespace NServer.Infrastructure.Helper
         /// <returns>A string representing the byte array in hexadecimal format.</returns>
         public static string BytesToHexStr(byte[] byteArray)
         {
-            // Tối ưu hóa capacity của StringBuilder theo độ dài của byteArray
             var hex = new StringBuilder(byteArray.Length * 2);
             foreach (byte b in byteArray)
             {
-                // Sử dụng Append thay vì AppendFormat để tối ưu
                 hex.AppendFormat("{0:x2}", b);
             }
             return hex.ToString();

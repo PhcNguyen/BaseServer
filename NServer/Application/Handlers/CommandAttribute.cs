@@ -1,4 +1,4 @@
-﻿namespace NServer.Application.Handlers
+﻿namespace Base.Application.Handlers
 {
     [System.AttributeUsage(System.AttributeTargets.Method)]
     internal class CommandAttribute(Cmd command) : System.Attribute
@@ -9,7 +9,7 @@
 
     internal enum Cmd : short
     {
-        NONE,
+        NONE = 0,
         PING,
         PONG,
         SET_KEY,

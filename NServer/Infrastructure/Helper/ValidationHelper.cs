@@ -2,9 +2,9 @@
 using System.Net;
 using System.Linq;
 
-namespace NServer.Infrastructure.Helper
+namespace Base.Infrastructure.Helper
 {
-    internal class AuthenticationHelper
+    internal class ValidationHelper
     {
         public static bool ValidateInput(string[] parts, int expectedLength)
         {
@@ -82,7 +82,7 @@ namespace NServer.Infrastructure.Helper
                 {
                     digitCount++;
                 }
-                else if (!(c is '-' or ' ' or '(' or ')' or '+')) 
+                else if (!(c is '-' or ' ' or '(' or ')' or '+'))
                 {
                     return false;
                 }

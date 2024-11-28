@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using System.Linq;
 using System.Net.Sockets;
-using NServer.Infrastructure.Logging;
+using Base.Infrastructure.Logging;
 using System;
 
-namespace NServer.Infrastructure.Helper
+namespace Base.Infrastructure.Helper
 {
-    internal class IPAddressHelper
+    internal class NetworkHelper
     {
         public static string GetPublicIPFromDns()
         {

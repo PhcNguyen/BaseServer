@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace NServer.Core.Security
+namespace Base.Core.Security
 {
     /// <summary>
     /// Cung cấp các phương thức để mã hóa và xác thực mật khẩu bằng PBKDF2 với thuật toán SHA256.

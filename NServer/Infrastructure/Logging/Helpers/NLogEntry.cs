@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Text;
 
-using NServer.Infrastructure.Logging.Enums;
-using NServer.Infrastructure.Logging.Filter;
+using Base.Infrastructure.Logging.Enums;
+using Base.Infrastructure.Logging.Filter;
 
-namespace NServer.Infrastructure.Logging.Helpers
+namespace Base.Infrastructure.Logging.Helpers
 {
     public class NLogEntry(LogLevel level, string? message = null, Exception? exception = null, string? additionalInfo = null)
     {

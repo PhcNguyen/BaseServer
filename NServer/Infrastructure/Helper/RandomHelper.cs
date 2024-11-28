@@ -1,10 +1,10 @@
 ﻿using System.Security.Cryptography;
 
-namespace NServer.Infrastructure.Helper
+namespace Base.Infrastructure.Helper
 {
-    internal class GeneratorHelper
+    internal class RandomHelper
     {
-        public static byte[] K128()
+        public static byte[] Generate128Bit()
         {
             using var rng = RandomNumberGenerator.Create();
             byte[] key = new byte[128 / 8];
@@ -12,7 +12,7 @@ namespace NServer.Infrastructure.Helper
             return key;
         }
 
-        public static byte[] K192()
+        public static byte[] Generate192Bit()
         {
             using var rng = RandomNumberGenerator.Create();
             byte[] key = new byte[192 / 8];
@@ -20,7 +20,7 @@ namespace NServer.Infrastructure.Helper
             return key;
         }
 
-        public static byte[] K256()
+        public static byte[] Generate256Bit()
         {
             using var rng = RandomNumberGenerator.Create();
             byte[] key = new byte[256 / 8];

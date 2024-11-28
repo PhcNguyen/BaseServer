@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NServer.Application.Model
+namespace Base.Application.Model
 {
     /// <summary>
     /// Đại diện cho tài khoản người dùng trong hệ thống.

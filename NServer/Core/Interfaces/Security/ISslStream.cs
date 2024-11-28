@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Security
+namespace Base.Core.Interfaces.Security
 {
     /// <summary>
     /// Cung cấp các phương thức để thiết lập và quản lý kết nối SSL cho server.

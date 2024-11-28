@@ -1,15 +1,17 @@
 ﻿using System;
 
-using NServer.Core.Packets.Enums;
-using NServer.Core.Packets.Utils;
-using NServer.Core.Interfaces.Packets;
+using Base.Core.Packets.Base;
+using Base.Core.Packets.Enums;
+using Base.Core.Packets.Metadata;
+using Base.Core.Interfaces.Packets;
 
-namespace NServer.Core.Packets
+
+namespace Base.Core.Packets
 {
     /// <summary>
     /// Gói tin cơ bản, kế thừa từ PacketBase.
     /// </summary>
-    internal class Packet : BasePacket, IPacket
+    internal class Packet : PacketBase, IPacket
     {
         /// <summary>
         /// Constructor để tạo Packet với Command và Payload.

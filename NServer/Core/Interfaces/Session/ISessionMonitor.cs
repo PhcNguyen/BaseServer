@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Session
+namespace Base.Core.Interfaces.Session
 {
     internal interface ISessionMonitor
     {

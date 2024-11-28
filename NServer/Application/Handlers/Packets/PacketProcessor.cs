@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using NServer.Core.Interfaces.Packets;
-using NServer.Infrastructure.Logging;
-using NServer.Core.Interfaces.Session;
+using Base.Infrastructure.Logging;
+using Base.Core.Interfaces.Session;
+using Base.Core.Interfaces.Packets;
 
-namespace NServer.Application.Handlers.Packets
+namespace Base.Application.Handlers.Packets
 {
     /// <summary>
     /// Lớp PacketProcessor chịu trách nhiệm xử lý các gói tin đến và đi.
     /// </summary>
     /// <remarks>
-    /// Khởi tạo một đối tượng <see cref="PacketHandler"/> mới.
+    /// Khởi tạo một đối tượng <see cref="PacketProcessor"/> mới.
     /// </remarks>
     /// <param name="sessionManager">Đối tượng quản lý phiên làm việc.</param>
-    internal class PacketHandler(ISessionManager sessionManager)
+    internal class PacketProcessor(ISessionManager sessionManager)
     {
         private readonly ISessionManager _sessionManager = sessionManager;
 
@@ -23,8 +23,7 @@ namespace NServer.Application.Handlers.Packets
         /// </summary>
         /// <param name="packet">Gói tin đến cần xử lý.</param>
         /// <param name="outgoingQueue">Hàng đợi gửi gói tin.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "<Pending>")]
-        public async Task HandleIncomingPacket(IPacket packet, IPacketSender outgoingQueue)
+        public async Task HandleIncomingPacket(IPacket packet, IPacketOutgoing outgoingQueue)
         {
             try
             {

@@ -1,8 +1,8 @@
 ﻿using System.Security.Cryptography;
 
-namespace NServer.Core.Interfaces.Security
+namespace Base.Core.Interfaces.Security
 {
-    internal interface IRSA2048
+    internal interface IRsaCipher
     {
         /// <summary>
         /// Thuộc tính khóa riêng của RSA.

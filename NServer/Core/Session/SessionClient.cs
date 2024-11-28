@@ -1,20 +1,22 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Net.Sockets;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
-using NServer.Core.Network;
-using NServer.Core.Packets;
-using NServer.Core.Network.Firewall;
-using NServer.Core.Interfaces.Session;
-using NServer.Infrastructure.Helper;
-using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Services;
-using NServer.Infrastructure.Configuration;
+using Base.Core.Network;
+using Base.Core.Packets;
+using Base.Core.Network.Firewall;
+using Base.Core.Interfaces.Session;
+using Base.Infrastructure.Helper;
+using Base.Infrastructure.Logging;
+using Base.Infrastructure.Services;
+using Base.Infrastructure.Configuration;
+using Base.Core.Packets.Queue;
 
-namespace NServer.Core.Session
+namespace Base.Core.Session
 {
     /// <summary>
     /// Quản lý phiên làm việc của khách hàng.
@@ -33,11 +35,11 @@ namespace NServer.Core.Session
         private readonly Stopwatch _activityTimer;
         private readonly SocketWriter _socketWriter;
         private readonly SocketReader _socketReader;
-
-        private readonly ConnLimiter _connLimiter = Singleton.GetInstance<ConnLimiter>();
-        private readonly PacketReceiver _packetReceiver = Singleton.GetInstance<PacketReceiver>();
+        private readonly Queue<Task> _sendQueue = new();
         private readonly CancellationTokenSource _cts = new();
-
+        private readonly ConnLimiter _connLimiter = Singleton.GetInstance<ConnLimiter>();
+        private readonly PacketIncoming _packetReceiver = Singleton.GetInstance<PacketIncoming>();
+        
         /// <summary>
         /// Kiểm tra trạng thái kết nối của phiên làm việc.
         /// </summary>
@@ -70,7 +72,8 @@ namespace NServer.Core.Session
         public SessionClient(Socket socket)
         {
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-            _clientIp = IPAddressHelper.GetClientIP(_socket);
+            _clientIp = NetworkHelper.GetClientIP(_socket);
+
             _id = UniqueId.NewId();
             _timeout = Setting.Timeout;
             _activityTimer = Stopwatch.StartNew();
@@ -134,6 +137,35 @@ namespace NServer.Core.Session
             }
         }
 
+        public async Task ReconnectAsync()
+        {
+            if (!IsConnected)
+            {
+                int retries = 3;
+                TimeSpan delay = TimeSpan.FromSeconds(2);
+
+                while (retries > 0)
+                {
+                    try
+                    {
+                        NLog.Instance.Info("Đang thử kết nối lại...");
+                        await ConnectAsync();
+                        return; // Kết nối thành công
+                    }
+                    catch (Exception ex)
+                    {
+                        NLog.Instance.Error($"Lần thử kết nối lại thất bại: {ex.Message}");
+                        retries--;
+                        if (retries > 0)
+                        {
+                            await Task.Delay(delay); // Tăng dần độ trễ
+                            delay = delay.Add(delay); // Tăng gấp đôi độ trễ
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Ngắt kết nối phiên làm việc.
         /// </summary>
@@ -148,6 +180,7 @@ namespace NServer.Core.Session
                 _cts.Cancel();
                 await DisposeAsync();
                 _connLimiter.ConnectionClosed(_clientIp);
+
                 NLog.Instance.Info($"Session {_id} disconnected from {_clientIp}");
             }
             catch (Exception ex)
@@ -178,27 +211,42 @@ namespace NServer.Core.Session
 
             try
             {
-                switch (data)
+                Task sendTask = data switch
                 {
-                    case byte[] byteArray:
-                        await _socketWriter.SendAsync(byteArray);
-                        break;
-                    case string str:
-                        await _socketWriter.SendAsync(ConverterHelper.ToBytes(str));
-                        break;
-                    case Packet packet:
-                        await _socketWriter.SendAsync(packet.ToByteArray());
-                        break;
-                    default:
-                        throw new ArgumentException("Unsupported data type.");
-                }
+                    byte[] byteArray => _socketWriter.SendAsync(byteArray),
+                    string str => _socketWriter.SendAsync(ConverterHelper.ToBytes(str)),
+                    Packet packet => _socketWriter.SendAsync(packet.ToByteArray()),
+                    _ => throw new ArgumentException("Unsupported data type.")
+                };
 
+                // Thêm task gửi vào hàng đợi
+                _sendQueue.Enqueue(sendTask);
+
+                // Kiểm tra và gửi lần lượt
+                await ProcessSendQueueAsync();
                 return true;
             }
             catch (Exception ex)
             {
                 NLog.Instance.Error($"Error sending data: {ex.Message}");
                 return false;
+            }
+        }
+
+        private async Task ProcessSendQueueAsync()
+        {
+            while (_sendQueue.Count > 0)
+            {
+                var task = _sendQueue.Dequeue();
+                try
+                {
+                    // Chờ cho task hoàn thành mà không chặn luồng
+                    await task.ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    NLog.Instance.Error($"Lỗi trong quá trình gửi dữ liệu: {ex.Message}");
+                }
             }
         }
 

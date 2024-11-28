@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Database
+namespace Base.Core.Interfaces.Database
 {
     internal interface IDatabaseConnection
     {

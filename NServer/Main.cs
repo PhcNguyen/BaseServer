@@ -1,9 +1,9 @@
-﻿using NServer.Application.Threading;
-using NServer.Core.Network.BufferPool;
-using NServer.Infrastructure.Services;
+﻿using Base.Application.Threading;
+using Base.Core.Network.BufferPool;
+using Base.Infrastructure.Services;
 using System;
 
-namespace NServer
+namespace Base
 {
     internal class Program
     {

@@ -4,20 +4,19 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-using NServer.Core.Session;
-using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Services;
+using Base.Core.Session;
+using Base.Infrastructure.Logging;
+using Base.Infrastructure.Services;
 
-namespace NServer.Application.Main
+namespace Base.Application.Main
 {
     /// <summary>
     /// Lớp điều khiển các phiên làm việc và xử lý gói tin từ người dùng.
     /// </summary>
     internal class Controller
     {
-        private readonly SessionManager _sessionManager = Singleton.GetInstance<SessionManager>();
-
         private readonly CancellationToken _token;
+        private readonly SessionManager _sessionManager;
         private readonly SessionMonitor _sessionMonitor;
         private readonly PacketContainer _packetContainer;
 
@@ -28,6 +27,7 @@ namespace NServer.Application.Main
         public Controller(CancellationToken cancellationToken)
         {
             _token = cancellationToken;
+            _sessionManager = Singleton.GetInstance<SessionManager>();
 
             _packetContainer = new PacketContainer(_token);
             _sessionMonitor = new SessionMonitor(_sessionManager, _token);
@@ -44,7 +44,6 @@ namespace NServer.Application.Main
             Task processIncomingPacketsTask = _packetContainer.ProcessIncomingPackets();
             Task processOutgoingPacketsTask = _packetContainer.ProcessOutgoingPackets();
 
-            // Chờ cho tất cả các tác vụ hoàn thành
             Task.Run(async () =>
             {
                 try

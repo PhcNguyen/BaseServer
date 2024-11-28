@@ -1,12 +1,12 @@
 ﻿using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Security
+namespace Base.Core.Interfaces.Security
 {
     /// <summary>
     /// A class that provides AES encryption and decryption functionality using a key.
     /// Implements IDisposable to release resources.
     /// </summary>
-    internal interface IAES256
+    internal interface IAesCipher
     {
         /// <summary>
         /// Gets the encryption key used for AES encryption and decryption.

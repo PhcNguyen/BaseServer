@@ -1,8 +1,8 @@
-﻿using NServer.Infrastructure.Services;
+﻿using Base.Infrastructure.Services;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Session
+namespace Base.Core.Interfaces.Session
 {
     internal interface ISessionClient
     {

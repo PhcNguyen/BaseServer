@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using NServer.Infrastructure.Configuration;
+using Base.Infrastructure.Configuration;
 
-namespace NServer.Core.Network.BufferPool
+namespace Base.Core.Network.BufferPool
 {
     internal class MultiSizeBuffer : IDisposable
     {

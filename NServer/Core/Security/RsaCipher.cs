@@ -3,16 +3,16 @@ using System.IO;
 using System.Text;
 using System.Security.Cryptography;
 
-using NServer.Infrastructure.Helper;
-using NServer.Core.Interfaces.Security;
-using NServer.Infrastructure.Configuration;
+using Base.Infrastructure.Helper;
+using Base.Core.Interfaces.Security;
+using Base.Infrastructure.Configuration;
 
-namespace NServer.Core.Security
+namespace Base.Core.Security
 {
     /// <summary>
     /// Lớp RsaCipher cung cấp các chức năng mã hóa và giải mã sử dụng thuật toán RSA.
     /// </summary>
-    internal class RSA2048 : IRSA2048
+    internal class RsaCipher : IRsaCipher
     {
         private static readonly string ExpiryFilePath = Setting.RsaShelfLifePath;
         private static readonly TimeSpan KeyRotationInterval = Setting.RsaKeyRotationInterval;
@@ -45,9 +45,9 @@ namespace NServer.Core.Security
         /// </summary>
         /// <returns>True nếu tất cả các tập tin khóa tồn tại, ngược lại là False.</returns>
         private bool KeysExist() =>
-            FileIOHelper.FileExists(PublicKeyFilePath) &&
-            FileIOHelper.FileExists(PrivateKeyFilePath) &&
-            FileIOHelper.FileExists(ExpiryFilePath);
+            FileHelper.FileExists(PublicKeyFilePath) &&
+            FileHelper.FileExists(PrivateKeyFilePath) &&
+            FileHelper.FileExists(ExpiryFilePath);
 
         /// <summary>
         /// Kiểm tra xem khóa RSA đã hết hạn hay chưa.
@@ -55,7 +55,7 @@ namespace NServer.Core.Security
         /// <returns>True nếu khóa đã hết hạn, ngược lại là False.</returns>
         private static bool IsKeyExpired()
         {
-            var expiryDateStr = FileIOHelper.ReadFromFile(ExpiryFilePath);
+            var expiryDateStr = FileHelper.ReadFromFile(ExpiryFilePath);
             return DateTime.Now > DateTime.Parse(expiryDateStr);
         }
 
@@ -70,7 +70,7 @@ namespace NServer.Core.Security
             PrivateKey = rsa.ExportParameters(true);
 
             SaveKeys();
-            FileIOHelper.WriteToFile(ExpiryFilePath, DateTime.Now.Add(KeyRotationInterval).ToString());
+            FileHelper.WriteToFile(ExpiryFilePath, DateTime.Now.Add(KeyRotationInterval).ToString());
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace NServer.Core.Security
             // Chỉ ghi khóa vào file nếu khóa không phải là null.
             if (PublicKey.Modulus != null && PrivateKey.Modulus != null)
             {
-                FileIOHelper.WriteToFile(PublicKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPublicKey()));
-                FileIOHelper.WriteToFile(PrivateKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPrivateKey()));
+                FileHelper.WriteToFile(PublicKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPublicKey()));
+                FileHelper.WriteToFile(PrivateKeyFilePath, Convert.ToBase64String(rsa.ExportRSAPrivateKey()));
             }
         }
 
@@ -91,8 +91,8 @@ namespace NServer.Core.Security
         /// </summary>
         private void LoadKeys()
         {
-            var publicKeyContent = FileIOHelper.ReadFromFile(PublicKeyFilePath);
-            var privateKeyContent = FileIOHelper.ReadFromFile(PrivateKeyFilePath);
+            var publicKeyContent = FileHelper.ReadFromFile(PublicKeyFilePath);
+            var privateKeyContent = FileHelper.ReadFromFile(PrivateKeyFilePath);
 
             rsa.ImportRSAPublicKey(Convert.FromBase64String(publicKeyContent), out _);
             rsa.ImportRSAPrivateKey(Convert.FromBase64String(privateKeyContent), out _);

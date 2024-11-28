@@ -1,21 +1,21 @@
-﻿using NServer.Core.Interfaces.Packets;
-using NServer.Core.Packets.Utils;
-using System;
+﻿using System;
 
-namespace NServer.Core.Packets
+using Base.Core.Interfaces.Packets;
+
+namespace Base.Core.Packets.Queue
 {
     /// <summary>
     /// Hàng đợi gói tin dùng để xử lý các gói tin gửi.
     /// </summary>
-    internal class PacketSender : BasePacketContainer, IPacketSender
+    internal class PacketOutgoing : PacketQueue, IPacketOutgoing
     {
         public event Action? PacketAdded;
 
-        public PacketSender() : base() { }
+        public PacketOutgoing() : base() { }
 
         public void AddPacket(IPacket packet)
         {
-            EnqueuePacket(packet);
+            Enqueue(packet);
 
             // Kích hoạt sự kiện thông báo gói tin mới được thêm vào
             PacketAdded?.Invoke();

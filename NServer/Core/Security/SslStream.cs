@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
-using NServer.Core.Interfaces.Security;
-using NServer.Infrastructure.Configuration;
+using Base.Core.Interfaces.Security;
+using Base.Infrastructure.Configuration;
 
-namespace NServer.Core.Security
+namespace Base.Core.Security
 {
     /// <summary>
     /// Cung cấp các phương thức để thiết lập và quản lý kết nối SSL cho server.

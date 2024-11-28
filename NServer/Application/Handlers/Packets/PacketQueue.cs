@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using NServer.Core.Interfaces.Packets;
+using Base.Core.Interfaces.Packets;
 
-namespace NServer.Application.Handlers.Packets
+namespace Base.Application.Handlers.Packets
 {
     /// <summary>
     /// Lớp PacketQueue chịu trách nhiệm quản lý hàng đợi các gói tin đến và đi.
@@ -15,19 +15,19 @@ namespace NServer.Application.Handlers.Packets
         /// <summary>
         /// Hàng đợi các gói tin đến.
         /// </summary>
-        public IPacketReceiver IncomingPacketQueue { get; }
+        public IPacketIncoming IncomingPacketQueue { get; }
 
         /// <summary>
         /// Hàng đợi các gói tin đi.
         /// </summary>
-        public IPacketSender OutgoingPacketQueue { get; }
+        public IPacketOutgoing OutgoingPacketQueue { get; }
 
         /// <summary>
         /// Khởi tạo một đối tượng <see cref="PacketQueue"/> mới.
         /// </summary>
         /// <param name="incomingQueue">Hàng đợi các gói tin đến.</param>
         /// <param name="outgoingQueue">Hàng đợi các gói tin đi.</param>
-        public PacketQueue(IPacketReceiver incomingQueue, IPacketSender outgoingQueue)
+        public PacketQueue(IPacketIncoming incomingQueue, IPacketOutgoing outgoingQueue)
         {
             IncomingPacketQueue = incomingQueue;
             OutgoingPacketQueue = outgoingQueue;

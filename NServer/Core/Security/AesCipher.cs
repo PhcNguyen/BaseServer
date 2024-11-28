@@ -4,15 +4,15 @@ using System.Buffers;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 
-using NServer.Core.Interfaces.Security;
+using Base.Core.Interfaces.Security;
 
-namespace NServer.Core.Security
+namespace Base.Core.Security
 {
     /// <summary>
     /// A class that provides AES encryption and decryption functionality using a key.
     /// Implements IDisposable to release resources.
     /// </summary>
-    internal class AES256 : IAES256, IDisposable
+    internal class AesCipher : IAesCipher, IDisposable
     {
         /// <summary>
         /// Gets the encryption key used for AES encryption and decryption.
@@ -22,11 +22,11 @@ namespace NServer.Core.Security
         private bool isDisposed = false;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AES256"/> class with a specified key.
+        /// Initializes a new instance of the <see cref="AesCipher"/> class with a specified key.
         /// </summary>
         /// <param name="key">The key used for AES encryption. Must be 128, 192, or 256 bits.</param>
         /// <exception cref="ArgumentException">Thrown when the key size is invalid.</exception>
-        public AES256(byte[] key)
+        public AesCipher(byte[] key)
         {
             int keySize = key.Length * 8;
             if (keySize != 128 && keySize != 192 && keySize != 256)
@@ -227,7 +227,7 @@ namespace NServer.Core.Security
         }
 
         /// <summary>
-        /// Disposes of the resources used by the <see cref="AES256"/> instance.
+        /// Disposes of the resources used by the <see cref="AesCipher"/> instance.
         /// </summary>
         /// <param name="disposing">Indicates whether the method was called directly or from a finalizer.</param>
         protected virtual void Dispose(bool disposing)
@@ -243,7 +243,7 @@ namespace NServer.Core.Security
         }
 
         /// <summary>
-        /// Disposes of the <see cref="AES256"/> instance.
+        /// Disposes of the <see cref="AesCipher"/> instance.
         /// </summary>
         public void Dispose()
         {

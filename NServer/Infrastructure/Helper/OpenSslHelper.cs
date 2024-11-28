@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 
-using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Configuration;
+using Base.Infrastructure.Logging;
+using Base.Infrastructure.Configuration;
 
-namespace NServer.Infrastructure.Helper
+namespace Base.Infrastructure.Helper
 {
     internal class OpensslHelper
     {

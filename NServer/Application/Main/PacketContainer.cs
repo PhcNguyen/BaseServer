@@ -1,14 +1,15 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using NServer.Core.Interfaces.Packets;
-using NServer.Core.Interfaces.Session;
-using NServer.Infrastructure.Services;
+using Base.Core.Interfaces.Packets;
+using Base.Core.Interfaces.Session;
+using Base.Infrastructure.Services;
 
-using NServer.Application.Handlers.Packets;
+using Base.Application.Handlers.Packets;
 
-namespace NServer.Application.Main
+namespace Base.Application.Main
 {
     /// <summary>
     /// Lớp PacketContainer chịu trách nhiệm xử lý các gói tin đến và đi.
@@ -17,21 +18,31 @@ namespace NServer.Application.Main
     {
         private readonly CancellationToken _token;
         private readonly PacketQueue _packetQueue;
-        private readonly PacketHandler _packetHandler;
+        private readonly PacketProcessor _packetHandler;
+        private readonly ISessionManager _sessionManager;
+        private readonly ParallelOptions _parallelOptions;
+        private readonly IPacketOutgoing _outgoingPacketQueue;
+        private readonly IPacketIncoming _incomingPacketQueue;
 
-        private readonly IPacketReceiver _incomingPacketQueue = Singleton.GetInstance<IPacketReceiver>();
-        private readonly IPacketSender _outgoingPacketQueue = Singleton.GetInstance<IPacketSender>();
-        private readonly ISessionManager _sessionManager = Singleton.GetInstance<ISessionManager>();
-
-        /// <summary>
-        /// Khởi tạo một đối tượng <see cref="PacketContainer"/> mới.
-        /// </summary>
-        /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
-        public PacketContainer(CancellationToken token)
+    /// <summary>
+    /// Khởi tạo một đối tượng <see cref="PacketContainer"/> mới.
+    /// </summary>
+    /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
+    public PacketContainer(CancellationToken token)
         {
             _token = token;
-            _packetHandler = new PacketHandler(_sessionManager);
+            _incomingPacketQueue = Singleton.GetInstanceOfInterface<IPacketIncoming>();
+            _outgoingPacketQueue = Singleton.GetInstanceOfInterface<IPacketOutgoing>();
+            _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
+
+            _packetHandler = new PacketProcessor(_sessionManager);
             _packetQueue = new PacketQueue(_incomingPacketQueue, _outgoingPacketQueue);
+
+            _parallelOptions = new()
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount, 
+                CancellationToken = _token
+            };
         }
 
         /// <summary>
@@ -43,6 +54,7 @@ namespace NServer.Application.Main
             {
                 await _packetQueue.WaitForIncomingSignal(_token);
                 List<IPacket> packetsBatch = _packetQueue.IncomingPacketQueue.DequeueBatch(50);
+
                 await HandleIncomingPacketBatch(packetsBatch);
             }
         }
@@ -56,6 +68,7 @@ namespace NServer.Application.Main
             {
                 await _packetQueue.WaitForOutgoingSignal(_token);
                 List<IPacket> packetsBatch = _packetQueue.OutgoingPacketQueue.DequeueBatch(50);
+
                 await HandleOutgoingPacketBatch(packetsBatch);
             }
         }
@@ -66,7 +79,7 @@ namespace NServer.Application.Main
         /// <param name="packetsBatch">Danh sách các gói tin cần xử lý.</param>
         private async Task HandleIncomingPacketBatch(List<IPacket> packetsBatch)
         {
-            await Parallel.ForEachAsync(packetsBatch, _token, async (packet, token) =>
+            await Parallel.ForEachAsync(packetsBatch, _parallelOptions, async (packet, token) =>
             {
                 await _packetHandler.HandleIncomingPacket(packet, _packetQueue.OutgoingPacketQueue);
             });
@@ -78,7 +91,7 @@ namespace NServer.Application.Main
         /// <param name="packetsBatch">Danh sách các gói tin cần xử lý.</param>
         private async Task HandleOutgoingPacketBatch(List<IPacket> packetsBatch)
         {
-            await Parallel.ForEachAsync(packetsBatch, _token, async (packet, token) =>
+            await Parallel.ForEachAsync(packetsBatch, _parallelOptions, async (packet, token) =>
             {
                 await _packetHandler.HandleOutgoingPacket(packet);
             });

@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Concurrent;
-using NServer.Core.Interfaces.Network;
-using NServer.Infrastructure.Configuration;
+using Base.Core.Interfaces.Network;
+using Base.Infrastructure.Configuration;
 using System;
 
-namespace NServer.Core.Network.Firewall
+namespace Base.Core.Network.Firewall
 {
     /// <summary>
     /// Lớp xử lý giới hạn số lượng kết nối đồng thời từ mỗi địa chỉ IP.
