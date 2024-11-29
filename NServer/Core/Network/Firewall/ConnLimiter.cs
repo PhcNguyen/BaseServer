@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using NServer.Core.Interfaces.Network;
 using NServer.Infrastructure.Configuration;
-using System;
 
 namespace NServer.Core.Network.Firewall
 {

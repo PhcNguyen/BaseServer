@@ -42,7 +42,7 @@ namespace NServer.Application.Threading
             _disposed = false;
             _isInMaintenanceMode = false;
 
-            RegisterInstances();
+            ServiceRegistry.Register();
 
             _multiSizeBuffer.AllocateBuffers();
             _cts = new CancellationTokenSource();

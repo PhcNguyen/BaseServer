@@ -31,10 +31,10 @@ namespace NServer.Application.Main
     public PacketContainer(CancellationToken token)
         {
             _token = token;
+            _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
             _incomingPacketQueue = Singleton.GetInstanceOfInterface<IPacketIncoming>();
             _outgoingPacketQueue = Singleton.GetInstanceOfInterface<IPacketOutgoing>();
-            _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
-
+            
             _packetHandler = new PacketProcessor(_sessionManager);
             _packetQueue = new PacketQueue(_incomingPacketQueue, _outgoingPacketQueue);
 

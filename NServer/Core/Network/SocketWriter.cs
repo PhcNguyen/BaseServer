@@ -2,6 +2,8 @@
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
+using NServer.Infrastructure.Services;
+
 namespace NServer.Core.Network
 {
     /// <summary>
@@ -9,9 +11,9 @@ namespace NServer.Core.Network
     /// </summary>
     internal class SocketWriter(Socket socket) : IAsyncDisposable
     {
-        private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-        private readonly SocketAsyncEventArgs _sendEventArgs = new();
         private bool _disposed = false;
+        private readonly SocketAsyncEventArgs _sendEventArgs = new();
+        private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
 
         /// <summary>
         /// Gửi dữ liệu bất đồng bộ qua socket.

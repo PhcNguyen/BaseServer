@@ -8,13 +8,13 @@ using System.Collections.Generic;
 
 using NServer.Core.Network;
 using NServer.Core.Packets;
-using NServer.Core.Network.Firewall;
+using NServer.Core.Network.EventArgsN;
 using NServer.Core.Interfaces.Session;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Configuration;
-using NServer.Core.Packets.Queue;
+using NServer.Core.Security;
 
 namespace NServer.Core.Session
 {
@@ -28,6 +28,7 @@ namespace NServer.Core.Session
     {
         private bool _isDisposed;
         private readonly string _clientIp;
+        private Action<UniqueId, byte[]>? _processdata;
 
         private readonly UniqueId _id;
         private readonly Socket _socket;
@@ -37,9 +38,7 @@ namespace NServer.Core.Session
         private readonly SocketReader _socketReader;
         private readonly Queue<Task> _sendQueue = new();
         private readonly CancellationTokenSource _cts = new();
-        private readonly ConnLimiter _connLimiter = Singleton.GetInstance<ConnLimiter>();
-        private readonly PacketIncoming _packetReceiver = Singleton.GetInstance<PacketIncoming>();
-        
+
         /// <summary>
         /// Kiểm tra trạng thái kết nối của phiên làm việc.
         /// </summary>
@@ -48,7 +47,7 @@ namespace NServer.Core.Session
         /// <summary>
         /// Khóa phiên làm việc (dành cho mã hóa hoặc xác thực).
         /// </summary>
-        public byte[] Key { get; set; } = [];
+        public byte[] Key { get; set; } = Array.Empty<byte>();
 
         /// <summary>
         /// Địa chỉ IP của khách hàng.
@@ -79,7 +78,9 @@ namespace NServer.Core.Session
             _activityTimer = Stopwatch.StartNew();
 
             _socketWriter = new SocketWriter(_socket);
-            _socketReader = new SocketReader(_socket, ProcessReceived);
+            _socketReader = new SocketReader(_socket);
+
+            _socketReader.DataReceived += OnDataReceived!;
         }
 
         /// <summary>
@@ -99,12 +100,6 @@ namespace NServer.Core.Session
         public bool IsSocketInvalid() => !_socket.Connected || _isDisposed || _socketReader.Disposed;
 
         /// <summary>
-        /// Xác thực phiên làm việc dựa trên địa chỉ IP.
-        /// </summary>
-        /// <returns>True nếu phiên làm việc được phép kết nối, ngược lại False.</returns>
-        public bool Authentication() => _connLimiter.IsConnectionAllowed(_clientIp);
-
-        /// <summary>
         /// Kết nối và bắt đầu xử lý dữ liệu từ khách hàng.
         /// </summary>
         public async Task ConnectAsync()
@@ -121,9 +116,6 @@ namespace NServer.Core.Session
                 }
 
                 NLog.Instance.Info($"Session {_id} connected to {_clientIp}");
-
-                // Bắt đầu đọc gói tin không đồng bộ
-                _socketReader.Receive(_cts.Token);
             }
             catch (Exception ex) when (ex is TimeoutException or IOException)
             {
@@ -179,24 +171,12 @@ namespace NServer.Core.Session
             {
                 _cts.Cancel();
                 await DisposeAsync();
-                _connLimiter.ConnectionClosed(_clientIp);
 
                 NLog.Instance.Info($"Session {_id} disconnected from {_clientIp}");
             }
             catch (Exception ex)
             {
                 NLog.Instance.Error($"Error during disconnect: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Xử lý gói tin nhận được từ khách hàng.
-        /// </summary>
-        private void ProcessReceived(byte[] data)
-        {
-            if (!_packetReceiver.AddPacket(_id, data))
-            {
-                NLog.Instance.Warning($"Failed to process received data for session {_id}");
             }
         }
 
@@ -213,9 +193,9 @@ namespace NServer.Core.Session
             {
                 Task sendTask = data switch
                 {
-                    byte[] byteArray => _socketWriter.SendAsync(byteArray),
-                    string str => _socketWriter.SendAsync(ConverterHelper.ToBytes(str)),
-                    Packet packet => _socketWriter.SendAsync(packet.ToByteArray()),
+                    byte[] byteArray => _socketWriter.SendAsync(ChecksumGuard.AddChecksum(byteArray)),
+                    string str => _socketWriter.SendAsync(ChecksumGuard.AddChecksum(ConverterHelper.ToBytes(str))),
+                    Packet packet => _socketWriter.SendAsync(ChecksumGuard.AddChecksum(packet.ToByteArray())),
                     _ => throw new ArgumentException("Unsupported data type.")
                 };
 
@@ -230,6 +210,23 @@ namespace NServer.Core.Session
             {
                 NLog.Instance.Error($"Error sending data: {ex.Message}");
                 return false;
+            }
+        }
+
+        public void Receive(Action<UniqueId, byte[]> processdata)
+        {
+            _processdata = processdata;
+            _socketReader.Receive(_cts.Token);
+        }
+
+        private void OnDataReceived(object sender, SocketReceivedEventArgs e)
+        {
+            if (_processdata == null) return;
+            bool isValid = ChecksumGuard.VerifyChecksum(e.Data, out byte[]? originalData);
+
+            if (isValid && originalData != null)
+            {
+                _processdata(_id, originalData);
             }
         }
 
@@ -260,6 +257,8 @@ namespace NServer.Core.Session
             try
             {
                 _cts.Cancel();
+                _socketReader.DataReceived -= OnDataReceived!;
+
                 await _socketWriter.DisposeAsync();
                 await _socketReader.DisposeAsync();
             }

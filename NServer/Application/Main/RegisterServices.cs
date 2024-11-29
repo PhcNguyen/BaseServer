@@ -1,8 +1,11 @@
 ﻿using NServer.Core.Session;
+using NServer.Core.Packets.Queue;
+using NServer.Core.Network.Firewall;
 using NServer.Core.Interfaces.Packets;
 using NServer.Core.Interfaces.Session;
+using NServer.Core.Interfaces.Network;
+
 using NServer.Infrastructure.Services;
-using NServer.Core.Packets.Queue;
 
 namespace NServer.Application.Main
 {
@@ -16,6 +19,8 @@ namespace NServer.Application.Main
         /// </summary>
         public static void Register()
         {
+            Singleton.Register<IConnLimiter, ConnLimiter>();
+
             Singleton.Register<IPacketOutgoing, PacketOutgoing>();
             Singleton.Register<IPacketIncoming, PacketIncoming>();
             Singleton.Register<ISessionManager, SessionManager>();

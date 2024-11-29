@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using NServer.Core.Network.BufferPool;
+using NServer.Core.Network.EventArgsN;
 using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Network
@@ -15,13 +16,15 @@ namespace NServer.Core.Network
     internal class SocketReader : IAsyncDisposable, IDisposable
     {
         private readonly Socket _socket;
-        private readonly Action<byte[]> _processReceivedData;
         private readonly SocketAsyncEventArgs _receiveEventArgs;
         private readonly MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
 
         private byte[] _buffer;
         private bool _disposed = false;
         private CancellationTokenSource? _cts;
+
+        // Sự kiện khi dữ liệu được nhận đầy đủ
+        public event EventHandler<SocketReceivedEventArgs>? DataReceived;
 
         /// <summary>
         /// Kiểm tra xem đối tượng đã được giải phóng hay chưa.
@@ -32,12 +35,10 @@ namespace NServer.Core.Network
         /// Khởi tạo một đối tượng <see cref="SocketReader"/> mới.
         /// </summary>
         /// <param name="socket">Socket dùng để nhận dữ liệu.</param>
-        /// <param name="processReceivedData">Hàm xử lý dữ liệu nhận được.</param>
         /// <exception cref="ArgumentNullException">Ném ra khi socket là null.</exception>
-        public SocketReader(Socket socket, Action<byte[]> processReceivedData)
+        public SocketReader(Socket socket)
         {
             _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-            _processReceivedData = processReceivedData;
 
             _buffer = _multiSizeBuffer.RentBuffer(256);
             _receiveEventArgs = new SocketAsyncEventArgs();
@@ -120,8 +121,8 @@ namespace NServer.Core.Network
                         _receiveEventArgs.SetBuffer(_buffer, 0, _buffer.Length);
                     }
 
-                    // Gọi phương thức xử lý dữ liệu bất đồng bộ
-                    _processReceivedData(e.Buffer.Take(bytesRead).ToArray());
+                    // Tạo sự kiện khi dữ liệu đã đầy đủ
+                    OnDataReceived(new SocketReceivedEventArgs(e.Buffer.Take(bytesRead).ToArray()));
                 }
 
                 // Tiếp tục nhận dữ liệu
@@ -135,11 +136,15 @@ namespace NServer.Core.Network
             {
                 HandleError($"Error in OnReceiveCompleted: {ex.Message}");
             }
-            finally
-            {
-                // Hủy sự kiện sau khi đã xử lý xong
-                _receiveEventArgs.Completed -= OnReceiveCompleted!;
-            }
+        }
+
+        /// <summary>
+        /// Phương thức gọi sự kiện khi dữ liệu đã nhận đầy đủ.
+        /// </summary>
+        /// <param name="e">Thông tin sự kiện.</param>
+        protected virtual void OnDataReceived(SocketReceivedEventArgs e)
+        {
+            DataReceived?.Invoke(this, e);
         }
 
         /// <summary>
@@ -166,7 +171,7 @@ namespace NServer.Core.Network
             if (_buffer != null)
             {
                 _multiSizeBuffer.ReturnBuffer(_buffer);
-                _buffer = [];
+                _buffer = Array.Empty<byte>();
             }
 
             if (_cts != null)
@@ -194,7 +199,7 @@ namespace NServer.Core.Network
             if (_buffer != null)
             {
                 _multiSizeBuffer.ReturnBuffer(_buffer);
-                _buffer = [];
+                _buffer = Array.Empty<byte>();
             }
 
             if (_cts != null)

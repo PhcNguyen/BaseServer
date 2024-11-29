@@ -55,8 +55,8 @@ namespace NServer.Core.Packets.Base
                 return false;
 
             var newPayload = new byte[_payload.Length - length];
-            _payload.Span.Slice(0, startIndex).CopyTo(newPayload);
-            _payload.Span.Slice(startIndex + length).CopyTo(newPayload.AsSpan(startIndex));
+            _payload.Span[..startIndex].CopyTo(newPayload);
+            _payload.Span[(startIndex + length)..].CopyTo(newPayload.AsSpan(startIndex));
 
             _payload = new Memory<byte>(newPayload);
             return true;

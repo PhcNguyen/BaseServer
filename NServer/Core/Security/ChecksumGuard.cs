@@ -5,7 +5,7 @@ namespace NServer.Core.Security
     /// <summary>
     /// Tiện ích bảo mật xử lý checksum cho dữ liệu.
     /// </summary>
-    internal static class PacketSecurity
+    internal static class ChecksumGuard
     {
         /// <summary>
         /// Thêm checksum vào mảng byte.
@@ -65,7 +65,7 @@ namespace NServer.Core.Security
 
         private static readonly uint[] Crc32Table;
 
-        static PacketSecurity()
+        static ChecksumGuard()
         {
             Crc32Table = new uint[256];
             uint polynomial = 0xedb88320;

@@ -10,6 +10,7 @@ namespace NServer.Core.Interfaces.Packets
         bool TrySetPayload(ReadOnlySpan<byte> newPayload);
         void SetPayload(string newPayload);
         void SetPayload(Span<byte> newPayload);
+
         void AppendToPayload(byte[] additionalData);
         bool RemovePayloadSection(int startIndex, int length);
         bool ReplacePayloadSection(int startIndex, byte[] newData);

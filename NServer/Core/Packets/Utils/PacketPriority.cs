@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using NServer.Core.Packets.Enums;
+using NServer.Core.Interfaces.Packets;
 
 namespace NServer.Core.Packets.Utils
 {
@@ -13,7 +14,7 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Xác định độ ưu tiên của gói tin dựa trên cờ (flags).
         /// </summary>
-        public static int DeterminePriority(Packet packet) => packet.Flags switch
+        public static int DeterminePriority(IPacket packet) => packet.Flags switch
         {
             PacketFlags f when f.HasFlag(PacketFlags.ISURGENT) => 4, // Khẩn cấp
             PacketFlags f when f.HasFlag(PacketFlags.HIGH) => 3,     // Cao
@@ -25,7 +26,7 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Lấy danh sách các cờ trạng thái hiện tại của gói tin.
         /// </summary>
-        public static IEnumerable<PacketFlags> CombinedFlags(this Packet packet, Func<PacketFlags, bool>? filter = null)
+        public static IEnumerable<PacketFlags> CombinedFlags(this IPacket packet, Func<PacketFlags, bool>? filter = null)
         {
             for (int i = 0; i < sizeof(PacketFlags) * 8; i++)
             {

@@ -4,14 +4,16 @@ namespace NServer.Core.Interfaces.Packets
 {
     internal partial interface IPacket
     {
-        PacketFlags Flags { get; }
         PacketType Type { get; }
-        short Command { get; }
+        PacketFlags Flags { get; }
+        short Cmd { get; }
 
         void SetType(PacketType type);
+
         void AddFlag(PacketFlags flag);
-        void RemoveFlag(PacketFlags flag);
         bool HasFlag(PacketFlags flag);
+        void RemoveFlag(PacketFlags flag);
+
         void SetCmd(short command);
         void SetCmd(object command);
     }

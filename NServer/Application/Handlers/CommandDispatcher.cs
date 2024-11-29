@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using NServer.Core.Packets;
 using NServer.Infrastructure.Logging;
 using NServer.Core.Interfaces.Packets;
+using NServer.Application.Handlers.Packets;
 
 namespace NServer.Application.Handlers
 {
@@ -20,7 +21,7 @@ namespace NServer.Application.Handlers
             new string[] { "NServer.Application.Handler.Client" }
         );
 
-        private static readonly Dictionary<Cmd, Func<byte[], Task<Packet>>> CommandDelegateCache = new();
+        private static readonly Dictionary<Cmd, Func<byte[], Task<Packet>>> CommandDelegateCache = [];
 
         // Đảm bảo rằng các phương thức được load ngay khi ứng dụng bắt đầu
         static CommandDispatcher()
@@ -50,22 +51,16 @@ namespace NServer.Application.Handlers
 
         public static async Task<IPacket> HandleCommand(IPacket packet)
         {
-            var newPacket = new Packet();
-            newPacket.SetID(packet.Id);
-            newPacket.SetCommand((short)Cmd.ERROR);
-
-            if (packet.Command == (short)Cmd.NONE)
+            if (packet.Cmd == (short)Cmd.NONE)
             {
-                newPacket.SetPayload("Invalid command: Command is null or invalid.");
-                return newPacket;
+                return Utils.Response(Cmd.ERROR, "Invalid command: Command is null or invalid.");
             }
 
-            var command = (Cmd)packet.Command;
+            var command = (Cmd)packet.Cmd;
 
             if (!CommandCache.TryGetValue(command, out var method))
             {
-                newPacket.SetPayload($"Unknown command: {command}");
-                return newPacket;
+                return Utils.Response(Cmd.ERROR, $"Unknown command: {command}");
             }
 
             try
@@ -81,14 +76,13 @@ namespace NServer.Application.Handlers
                 byte[] payloadArray = packet.Payload.Span.ToArray();
                 Packet result = await func(payloadArray);
 
-                result.SetID(packet.Id);
+                result.SetId(packet.Id);
                 return result;
             }
             catch (Exception ex)
             {
-                newPacket.SetPayload($"Error executing command: {command}");
                 NLog.Instance.Error($"Error executing command: {command}. Exception: {ex.Message}");
-                return newPacket;
+                return Utils.Response(Cmd.ERROR, $"Error executing command: {command}");
             }
         }
 

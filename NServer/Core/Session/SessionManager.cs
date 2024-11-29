@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 
 using NServer.Core.Interfaces.Session;
 using NServer.Infrastructure.Services;
+using NServer.Core.Interfaces.Network;
 
 namespace NServer.Core.Session
 {
@@ -17,9 +18,29 @@ namespace NServer.Core.Session
     {
         // Lưu trữ tất cả các session hiện tại trong một ConcurrentDictionary.
         private readonly ConcurrentDictionary<UniqueId, ISessionClient> _activeSessions = new();
+        private readonly IConnLimiter _connLimiter = Singleton.GetInstanceOfInterface<IConnLimiter>();
 
         // Biến đếm số lượng session hiện tại.
         private int _sessionCount = 0;
+
+        /// <summary>
+        /// Quản lý giới hạn kết nối cho một địa chỉ IP cụ thể.
+        /// </summary>
+        /// <param name="ipAddress">Địa chỉ IP cần kiểm tra.</param>
+        /// <param name="isAdding">Xác định xem có đang thêm kết nối mới hay không.</param>
+        /// <returns>Trả về <c>true</c> nếu kết nối được phép, ngược lại là <c>false</c>.</returns>
+        private bool ManageConnLimit(string ipAddress, bool isAdding)
+        {
+            if (isAdding)
+            {
+                return _connLimiter.IsConnectionAllowed(ipAddress);
+            }
+            else
+            {
+                _connLimiter.ConnectionClosed(ipAddress);
+                return true;
+            }
+        }
 
         /// <summary>
         /// Thêm session mới vào danh sách và cập nhật số lượng session.
@@ -28,6 +49,9 @@ namespace NServer.Core.Session
         /// <returns>Trả về <c>true</c> nếu session được thêm thành công, ngược lại là <c>false</c>.</returns>
         public bool AddSession(ISessionClient session)
         {
+            if (!ManageConnLimit(session.IpAddress, true))
+                return false;
+
             bool isNewSession = _activeSessions.TryAdd(session.Id, session);
 
             if (isNewSession)
@@ -65,10 +89,11 @@ namespace NServer.Core.Session
         /// <returns>Trả về <c>true</c> nếu xóa thành công, ngược lại là <c>false</c>.</returns>
         public bool RemoveSession(UniqueId sessionId)
         {
-            bool isRemoved = _activeSessions.TryRemove(sessionId, out _);
+            bool isRemoved = _activeSessions.TryRemove(sessionId, out var session);
 
-            if (isRemoved)
+            if (session != null)
             {
+                ManageConnLimit(session.IpAddress, false);
                 Interlocked.Decrement(ref _sessionCount);
             }
 
@@ -90,7 +115,7 @@ namespace NServer.Core.Session
         /// <returns>Số lượng session hiện tại.</returns>
         public int Count()
         {
-            return _sessionCount;  
+            return _sessionCount;
         }
     }
 }

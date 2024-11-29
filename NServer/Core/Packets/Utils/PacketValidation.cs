@@ -6,7 +6,7 @@ namespace NServer.Core.Packets.Utils
     /// <summary>
     /// Tiện ích kiểm tra và xác thực gói tin.
     /// </summary>
-    internal static class PacketValidationUtils
+    internal static class PacketValidation
     {
         /// <summary>
         /// Kiểm tra xem gói tin có hợp lệ hay không.

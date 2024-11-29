@@ -1,5 +1,7 @@
 ﻿using System;
+
 using NServer.Core.Packets.Metadata;
+using NServer.Core.Interfaces.Packets;
 
 namespace NServer.Core.Packets.Utils
 {
@@ -8,7 +10,7 @@ namespace NServer.Core.Packets.Utils
     /// </summary>
     internal static class PacketExtensions
     {
-        public static readonly Packet EmptyPacket = new(0, 0, []);
+        public static readonly Packet EmptyPacket = new(0, 0, 0, []);
 
         public static Packet BuildResponse(short command, string message)
         {
@@ -25,7 +27,7 @@ namespace NServer.Core.Packets.Utils
         /// <param name="data">Mảng byte chứa dữ liệu gói tin.</param>
         /// <returns>Đối tượng <see cref="Packet"/> được tạo từ dữ liệu.</returns>
         /// <exception cref="ArgumentException">Nếu dữ liệu không hợp lệ.</exception>
-        public static Packet FromByteArray(byte[] data)
+        public static IPacket FromByteArray(byte[] data)
         {
             if (data == null || data.Length < PacketMetadata.HEADERSIZE)
             {
@@ -41,12 +43,13 @@ namespace NServer.Core.Packets.Utils
                 throw new ArgumentException("Invalid packet length.", nameof(data));
             }
 
+            byte type = span[PacketMetadata.TYPEOFFSET];
             byte flags = span[PacketMetadata.FLAGSOFFSET];
             short command = BitConverter.ToInt16(span[PacketMetadata.COMMANDOFFSET..]);
             byte[] payload = span[(PacketMetadata.PAYLOADOFFSET)..length].ToArray();
 
             // Tạo Packet từ dữ liệu
-            return new Packet(flags, command, payload);
+            return new Packet(type, flags, command, payload);
         }
 
         /// <summary>

@@ -16,13 +16,17 @@ namespace NServer.Core.Packets
         /// <summary>
         /// Constructor để tạo Packet với Command và Payload.
         /// </summary>
-        public Packet(byte? flags = null, short? command = null, byte[]? payload = null)
+        public Packet(byte? type = null, byte? flags = null, short? command = null, byte[]? payload = null)
         {
+            Type = type is not null && Enum.IsDefined((PacketType)type)
+                    ? (PacketType)type
+                    : PacketType.NONE;
+
             Flags = flags is not null && Enum.IsDefined((PacketFlags)flags)
                     ? (PacketFlags)flags
                     : PacketFlags.NONE;
 
-            Command = command ?? 0;
+            Cmd = command ?? 0;
 
             if (payload != null && payload.Length + PacketMetadata.HEADERSIZE > int.MaxValue)
             {

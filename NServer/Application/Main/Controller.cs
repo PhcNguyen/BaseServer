@@ -5,8 +5,11 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 
 using NServer.Core.Session;
+using NServer.Core.Packets.Utils;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Interfaces.Packets;
 
 namespace NServer.Application.Main
 {
@@ -16,18 +19,20 @@ namespace NServer.Application.Main
     internal class Controller
     {
         private readonly CancellationToken _token;
-        private readonly SessionManager _sessionManager;
         private readonly SessionMonitor _sessionMonitor;
+        private readonly ISessionManager _sessionManager;
+        private readonly IPacketIncoming _packetIncoming;
         private readonly PacketContainer _packetContainer;
 
         /// <summary>
         /// Khởi tạo một <see cref="Controller"/> mới.
         /// </summary>
-        /// <param name="cancellationToken">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
-        public Controller(CancellationToken cancellationToken)
+        /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
+        public Controller(CancellationToken token)
         {
-            _token = cancellationToken;
-            _sessionManager = Singleton.GetInstance<SessionManager>();
+            _token = token;
+            _packetIncoming = Singleton.GetInstance<IPacketIncoming>();
+            _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
 
             _packetContainer = new PacketContainer(_token);
             _sessionMonitor = new SessionMonitor(_sessionManager, _token);
@@ -57,6 +62,15 @@ namespace NServer.Application.Main
             }, _token);
         }
 
+        private void ProcessFunc(UniqueId id, byte[] data)
+        {
+            if (PacketValidation.IsValidPacket(data)) return;
+            IPacket packet = PacketExtensions.FromByteArray(data);
+            packet.SetId(id);
+
+            _packetIncoming.AddPacket(packet);
+        }
+            
         /// <summary>
         /// Lấy số lượng phiên đang hoạt động.
         /// </summary>
@@ -70,11 +84,10 @@ namespace NServer.Application.Main
         {
             SessionClient session = new(clientSocket);
 
-            if (session.Authentication())
+            if (_sessionManager.AddSession(session))
             {
-                _sessionManager.AddSession(session);
-
                 await session.ConnectAsync().ConfigureAwait(false);
+                session.Receive(this.ProcessFunc);
                 return;
             }
 

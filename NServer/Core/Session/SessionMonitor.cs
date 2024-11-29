@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 using NServer.Infrastructure.Logging;
 using NServer.Core.Interfaces.Session;
+using NServer.Core.Interfaces.Network;
 
 namespace NServer.Core.Session
 {
@@ -22,7 +23,7 @@ namespace NServer.Core.Session
                 : ISessionMonitor
     {
         private readonly ISessionManager _sessionManager = sessionManager;
-        private readonly CancellationToken _cancellationToken = cancellationToken;
+        private readonly CancellationToken _token = cancellationToken;
 
         /// <summary>
         /// Giám sát các phiên làm việc không đồng bộ, kiểm tra và đóng các kết nối không hợp lệ.
@@ -30,7 +31,7 @@ namespace NServer.Core.Session
         /// <returns>Task đại diện cho tác vụ giám sát phiên làm việc.</returns>
         public async Task MonitorSessionsAsync()
         {
-            while (!_cancellationToken.IsCancellationRequested)
+            while (!_token.IsCancellationRequested)
             {
                 foreach (ISessionClient session in _sessionManager.GetAllSessions())
                 {
@@ -47,7 +48,7 @@ namespace NServer.Core.Session
                     }
                 }
 
-                await Task.Delay(2000, _cancellationToken).ConfigureAwait(false);
+                await Task.Delay(2000, _token).ConfigureAwait(false);
             }
         }
 
