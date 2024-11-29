@@ -1,8 +1,8 @@
 ﻿using System;
 
-using Base.Core.Interfaces.Packets;
+using NServer.Core.Interfaces.Packets;
 
-namespace Base.Core.Packets.Queue
+namespace NServer.Core.Packets.Queue
 {
     /// <summary>
     /// Hàng đợi gói tin dùng để xử lý các gói tin gửi.

@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-using Base.Infrastructure.Logging.Enums;
+using NServer.Infrastructure.Logging.Enums;
 
-namespace Base.Infrastructure.Logging.Helpers
+namespace NServer.Infrastructure.Logging.Helpers
 {
     internal class FileLogging : IDisposable
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Base.Infrastructure.Logging.Filter
+namespace NServer.Infrastructure.Logging.Filter
 {
     internal static class FilterException
     {

@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using Base.Core.Packets;
-using Base.Core.Database;
-using Base.Core.Security;
-using Base.Core.Packets.Utils;
-using Base.Core.Database.Postgre;
-using Base.Infrastructure.Helper;
-using Base.Infrastructure.Logging;
+using NServer.Core.Packets;
+using NServer.Core.Database;
+using NServer.Core.Security;
+using NServer.Core.Packets.Utils;
+using NServer.Core.Database.Postgre;
+using NServer.Infrastructure.Helper;
+using NServer.Infrastructure.Logging;
 
-namespace Base.Application.Handlers.Client
+namespace NServer.Application.Handlers.Client
 {
     internal class Authentication
     {

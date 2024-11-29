@@ -3,7 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Base.Core.Packets.Base
+namespace NServer.Core.Packets.Base
 {
     internal partial class PacketBase
     {

@@ -2,7 +2,7 @@
 using System.Net;
 using System.Linq;
 
-namespace Base.Infrastructure.Helper
+namespace NServer.Infrastructure.Helper
 {
     internal class ValidationHelper
     {

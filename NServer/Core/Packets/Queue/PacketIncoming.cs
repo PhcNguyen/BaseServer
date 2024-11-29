@@ -1,9 +1,9 @@
 ﻿using System;
-using Base.Core.Packets.Utils;
-using Base.Core.Interfaces.Packets;
-using Base.Infrastructure.Services;
+using NServer.Core.Packets.Utils;
+using NServer.Core.Interfaces.Packets;
+using NServer.Infrastructure.Services;
 
-namespace Base.Core.Packets.Queue
+namespace NServer.Core.Packets.Queue
 {
     /// <summary>
     /// Hàng đợi gói tin dùng để xử lý các gói tin nhận.

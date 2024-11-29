@@ -1,7 +1,7 @@
 ﻿using System;
-using Base.Core.Packets.Metadata;
+using NServer.Core.Packets.Metadata;
 
-namespace Base.Core.Packets.Utils
+namespace NServer.Core.Packets.Utils
 {
     /// <summary>
     /// Tiện ích kiểm tra và xác thực gói tin.

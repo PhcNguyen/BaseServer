@@ -1,4 +1,4 @@
-﻿namespace Base.Core.Database
+﻿namespace NServer.Core.Database
 {
     internal enum SqlCommand
     {

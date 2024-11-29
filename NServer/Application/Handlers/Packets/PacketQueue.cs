@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Base.Core.Interfaces.Packets;
+using NServer.Core.Interfaces.Packets;
 
-namespace Base.Application.Handlers.Packets
+namespace NServer.Application.Handlers.Packets
 {
     /// <summary>
     /// Lớp PacketQueue chịu trách nhiệm quản lý hàng đợi các gói tin đến và đi.

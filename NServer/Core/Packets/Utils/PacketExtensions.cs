@@ -1,7 +1,7 @@
 ﻿using System;
-using Base.Core.Packets.Metadata;
+using NServer.Core.Packets.Metadata;
 
-namespace Base.Core.Packets.Utils
+namespace NServer.Core.Packets.Utils
 {
     /// <summary>
     /// Cung cấp các tiện ích mở rộng cho việc xử lý gói tin.

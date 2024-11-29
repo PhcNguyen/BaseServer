@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 
-using Base.Core.Packets.Enums;
+using NServer.Core.Packets.Enums;
 
-namespace Base.Core.Packets.Base
+namespace NServer.Core.Packets.Base
 {
     internal partial class PacketBase
     {

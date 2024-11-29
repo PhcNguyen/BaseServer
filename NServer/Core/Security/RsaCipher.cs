@@ -3,11 +3,11 @@ using System.IO;
 using System.Text;
 using System.Security.Cryptography;
 
-using Base.Infrastructure.Helper;
-using Base.Core.Interfaces.Security;
-using Base.Infrastructure.Configuration;
+using NServer.Infrastructure.Helper;
+using NServer.Core.Interfaces.Security;
+using NServer.Infrastructure.Configuration;
 
-namespace Base.Core.Security
+namespace NServer.Core.Security
 {
     /// <summary>
     /// Lớp RsaCipher cung cấp các chức năng mã hóa và giải mã sử dụng thuật toán RSA.

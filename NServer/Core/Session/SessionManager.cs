@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-using Base.Core.Interfaces.Session;
-using Base.Infrastructure.Services;
+using NServer.Core.Interfaces.Session;
+using NServer.Infrastructure.Services;
 
-namespace Base.Core.Session
+namespace NServer.Core.Session
 {
     /// <summary>
     /// Quản lý các phiên làm việc của khách hàng.

@@ -4,11 +4,11 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-using Base.Core.Session;
-using Base.Infrastructure.Logging;
-using Base.Infrastructure.Services;
+using NServer.Core.Session;
+using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Services;
 
-namespace Base.Application.Main
+namespace NServer.Application.Main
 {
     /// <summary>
     /// Lớp điều khiển các phiên làm việc và xử lý gói tin từ người dùng.

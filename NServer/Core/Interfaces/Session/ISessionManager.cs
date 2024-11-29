@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-using Base.Infrastructure.Services;
+using NServer.Infrastructure.Services;
 
-namespace Base.Core.Interfaces.Session
+namespace NServer.Core.Interfaces.Session
 {
     internal interface ISessionManager
     {

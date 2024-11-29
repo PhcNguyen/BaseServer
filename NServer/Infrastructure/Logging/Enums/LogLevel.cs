@@ -1,4 +1,4 @@
-﻿namespace Base.Infrastructure.Logging.Enums;
+﻿namespace NServer.Infrastructure.Logging.Enums;
 
 /// <summary>
 /// Defines the log level for logging messages.

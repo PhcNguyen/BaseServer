@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Base.Infrastructure.Helper
+namespace NServer.Infrastructure.Helper
 {
     /// <summary>
     /// Provides helper methods for converting between byte arrays and different data types.

@@ -6,17 +6,17 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using Base.Core.Network;
-using Base.Core.Packets;
-using Base.Core.Network.Firewall;
-using Base.Core.Interfaces.Session;
-using Base.Infrastructure.Helper;
-using Base.Infrastructure.Logging;
-using Base.Infrastructure.Services;
-using Base.Infrastructure.Configuration;
-using Base.Core.Packets.Queue;
+using NServer.Core.Network;
+using NServer.Core.Packets;
+using NServer.Core.Network.Firewall;
+using NServer.Core.Interfaces.Session;
+using NServer.Infrastructure.Helper;
+using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Services;
+using NServer.Infrastructure.Configuration;
+using NServer.Core.Packets.Queue;
 
-namespace Base.Core.Session
+namespace NServer.Core.Session
 {
     /// <summary>
     /// Quản lý phiên làm việc của khách hàng.

@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Linq;
 using System.Net.Sockets;
-using Base.Infrastructure.Logging;
+using NServer.Infrastructure.Logging;
 using System;
 
-namespace Base.Infrastructure.Helper
+namespace NServer.Infrastructure.Helper
 {
     internal class NetworkHelper
     {

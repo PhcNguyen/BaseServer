@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Security.Cryptography;
 
-namespace Base.Infrastructure.Services
+namespace NServer.Infrastructure.Services
 {
     /// <summary>
     /// Lớp đại diện cho một ID phiên duy nhất.

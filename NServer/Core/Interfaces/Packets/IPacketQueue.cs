@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Base.Core.Interfaces.Packets
+namespace NServer.Core.Interfaces.Packets
 {
     /// <summary>
     /// Giao diện cơ bản cho hàng đợi gói tin.

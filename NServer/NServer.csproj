@@ -10,9 +10,9 @@
 		<!-- Bật tính năng Nullability (cảnh báo lỗi nullable) -->
 		<Nullable>enable</Nullable>
 		<!-- Tên không gian gốc (Root Namespace) -->
-		<RootNamespace>Base</RootNamespace>
+		<RootNamespace>NServer</RootNamespace>
 		<!-- Tên của Assembly -->
-		<AssemblyName>Base</AssemblyName>
+		<AssemblyName>NServer</AssemblyName>
 		<!-- Cho phép sử dụng code unsafe -->
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>

@@ -1,4 +1,4 @@
-﻿namespace Base.Infrastructure.Configuration
+﻿namespace NServer.Infrastructure.Configuration
 {
     internal class PostgreConfig
     {

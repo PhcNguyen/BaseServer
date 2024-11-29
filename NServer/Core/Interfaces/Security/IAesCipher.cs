@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Base.Core.Interfaces.Security
+namespace NServer.Core.Interfaces.Security
 {
     /// <summary>
     /// A class that provides AES encryption and decryption functionality using a key.

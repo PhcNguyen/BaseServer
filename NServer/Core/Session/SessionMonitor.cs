@@ -2,10 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using Base.Infrastructure.Logging;
-using Base.Core.Interfaces.Session;
+using NServer.Infrastructure.Logging;
+using NServer.Core.Interfaces.Session;
 
-namespace Base.Core.Session
+namespace NServer.Core.Session
 {
     /// <summary>
     /// Giám sát và quản lý trạng thái của các phiên làm việc.

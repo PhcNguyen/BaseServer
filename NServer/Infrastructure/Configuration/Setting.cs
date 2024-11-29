@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Authentication;
 
-namespace Base.Infrastructure.Configuration
+namespace NServer.Infrastructure.Configuration
 {
     public static class Setting
     {

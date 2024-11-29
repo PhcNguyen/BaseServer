@@ -3,9 +3,9 @@ using System.Net;
 using System.Net.Mail;
 using System.Collections.Generic;
 
-using Base.Infrastructure.Logging;
+using NServer.Infrastructure.Logging;
 
-namespace Base.Infrastructure.Services
+namespace NServer.Infrastructure.Services
 {
     internal class EmailService(string smtpServer, int smtpPort, string fromAddress, string fromPassword, bool useSsl = true)
     {

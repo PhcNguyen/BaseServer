@@ -1,8 +1,8 @@
 ﻿using System;
 
-using Base.Infrastructure.Services;
+using NServer.Infrastructure.Services;
 
-namespace Base.Core.Interfaces.Packets
+namespace NServer.Core.Interfaces.Packets
 {
     internal interface IPacketIncoming: IPacketQueue
     {

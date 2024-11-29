@@ -1,4 +1,4 @@
-﻿namespace Base.Core.Packets.Metadata
+﻿namespace NServer.Core.Packets.Metadata
 {
     /// <summary>
     /// Metadata offsets and size for network packets.

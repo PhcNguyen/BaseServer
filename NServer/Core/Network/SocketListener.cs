@@ -4,11 +4,11 @@ using System.Threading;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-using Base.Infrastructure.Helper;
-using Base.Infrastructure.Logging;
-using Base.Infrastructure.Configuration;
+using NServer.Infrastructure.Helper;
+using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Configuration;
 
-namespace Base.Core.Network
+namespace NServer.Core.Network
 {
     /// <summary>
     /// SocketListener là lớp quản lý việc lắng nghe kết nối TCP đến server.

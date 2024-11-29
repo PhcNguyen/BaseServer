@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-using Base.Infrastructure.Logging;
-using Base.Core.Interfaces.Session;
-using Base.Core.Interfaces.Packets;
+using NServer.Infrastructure.Logging;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Interfaces.Packets;
 
-namespace Base.Application.Handlers.Packets
+namespace NServer.Application.Handlers.Packets
 {
     /// <summary>
     /// Lớp PacketProcessor chịu trách nhiệm xử lý các gói tin đến và đi.

@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Base.Infrastructure.Helper
+namespace NServer.Infrastructure.Helper
 {
     internal class RandomHelper
     {

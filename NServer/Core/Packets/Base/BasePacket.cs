@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Buffers;
 
-using Base.Core.Packets.Metadata;
-using Base.Infrastructure.Services;
+using NServer.Core.Packets.Metadata;
+using NServer.Infrastructure.Services;
 
-namespace Base.Core.Packets.Base
+namespace NServer.Core.Packets.Base
 {
     /// <summary>
     /// Lớp cơ sở cho tất cả các gói tin mạng.

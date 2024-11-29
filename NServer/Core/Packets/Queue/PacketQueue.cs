@@ -3,9 +3,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-using Base.Core.Interfaces.Packets;
+using NServer.Core.Interfaces.Packets;
 
-namespace Base.Core.Packets.Queue
+namespace NServer.Core.Packets.Queue
 {
     /// <summary>
     /// Lớp cơ sở cho các hàng đợi gói tin, cung cấp các phương thức chung để quản lý hàng đợi.

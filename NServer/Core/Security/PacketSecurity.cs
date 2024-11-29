@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Base.Core.Security
+namespace NServer.Core.Security
 {
     /// <summary>
     /// Tiện ích bảo mật xử lý checksum cho dữ liệu.

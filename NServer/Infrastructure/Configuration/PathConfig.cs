@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Base.Infrastructure.Configuration
+namespace NServer.Infrastructure.Configuration
 {
     internal class PathConfig
     {

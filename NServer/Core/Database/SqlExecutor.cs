@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Base.Core.Interfaces.Database;
+using NServer.Core.Interfaces.Database;
 
-namespace Base.Core.Database
+namespace NServer.Core.Database
 {
     internal partial class SqlExecutor(IDatabaseConnectionFactory connectionFactory)
     {

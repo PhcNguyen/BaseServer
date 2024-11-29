@@ -3,13 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using Base.Core.Interfaces.Packets;
-using Base.Core.Interfaces.Session;
-using Base.Infrastructure.Services;
+using NServer.Core.Interfaces.Packets;
+using NServer.Core.Interfaces.Session;
+using NServer.Infrastructure.Services;
 
-using Base.Application.Handlers.Packets;
+using NServer.Application.Handlers.Packets;
 
-namespace Base.Application.Main
+namespace NServer.Application.Main
 {
     /// <summary>
     /// Lớp PacketContainer chịu trách nhiệm xử lý các gói tin đến và đi.

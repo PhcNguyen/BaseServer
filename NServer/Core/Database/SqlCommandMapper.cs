@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Base.Core.Database
+namespace NServer.Core.Database
 {
     internal class SqlCommandMapper
     {

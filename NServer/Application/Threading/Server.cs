@@ -3,24 +3,24 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Base.Application.Main;
+using NServer.Application.Main;
 
-using Base.Core.Network;
-using Base.Core.Session;
-using Base.Core.Network.Firewall;
-using Base.Core.Interfaces.Session;
-using Base.Core.Network.BufferPool;
+using NServer.Core.Network;
+using NServer.Core.Session;
+using NServer.Core.Network.Firewall;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Network.BufferPool;
 
-using Base.Core.Packets;
-using Base.Infrastructure.Helper;
-using Base.Infrastructure.Logging;
-using Base.Infrastructure.Services;
-using Base.Infrastructure.Configuration;
-using Base.Core.Interfaces.Packets;
+using NServer.Core.Packets;
+using NServer.Infrastructure.Helper;
+using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Services;
+using NServer.Infrastructure.Configuration;
+using NServer.Core.Interfaces.Packets;
 
 
 
-namespace Base.Application.Threading
+namespace NServer.Application.Threading
 {
     internal class Server : IDisposable
     {

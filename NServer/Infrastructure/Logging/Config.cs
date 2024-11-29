@@ -2,9 +2,9 @@
 using System.IO;
 using System.Collections.Generic;
 
-using Base.Infrastructure.Logging.Enums;
+using NServer.Infrastructure.Logging.Enums;
 
-namespace Base.Infrastructure.Logging
+namespace NServer.Infrastructure.Logging
 {
     internal class Config
     {

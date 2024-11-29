@@ -1,12 +1,12 @@
 ﻿using System;
 
-using Base.Core.Packets.Base;
-using Base.Core.Packets.Enums;
-using Base.Core.Packets.Metadata;
-using Base.Core.Interfaces.Packets;
+using NServer.Core.Packets.Base;
+using NServer.Core.Packets.Enums;
+using NServer.Core.Packets.Metadata;
+using NServer.Core.Interfaces.Packets;
 
 
-namespace Base.Core.Packets
+namespace NServer.Core.Packets
 {
     /// <summary>
     /// Gói tin cơ bản, kế thừa từ PacketBase.

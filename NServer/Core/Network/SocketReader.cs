@@ -4,10 +4,10 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Base.Core.Network.BufferPool;
-using Base.Infrastructure.Services;
+using NServer.Core.Network.BufferPool;
+using NServer.Infrastructure.Services;
 
-namespace Base.Core.Network
+namespace NServer.Core.Network
 {
     /// <summary>
     /// Lớp SocketReader dùng để đọc dữ liệu từ socket một cách không đồng bộ.

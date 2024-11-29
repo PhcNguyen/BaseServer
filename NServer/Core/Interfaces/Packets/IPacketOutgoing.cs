@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Base.Core.Interfaces.Packets
+namespace NServer.Core.Interfaces.Packets
 {
     internal interface IPacketOutgoing: IPacketQueue
     {

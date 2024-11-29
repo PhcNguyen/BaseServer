@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Base.Core.Packets.Enums;
+using NServer.Core.Packets.Enums;
 
-namespace Base.Core.Packets.Utils
+namespace NServer.Core.Packets.Utils
 {
     /// <summary>
     /// Tiện ích xử lý ưu tiên và cờ trạng thái của gói tin.

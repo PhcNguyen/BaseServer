@@ -1,10 +1,10 @@
-﻿using Base.Core.Session;
-using Base.Core.Interfaces.Packets;
-using Base.Core.Interfaces.Session;
-using Base.Infrastructure.Services;
-using Base.Core.Packets.Queue;
+﻿using NServer.Core.Session;
+using NServer.Core.Interfaces.Packets;
+using NServer.Core.Interfaces.Session;
+using NServer.Infrastructure.Services;
+using NServer.Core.Packets.Queue;
 
-namespace Base.Application.Main
+namespace NServer.Application.Main
 {
     /// <summary>
     /// Lớp ServiceRegistry chịu trách nhiệm đăng ký các dịch vụ trong hệ thống.

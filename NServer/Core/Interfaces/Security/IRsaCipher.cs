@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace Base.Core.Interfaces.Security
+namespace NServer.Core.Interfaces.Security
 {
     internal interface IRsaCipher
     {

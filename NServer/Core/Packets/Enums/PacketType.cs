@@ -1,4 +1,4 @@
-﻿namespace Base.Core.Packets.Enums
+﻿namespace NServer.Core.Packets.Enums
 {
     /// <summary>
     /// Enum định nghĩa các loại gói tin trong hệ thống.

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 
-namespace Base.Infrastructure.Services
+namespace NServer.Infrastructure.Services
 {
     /// <summary>
     /// Lớp Singleton dùng để quản lý và khởi tạo các instance duy nhất của các class.

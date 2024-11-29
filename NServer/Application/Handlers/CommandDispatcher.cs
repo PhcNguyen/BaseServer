@@ -4,11 +4,11 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
-using Base.Core.Packets;
-using Base.Infrastructure.Logging;
-using Base.Core.Interfaces.Packets;
+using NServer.Core.Packets;
+using NServer.Infrastructure.Logging;
+using NServer.Core.Interfaces.Packets;
 
-namespace Base.Application.Handlers
+namespace NServer.Application.Handlers
 {
     internal class CommandDispatcher
     {

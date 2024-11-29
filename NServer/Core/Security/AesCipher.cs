@@ -4,9 +4,9 @@ using System.Buffers;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 
-using Base.Core.Interfaces.Security;
+using NServer.Core.Interfaces.Security;
 
-namespace Base.Core.Security
+namespace NServer.Core.Security
 {
     /// <summary>
     /// A class that provides AES encryption and decryption functionality using a key.
