@@ -1,5 +1,11 @@
-﻿using ToolClient.Core.Network;
+﻿
 using ToolClient.Core;
+using ToolClient.Core.Packets.Enums;
+using ToolClient.Core.Helper;
+using System.Windows.Forms;
+using System;
+using System.Drawing;
+using ToolClient.Core.Packets;
 
 namespace ToolClient
 {
@@ -29,13 +35,13 @@ namespace ToolClient
 
             comboFlags.SelectedItem = PacketFlags.NONE;
 
-            foreach (Cmd cmd in Enum.GetValues(typeof(Cmd)))
+            foreach (Command cmd in Enum.GetValues(typeof(Command)))
             {
                 // Thêm các giá trị có thể chọn từ enum vào ComboBox
                 comboCmd.Items.Add(cmd);
             }
 
-            comboCmd.SelectedItem = Cmd.NONE;
+            comboCmd.SelectedItem = Command.NONE;
         }
 
         private void Connect_Click(object sender, EventArgs e)
@@ -88,9 +94,9 @@ namespace ToolClient
             }
 
             PacketFlags selectedFlags = (PacketFlags)comboFlags.SelectedItem;
-            Cmd cmd = (Cmd)comboCmd.SelectedItem;
+            Command cmd = (Command)comboCmd.SelectedItem;
 
-            var packet = new Packet((byte)selectedFlags, (sbyte)cmd, 0, ConverterHelper.ToBytes(TextPayload.Text));
+            var packet = new Packet(0, (byte)selectedFlags, (sbyte)cmd, ConverterHelper.ToBytes(TextPayload.Text));
             _tcpClientManager.SendData(packet.ToByteArray());
         }
     }

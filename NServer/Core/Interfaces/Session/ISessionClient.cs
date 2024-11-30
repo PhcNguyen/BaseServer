@@ -9,6 +9,7 @@ namespace NServer.Core.Interfaces.Session
         UniqueId Id { get; }
         byte[] Key { get; }
         string IpAddress { get; }
+        bool Authenticator { get; set; }
         Socket Socket { get; }
         bool IsConnected { get; }
 

@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using NServer.Infrastructure.Logging;
 using NServer.Core.Interfaces.Session;
 using NServer.Core.Interfaces.Packets;
+using NServer.Infrastructure.Services;
 
 namespace NServer.Application.Handlers.Packets
 {
@@ -17,6 +19,14 @@ namespace NServer.Application.Handlers.Packets
     internal class PacketProcessor(ISessionManager sessionManager)
     {
         private readonly ISessionManager _sessionManager = sessionManager;
+        private readonly Cmd[] _commandsWithoutLoginRequired = 
+        [
+            Cmd.PONG, Cmd.PING, 
+            Cmd.NONE, Cmd.HEARTBEAT,
+            Cmd.CLOSE, Cmd.GET_KEY,
+            Cmd.REGISTER, Cmd.LOGIN
+        ];
+        private readonly CommandDispatcher _commandDispatcher = Singleton.GetInstance<CommandDispatcher>();
 
         /// <summary>
         /// Xử lý gói tin đến và thêm gói tin phản hồi vào hàng đợi gửi.
@@ -27,7 +37,20 @@ namespace NServer.Application.Handlers.Packets
         {
             try
             {
-                IPacket responsePacket = await CommandDispatcher.HandleCommand(packet).ConfigureAwait(false);
+                ISessionClient? session = _sessionManager.GetSession(packet.Id);
+
+                if (session == null || !session.IsConnected)
+                    return;
+
+                if (!session.Authenticator)
+                {
+                    if (!_commandsWithoutLoginRequired.Contains(((Cmd)packet.Cmd)))
+                    {
+                        outgoingQueue.AddPacket(PacketUtils.Response(Cmd.ERROR, "You must log in first."));
+                    }
+                }
+
+                IPacket responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
                 outgoingQueue.AddPacket(responsePacket);
             }
             catch (Exception ex)

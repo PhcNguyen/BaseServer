@@ -6,19 +6,13 @@ using System.Threading.Tasks;
 using NServer.Application.Main;
 
 using NServer.Core.Network;
-using NServer.Core.Session;
 using NServer.Core.Network.Firewall;
-using NServer.Core.Interfaces.Session;
 using NServer.Core.Network.BufferPool;
 
-using NServer.Core.Packets;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Configuration;
-using NServer.Core.Interfaces.Packets;
-
-
 
 namespace NServer.Application.Threading
 {
@@ -33,16 +27,13 @@ namespace NServer.Application.Threading
 
         private CancellationTokenSource _cts;
         private readonly MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
-        private readonly RequestLimiter _requestLimiter = Singleton.GetInstance<RequestLimiter>(() =>
-            new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration));
+        private readonly RequestLimiter _requestLimiter = Singleton.GetInstance<RequestLimiter>();
 
         public Server()
         {
             _isRunning = 0;
             _disposed = false;
             _isInMaintenanceMode = false;
-
-            ServiceRegistry.Register();
 
             _multiSizeBuffer.AllocateBuffers();
             _cts = new CancellationTokenSource();
@@ -126,7 +117,6 @@ namespace NServer.Application.Threading
 
                     if (!_requestLimiter.IsAllowed(NetworkHelper.GetClientIP(acceptSocket)))
                     {
-                        Console.WriteLine($"Ban {acceptSocket.SocketType}");
                         acceptSocket.Close();
                         continue;
                     }

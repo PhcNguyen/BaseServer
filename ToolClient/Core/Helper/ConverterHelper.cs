@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 
-namespace ToolClient.Core.Network
+namespace ToolClient.Core.Helper
 {
     /// <summary>
     /// Provides helper methods for converting between byte arrays and different data types.

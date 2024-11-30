@@ -1,4 +1,7 @@
-﻿using System.Buffers;
+﻿using System;
+using System.IO;
+using System.Buffers;
+using System.Threading.Tasks;
 using System.Security.Cryptography;
 
 namespace ToolClient.Core.Security

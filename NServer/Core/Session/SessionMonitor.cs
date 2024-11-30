@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 
 using NServer.Infrastructure.Logging;
 using NServer.Core.Interfaces.Session;
-using NServer.Core.Interfaces.Network;
 
 namespace NServer.Core.Session
 {

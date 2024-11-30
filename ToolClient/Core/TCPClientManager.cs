@@ -1,4 +1,10 @@
-﻿namespace ToolClient.Core.Network
+﻿using System;
+using System.Drawing;
+using ToolClient.Core.Network;
+using ToolClient.Core.Packets;
+using ToolClient.Core.Packets.Enums;
+
+namespace ToolClient.Core
 {
     public class TCPClientManager
     {
@@ -77,7 +83,7 @@
                 if (_tcpClient != null && _tcpClient.IsConnect)
                 {
                     byte[] pingPacket = System.Text.Encoding.UTF8.GetBytes("pong");
-                    Packet packet = new((byte)0, (sbyte)1, (byte)0, pingPacket);
+                    Packet packet = new((byte)PacketType.NONE, (byte)PacketFlags.NONE, (short)Command.PING, pingPacket);
                     _tcpClient.SendData(packet.ToByteArray());
                 }
             }

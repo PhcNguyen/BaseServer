@@ -1,4 +1,8 @@
-﻿namespace ToolClient.Core
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace ToolClient.Core
 {
     public class ConsoleManager(RichTextBox console)
     {

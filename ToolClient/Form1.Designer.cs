@@ -1,4 +1,7 @@
-﻿namespace ToolClient
+﻿using System.Drawing;
+using System.Windows.Forms;
+
+namespace ToolClient
 {
     partial class Tool
     {

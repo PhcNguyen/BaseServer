@@ -8,13 +8,14 @@ using System.Collections.Generic;
 
 using NServer.Core.Network;
 using NServer.Core.Packets;
+using NServer.Core.Security;
 using NServer.Core.Network.EventArgsN;
 using NServer.Core.Interfaces.Session;
+
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using NServer.Infrastructure.Configuration;
-using NServer.Core.Security;
 
 namespace NServer.Core.Session
 {
@@ -53,6 +54,8 @@ namespace NServer.Core.Session
         /// Địa chỉ IP của khách hàng.
         /// </summary>
         public string IpAddress => _clientIp;
+
+        public bool Authenticator { get; set; } = false;
 
         /// <summary>
         /// ID duy nhất của phiên làm việc.

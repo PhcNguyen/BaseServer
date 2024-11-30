@@ -1,13 +1,6 @@
-﻿namespace NServer.Application.Handlers
+﻿namespace ToolClient.Core.Packets.Enums
 {
-    [System.AttributeUsage(System.AttributeTargets.Method)]
-    internal class CommandAttribute(Cmd command) : System.Attribute
-    {
-        // Gán giá trị cho thuộc tính Command
-        public Cmd Command { get; } = command;  
-    }
-
-    internal enum Cmd : short
+    internal enum Command : short
     {
         NONE = 0,
 

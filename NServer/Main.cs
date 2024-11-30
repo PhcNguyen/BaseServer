@@ -1,4 +1,5 @@
-﻿using NServer.Application.Threading;
+﻿using NServer.Application.Main;
+using NServer.Application.Threading;
 using NServer.Core.Network.BufferPool;
 using NServer.Infrastructure.Services;
 using System;
@@ -18,6 +19,7 @@ namespace NServer
 
         static void Main(string[] args)
         {
+            ServiceRegistry.Register();
             // Tạo instance của ServerEngine
             var serverEngine = new Server();
 

@@ -19,6 +19,8 @@
 		<ReadyToRun>true</ReadyToRun>
 		<!-- Tắt Ready-to-Run để tránh tăng kích thước khi biên dịch trước -->
 		<PublishTrimmed>false</PublishTrimmed>
+
+		<ImplicitUsings>disable</ImplicitUsings>
 		
 	</PropertyGroup>
 

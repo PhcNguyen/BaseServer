@@ -55,10 +55,15 @@ namespace NServer.Application.Main
                 {
                     await Task.WhenAll(monitorSessionsTask, processIncomingPacketsTask, processOutgoingPacketsTask).ConfigureAwait(false);
                 }
+                catch (OperationCanceledException)
+                {
+                    NLog.Instance.Info("Operation was canceled.");
+                }
                 catch (Exception ex)
                 {
                     NLog.Instance.Error($"Error during initialization: {ex.Message}");
                 }
+
             }, _token);
         }
 

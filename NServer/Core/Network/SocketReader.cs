@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using NServer.Core.Network.BufferPool;
 using NServer.Core.Network.EventArgsN;
+using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 
 namespace NServer.Core.Network
@@ -81,11 +82,11 @@ namespace NServer.Core.Network
             }
             catch (ObjectDisposedException ex)
             {
-                HandleError($"Socket disposed: {ex.Message}");
+                NLog.Instance.Error($"Socket disposed: {ex.Message}");
             }
             catch (Exception ex)
             {
-                HandleError($"Unexpected error in StartReceiving: {ex.Message}");
+                NLog.Instance.Error($"Unexpected error in StartReceiving: {ex.Message}");
             }
         }
 
@@ -102,7 +103,7 @@ namespace NServer.Core.Network
 
                 if (e.SocketError != SocketError.Success)
                 {
-                    HandleError($"Socket error: {e.SocketError}");
+                    NLog.Instance.Error($"Socket error: {e.SocketError}");
                     await DisposeAsync();
                     return;
                 }
@@ -125,16 +126,21 @@ namespace NServer.Core.Network
                     OnDataReceived(new SocketReceivedEventArgs(e.Buffer.Take(bytesRead).ToArray()));
                 }
 
+                await Task.Yield();
+                await Task.Delay(20);
+
                 // Tiếp tục nhận dữ liệu
                 StartReceiving();
             }
             catch (OperationCanceledException)
             {
-                HandleError("Operation canceled.");
+                NLog.Instance.Info("Operation canceled.");
+                await DisposeAsync();
             }
             catch (Exception ex)
             {
-                HandleError($"Error in OnReceiveCompleted: {ex.Message}");
+                NLog.Instance.Error($"Error in OnReceiveCompleted: {ex.Message}", ex);
+                await DisposeAsync();
             }
         }
 
@@ -145,15 +151,6 @@ namespace NServer.Core.Network
         protected virtual void OnDataReceived(SocketReceivedEventArgs e)
         {
             DataReceived?.Invoke(this, e);
-        }
-
-        /// <summary>
-        /// Xử lý lỗi và ghi thông báo lỗi ra console.
-        /// </summary>
-        /// <param name="errorMessage">Thông báo lỗi.</param>
-        private static void HandleError(string errorMessage)
-        {
-            Console.WriteLine(errorMessage);
         }
 
         /// <summary>
