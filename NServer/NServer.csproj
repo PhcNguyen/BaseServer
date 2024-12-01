@@ -59,7 +59,4 @@
 		<!-- Npgsql: thư viện kết nối PostgreSQL -->
 		<PackageReference Include="Npgsql" Version="8.0.5" />
 	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="Application\Handlers\Core\" />
-	</ItemGroup>
 </Project>

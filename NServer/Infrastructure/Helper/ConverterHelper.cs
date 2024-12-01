@@ -6,7 +6,7 @@ namespace NServer.Infrastructure.Helper
     /// <summary>
     /// Provides helper methods for converting between byte arrays and different data types.
     /// </summary>
-    internal class ConverterHelper
+    public static class ConverterHelper
     {
         /// <summary>
         /// Converts an integer to a byte array.

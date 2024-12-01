@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NServer.Core.Interfaces.Database
+﻿namespace NServer.Core.Interfaces.Database
 {
-    internal interface IDatabaseConnectionFactory
+    public interface IDatabaseConnectionFactory
     {
         IDatabaseConnection CreateConnection();
     }

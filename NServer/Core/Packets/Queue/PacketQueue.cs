@@ -1,27 +1,35 @@
-﻿using System;
+﻿using NServer.Core.Interfaces.Packets;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
-
-using NServer.Core.Interfaces.Packets;
 
 namespace NServer.Core.Packets.Queue
 {
     /// <summary>
     /// Lớp cơ sở cho các hàng đợi gói tin, cung cấp các phương thức chung để quản lý hàng đợi.
     /// </summary>
-    internal abstract class PacketQueue : IDisposable, IPacketQueue
+    public abstract class PacketQueue : IDisposable
     {
         private readonly ConcurrentQueue<IPacket> _queue = new();
+        private bool _disposed;
+
+        /// <summary>
+        /// Sự kiện được kích hoạt khi có gói tin mới được thêm vào hàng đợi.
+        /// </summary>
+        public event Action? PacketAdded;
 
         /// <summary>
         /// Thêm gói tin vào hàng đợi.
         /// </summary>
         /// <param name="packet">Gói tin cần thêm.</param>
-        protected void Enqueue(IPacket packet)
+        public void Enqueue(IPacket packet)
         {
             if (packet == null) throw new ArgumentNullException(nameof(packet), "Packet cannot be null.");
             _queue.Enqueue(packet);
+
+            // Kích hoạt sự kiện thông báo gói tin mới được thêm vào
+            PacketAdded?.Invoke();
         }
 
         /// <summary>
@@ -75,7 +83,7 @@ namespace NServer.Core.Packets.Queue
         /// </summary>
         public void Clear()
         {
-            while (_queue.TryDequeue(out _)) { }
+            while (_queue.TryDequeue(out _)) { /*continute*/ }
         }
 
         /// <summary>
@@ -97,15 +105,6 @@ namespace NServer.Core.Packets.Queue
         }
 
         /// <summary>
-        /// Giải phóng tài nguyên được sử dụng bởi <see cref="PacketQueue"/>.
-        /// </summary>
-        public virtual void Dispose()
-        {
-            Clear(); // Xóa toàn bộ hàng đợi
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
         /// Lọc các gói tin dựa trên điều kiện cho trước.
         /// </summary>
         /// <param name="predicate">Điều kiện để lọc gói tin.</param>
@@ -113,6 +112,27 @@ namespace NServer.Core.Packets.Queue
         public IEnumerable<IPacket> Filter(Func<IPacket, bool> predicate)
         {
             return _queue.Where(predicate);
+        }
+
+        /// <summary>
+        /// Giải phóng tài nguyên được sử dụng bởi <see cref="PacketQueue"/>.
+        /// </summary>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return; 
+
+            if (disposing)
+            { 
+                Clear(); 
+                PacketAdded = null; 
+            } 
+            _disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

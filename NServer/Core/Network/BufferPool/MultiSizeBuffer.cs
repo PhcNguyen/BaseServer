@@ -1,19 +1,19 @@
-﻿using System;
+﻿using NServer.Infrastructure.Configuration;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-
-using NServer.Infrastructure.Configuration;
 
 namespace NServer.Core.Network.BufferPool
 {
-    internal class MultiSizeBuffer : IDisposable
+    public class MultiSizeBuffer : IDisposable
     {
         private readonly Dictionary<int, double> _bufferAllocations = Setting.BufferAllocations;
-        private readonly SortedDictionary<int, SharedBufferPool> _pools = new(); // Khởi tạo đúng kiểu dữ liệu
+        private readonly SortedDictionary<int, SharedBufferPool> _pools = []; // Khởi tạo đúng kiểu dữ liệu
         private readonly int _totalBuffers = Setting.TotalBuffers;
-        private bool _isInitialized = false;
         private readonly object _initLock = new();
+        private bool _isInitialized = false;
+        private bool _disposed = false;
 
         private int _rentedCount = 0; // Số lần thuê bộ đệm
         private const int MaxRentsBeforeAdjustment = 10; // Sau mỗi 10 lần thuê, điều chỉnh pool
@@ -45,7 +45,7 @@ namespace NServer.Core.Network.BufferPool
 
         public byte[] RentBuffer(int size = 256)
         {
-            var suitableBuffer = _pools.Keys.Where(key => key >= size).FirstOrDefault();
+            var suitableBuffer = _pools.Keys.FirstOrDefault(key => key >= size);
             if (suitableBuffer == 0)
             {
                 throw new ArgumentException("Requested buffer size exceeds maximum allowed size.");
@@ -166,15 +166,28 @@ namespace NServer.Core.Network.BufferPool
 
         public void Dispose()
         {
-            if (!_isInitialized) return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            // Giải phóng tài nguyên
-            foreach (var pool in _pools.Values)
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+
+            if (disposing)
             {
-                pool.Dispose();
+                if (_isInitialized)
+                {
+                    foreach (var pool in _pools.Values)
+                    {
+                        pool.Dispose();
+                    }
+                    _pools.Clear();
+                }
+                _isInitialized = false;
             }
-            _pools.Clear();
-            _isInitialized = false;
+
+            _disposed = true;
         }
     }
 }

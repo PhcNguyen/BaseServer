@@ -1,73 +1,61 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-
-using NServer.Infrastructure.Logging;
-using NServer.Core.Interfaces.Session;
+﻿using NServer.Application.Handlers.Enums;
 using NServer.Core.Interfaces.Packets;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Packets.Queue;
+using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace NServer.Application.Handlers.Packets
 {
     /// <summary>
-    /// Lớp PacketProcessor chịu trách nhiệm xử lý các gói tin đến và đi.
+    /// Lớp chịu trách nhiệm xử lý gói tin đến và đi.
     /// </summary>
-    /// <remarks>
-    /// Khởi tạo một đối tượng <see cref="PacketProcessor"/> mới.
-    /// </remarks>
-    /// <param name="sessionManager">Đối tượng quản lý phiên làm việc.</param>
     internal class PacketProcessor(ISessionManager sessionManager)
     {
         private readonly ISessionManager _sessionManager = sessionManager;
-        private readonly Cmd[] _commandsWithoutLoginRequired = 
+
+        private readonly HashSet<Cmd> _commandsWithoutLoginRequired =
         [
-            Cmd.PONG, Cmd.PING, 
-            Cmd.NONE, Cmd.HEARTBEAT,
-            Cmd.CLOSE, Cmd.GET_KEY,
-            Cmd.REGISTER, Cmd.LOGIN
+            Cmd.PONG, Cmd.PING, Cmd.NONE, Cmd.HEARTBEAT,
+            Cmd.CLOSE, Cmd.GET_KEY, Cmd.REGISTER, Cmd.LOGIN
         ];
+
         private readonly CommandDispatcher _commandDispatcher = Singleton.GetInstance<CommandDispatcher>();
 
         /// <summary>
-        /// Xử lý gói tin đến và thêm gói tin phản hồi vào hàng đợi gửi.
+        /// Xử lý gói tin đến.
         /// </summary>
-        /// <param name="packet">Gói tin đến cần xử lý.</param>
-        /// <param name="outgoingQueue">Hàng đợi gửi gói tin.</param>
-        public async Task HandleIncomingPacket(IPacket packet, IPacketOutgoing outgoingQueue)
+        public async Task HandleIncomingPacket(IPacket packet, PacketOutgoing outgoingQueue)
         {
             try
             {
-                ISessionClient? session = _sessionManager.GetSession(packet.Id);
-
-                if (session == null || !session.IsConnected)
+                if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                     return;
 
-                if (!session.Authenticator)
+                if (!session.Authenticator && !_commandsWithoutLoginRequired.Contains((Cmd)packet.Cmd))
                 {
-                    if (!_commandsWithoutLoginRequired.Contains(((Cmd)packet.Cmd)))
-                    {
-                        outgoingQueue.AddPacket(PacketUtils.Response(Cmd.ERROR, "You must log in first."));
-                    }
+                    outgoingQueue.Enqueue(PacketUtils.Response(Cmd.ERROR, "You must log in first."));
+                    return;
                 }
 
-                IPacket responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
-                outgoingQueue.AddPacket(responsePacket);
+                var responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
+                outgoingQueue.Enqueue(responsePacket);
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error processing incoming packet: {ex.Message}");
+                NLog.Instance.Error<PacketProcessor>($"[HandleIncomingPacket] Error processing packet: {ex}");
             }
         }
 
         /// <summary>
         /// Xử lý gói tin đi.
         /// </summary>
-        /// <param name="packet">Gói tin đi cần xử lý.</param>
         public async Task HandleOutgoingPacket(IPacket packet)
         {
-            ISessionClient? session = _sessionManager.GetSession(packet.Id);
-
-            if (session == null || !session.IsConnected)
+            if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                 return;
 
             try
@@ -77,39 +65,35 @@ namespace NServer.Application.Handlers.Packets
                 if (packet.Payload.Length == 0)
                     return;
 
-                await RetryAsync(async () => await session.SendAsync(packet).ConfigureAwait(false), 3, 100).ConfigureAwait(false);
+                await RetryAsync(() => session.SendAsync(packet), maxRetries: 3, delayMs: 100).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error sending packet: {ex.Message}");
+                NLog.Instance.Error<PacketProcessor>($"[HandleOutgoingPacket] Error sending packet: {ex}");
             }
         }
 
         /// <summary>
         /// Thực hiện lại hành động không đồng bộ nhiều lần nếu thất bại.
         /// </summary>
-        /// <param name="action">Hành động không đồng bộ cần thực hiện.</param>
-        /// <param name="maxRetries">Số lần thử lại tối đa.</param>
-        /// <param name="delayMs">Thời gian chờ giữa các lần thử lại.</param>
-        /// <returns>Nhiệm vụ không đồng bộ đại diện cho quá trình thực hiện lại.</returns>
         private static async Task RetryAsync(Func<Task<bool>> action, int maxRetries, int delayMs)
         {
-            int attempt = 0;
-            while (attempt < maxRetries)
+            for (int attempt = 0; attempt < maxRetries; attempt++)
             {
                 try
                 {
-                    bool result = await action();
-                    if (result) return;
+                    if (await action().ConfigureAwait(false))
+                        return;
                 }
-                catch
+                catch (Exception ex) when (attempt < maxRetries - 1)
                 {
-                    if (++attempt >= maxRetries)
-                        throw;
-
-                    await Task.Delay(delayMs);
+                    NLog.Instance.Warning($"[RetryAsync] Attempt {attempt + 1} failed: {ex.Message}");
                 }
+
+                await Task.Delay(delayMs).ConfigureAwait(false);
             }
+
+            throw new InvalidOperationException("All retry attempts failed.");
         }
     }
 }

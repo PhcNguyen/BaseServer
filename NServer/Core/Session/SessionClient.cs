@@ -1,21 +1,19 @@
-﻿using System;
-using System.IO;
-using System.Threading;
-using System.Net.Sockets;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
-using NServer.Core.Network;
+﻿using NServer.Core.Helper;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Network.IO;
 using NServer.Core.Packets;
 using NServer.Core.Security;
-using NServer.Core.Network.EventArgsN;
-using NServer.Core.Interfaces.Session;
-
+using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
-using NServer.Infrastructure.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NServer.Core.Session
 {
@@ -25,7 +23,7 @@ namespace NServer.Core.Session
     /// Lớp này chịu trách nhiệm kết nối, xác thực, gửi/nhận dữ liệu và quản lý trạng thái của phiên làm việc từ phía khách hàng.
     /// </para>
     /// </summary>
-    internal class SessionClient : ISessionClient, IAsyncDisposable
+    public class SessionClient : ISessionClient
     {
         private bool _isDisposed;
         private readonly string _clientIp;
@@ -122,12 +120,12 @@ namespace NServer.Core.Session
             }
             catch (Exception ex) when (ex is TimeoutException or IOException)
             {
-                NLog.Instance.Error($"Connection error for {_clientIp}: {ex.Message}");
+                NLog.Instance.Error<SessionClient>($"Connection error for {_clientIp}: {ex.Message}");
                 await DisconnectAsync();
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Unexpected error for {_clientIp}: {ex.Message}");
+                NLog.Instance.Error<SessionClient>($"Unexpected error for {_clientIp}: {ex.Message}");
                 await DisconnectAsync();
             }
         }
@@ -149,7 +147,7 @@ namespace NServer.Core.Session
                     }
                     catch (Exception ex)
                     {
-                        NLog.Instance.Error($"Lần thử kết nối lại thất bại: {ex.Message}");
+                        NLog.Instance.Error<SessionClient>($"Lần thử kết nối lại thất bại: {ex.Message}");
                         retries--;
                         if (retries > 0)
                         {
@@ -172,14 +170,14 @@ namespace NServer.Core.Session
 
             try
             {
-                _cts.Cancel();
+                await _cts.CancelAsync();
                 await DisposeAsync();
 
-                NLog.Instance.Info($"Session {_id} disconnected from {_clientIp}");
+                NLog.Instance.Info<SessionClient>($"Session {_id} disconnected from {_clientIp}");
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error during disconnect: {ex.Message}");
+                NLog.Instance.Error<SessionClient>($"Error during disconnect: {ex.Message}");
             }
         }
 
@@ -196,9 +194,9 @@ namespace NServer.Core.Session
             {
                 Task sendTask = data switch
                 {
-                    byte[] byteArray => _socketWriter.SendAsync(ChecksumGuard.AddChecksum(byteArray)),
-                    string str => _socketWriter.SendAsync(ChecksumGuard.AddChecksum(ConverterHelper.ToBytes(str))),
-                    Packet packet => _socketWriter.SendAsync(ChecksumGuard.AddChecksum(packet.ToByteArray())),
+                    byte[] byteArray => _socketWriter.SendAsync(Crc32Checksum.AddCrc32(byteArray)),
+                    string str => _socketWriter.SendAsync(Crc32Checksum.AddCrc32(ConverterHelper.ToBytes(str))),
+                    Packet packet => _socketWriter.SendAsync(Crc32Checksum.AddCrc32(packet.ToByteArray())),
                     _ => throw new ArgumentException("Unsupported data type.")
                 };
 
@@ -211,7 +209,7 @@ namespace NServer.Core.Session
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error sending data: {ex.Message}");
+                NLog.Instance.Error<SessionClient>($"Error sending data: {ex.Message}");
                 return false;
             }
         }
@@ -225,7 +223,7 @@ namespace NServer.Core.Session
         private void OnDataReceived(object sender, SocketReceivedEventArgs e)
         {
             if (_processdata == null) return;
-            bool isValid = ChecksumGuard.VerifyChecksum(e.Data, out byte[]? originalData);
+            bool isValid = Crc32Checksum.VerifyCrc32(e.Data, out byte[]? originalData);
 
             if (isValid && originalData != null)
             {
@@ -245,7 +243,7 @@ namespace NServer.Core.Session
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error($"Lỗi trong quá trình gửi dữ liệu: {ex.Message}");
+                    NLog.Instance.Error<SessionClient>($"Lỗi trong quá trình gửi dữ liệu: {ex.Message}");
                 }
             }
         }
@@ -257,25 +255,23 @@ namespace NServer.Core.Session
         {
             if (_isDisposed) return;
 
-            try
-            {
-                _cts.Cancel();
-                _socketReader.DataReceived -= OnDataReceived!;
+            // Dispose managed resources
+            await _cts.CancelAsync();
+            _socketReader.DataReceived -= OnDataReceived!;
 
-                await _socketWriter.DisposeAsync();
-                await _socketReader.DisposeAsync();
-            }
-            catch (Exception ex)
-            {
-                NLog.Instance.Error($"Error disposing session: {ex.Message}");
-            }
-            finally
-            {
-                _socket.Dispose();
-                _cts.Dispose();
-                _isDisposed = true;
-                GC.SuppressFinalize(this);
-            }
+            await _socketWriter.DisposeAsync();
+            await _socketReader.DisposeAsync();
+
+            _socket.Dispose();
+            _cts.Dispose();
+
+            _isDisposed = true;
+        }
+
+        // Finalizer if necessary for unmanaged resources
+        ~SessionClient()
+        {
+            DisposeAsync().AsTask().Wait(); // Ensure that DisposeAsync is called if needed
         }
     }
 }

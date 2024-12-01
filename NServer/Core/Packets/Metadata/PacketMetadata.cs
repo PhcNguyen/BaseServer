@@ -3,7 +3,7 @@
     /// <summary>
     /// Metadata offsets and size for network packets.
     /// </summary>
-    internal struct PacketMetadata
+    public struct PacketMetadata
     {
         /// <summary>
         /// Size of the length (4 bytes).
@@ -29,7 +29,6 @@
         /// Total size of the header in bytes.
         /// </summary>
         public const int HEADERSIZE = LENGHTSIZE + TYPESIZE + FLAGSSIZE + COMMANDSIZE;
-
 
         /// <summary>
         /// Offset for the length field (4 bytes).

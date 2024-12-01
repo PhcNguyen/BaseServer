@@ -2,9 +2,10 @@
 
 namespace NServer.Core.Interfaces.Session
 {
-    internal interface ISessionMonitor
+    public interface ISessionMonitor
     {
         Task MonitorSessionsAsync();
+
         Task CloseConnectionAsync(ISessionClient session);
     }
 }

@@ -1,12 +1,12 @@
-﻿using System;
-using NServer.Core.Packets.Metadata;
+﻿using NServer.Core.Packets.Metadata;
+using System;
 
 namespace NServer.Core.Packets.Utils
 {
     /// <summary>
     /// Tiện ích kiểm tra và xác thực gói tin.
     /// </summary>
-    internal static class PacketValidation
+    public static class PacketValidation
     {
         /// <summary>
         /// Kiểm tra xem gói tin có hợp lệ hay không.

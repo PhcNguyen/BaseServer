@@ -2,28 +2,28 @@
 
 namespace NServer.Infrastructure.Helper
 {
-    internal class RandomHelper
+    public static class RandomHelper
     {
-        public static byte[] Generate128Bit()
+        public static byte[] GenerateKey128()
         {
-            using var rng = RandomNumberGenerator.Create();
-            byte[] key = new byte[128 / 8];
-            rng.GetBytes(key);
-            return key;
+            return GenerateKey(128);
         }
 
-        public static byte[] Generate192Bit()
+        public static byte[] GenerateKey192()
         {
-            using var rng = RandomNumberGenerator.Create();
-            byte[] key = new byte[192 / 8];
-            rng.GetBytes(key);
-            return key;
+            return GenerateKey(192);
         }
 
-        public static byte[] Generate256Bit()
+        public static byte[] GenerateKey256()
+        {
+            return GenerateKey(256);
+        }
+
+        // General method to generate keys of any size
+        private static byte[] GenerateKey(int bitSize)
         {
             using var rng = RandomNumberGenerator.Create();
-            byte[] key = new byte[256 / 8];
+            byte[] key = new byte[bitSize / 8];
             rng.GetBytes(key);
             return key;
         }

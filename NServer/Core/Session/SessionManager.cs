@@ -1,10 +1,9 @@
-﻿using System.Threading;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-
+﻿using NServer.Core.Interfaces.Network;
 using NServer.Core.Interfaces.Session;
 using NServer.Infrastructure.Services;
-using NServer.Core.Interfaces.Network;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace NServer.Core.Session
 {
@@ -14,10 +13,11 @@ namespace NServer.Core.Session
     /// Lớp này chịu trách nhiệm quản lý, thêm, xóa và lấy các session hiện tại của người dùng.
     /// </para>
     /// </summary>
-    internal class SessionManager : ISessionManager
+    public class SessionManager : ISessionManager
     {
         // Lưu trữ tất cả các session hiện tại trong một ConcurrentDictionary.
         private readonly ConcurrentDictionary<UniqueId, ISessionClient> _activeSessions = new();
+
         private readonly IConnLimiter _connLimiter = Singleton.GetInstanceOfInterface<IConnLimiter>();
 
         // Biến đếm số lượng session hiện tại.

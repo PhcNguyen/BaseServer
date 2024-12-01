@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Text;
 
-using NServer.Core.Packets.Enums;
-
 namespace NServer.Core.Packets.Base
 {
-    internal partial class PacketBase
+    public partial class PacketBase
     {
         /// <summary>
         /// Phương thức để đặt lại gói tin về trạng thái ban đầu.
         /// </summary>
         public void Reset()
         {
-            Flags = PacketFlags.NONE;
+            Flags = Enums.Packet.NONE;
             Cmd = (short)0;
             Payload = Memory<byte>.Empty;
         }

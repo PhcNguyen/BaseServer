@@ -1,18 +1,17 @@
-﻿using System;
-
+﻿using NServer.Core.Interfaces.Packets;
 using NServer.Core.Packets.Metadata;
-using NServer.Core.Interfaces.Packets;
+using System;
 
 namespace NServer.Core.Packets.Utils
 {
     /// <summary>
     /// Cung cấp các tiện ích mở rộng cho việc xử lý gói tin.
     /// </summary>
-    internal static class PacketExtensions
+    public static class PacketExtensions
     {
         public static readonly Packet EmptyPacket = new(0, 0, 0, []);
 
-        public static Packet BuildResponse(short command, string message)
+        public static Packet BuildResponse(this short command, string message)
         {
             var packet = new Packet();
 
@@ -27,7 +26,7 @@ namespace NServer.Core.Packets.Utils
         /// <param name="data">Mảng byte chứa dữ liệu gói tin.</param>
         /// <returns>Đối tượng <see cref="Packet"/> được tạo từ dữ liệu.</returns>
         /// <exception cref="ArgumentException">Nếu dữ liệu không hợp lệ.</exception>
-        public static IPacket FromByteArray(byte[] data)
+        public static IPacket FromByteArray(this byte[] data)
         {
             if (data == null || data.Length < PacketMetadata.HEADERSIZE)
             {
@@ -55,25 +54,22 @@ namespace NServer.Core.Packets.Utils
         /// <summary>
         /// Lấy chiều dài của gói tin từ header.
         /// </summary>
-        public static int GetPacketLength(byte[] packet)
-        {
-            return BitConverter.ToInt32(packet, PacketMetadata.LENGHTOFFSET);
-        }
+        public static int GetPacketLength(this byte[] packet) =>
+           BitConverter.ToInt32(packet, PacketMetadata.LENGHTOFFSET);
+        
 
         /// <summary>
         /// Lấy cờ (flags) từ gói tin.
         /// </summary>
-        public static byte GetPacketFlags(byte[] packet)
-        {
-            return packet[PacketMetadata.FLAGSOFFSET];
-        }
+        public static byte GetPacketFlags(this byte[] packet) =>
+            packet[PacketMetadata.FLAGSOFFSET];
+
 
         /// <summary>
         /// Lấy lệnh (command) từ gói tin.
         /// </summary>
-        public static short GetPacketCommand(byte[] packet)
-        {
-            return BitConverter.ToInt16(packet, PacketMetadata.COMMANDOFFSET);
-        }
+        public static short GetPacketCommand(this byte[] packet) =>
+            BitConverter.ToInt16(packet, PacketMetadata.COMMANDOFFSET);
+        
     }
 }

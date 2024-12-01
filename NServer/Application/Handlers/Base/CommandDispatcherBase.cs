@@ -1,13 +1,13 @@
-﻿using System;
+﻿using NServer.Application.Handlers.Enums;
+using NServer.Application.Handlers.Packets;
+using NServer.Core.Interfaces.Packets;
+using NServer.Infrastructure.Logging;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-
-using NServer.Core.Interfaces.Packets;
-using NServer.Infrastructure.Logging;
-using NServer.Application.Handlers.Packets;
 
 namespace NServer.Application.Handlers.Base
 {
@@ -17,7 +17,7 @@ namespace NServer.Application.Handlers.Base
     internal abstract class CommandDispatcherBase
     {
         private static readonly BindingFlags CommandBindingFlags = (
-            BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance
+            BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance
         );
 
         protected readonly ConcurrentDictionary<Cmd, MethodInfo> CommandCache;
@@ -76,7 +76,7 @@ namespace NServer.Application.Handlers.Base
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error executing command: {command}. Exception: {ex.Message}");
+                NLog.Instance.Error<CommandDispatcherBase>($"Error executing command: {command}. Exception: {ex.Message}");
                 return PacketUtils.Response(Cmd.ERROR, $"Error executing command: {command}");
             }
         }
@@ -126,7 +126,7 @@ namespace NServer.Application.Handlers.Base
             }
             else
             {
-                NLog.Instance.Error($"The method for {command} command is invalid.");
+                NLog.Instance.Error<CommandDispatcherBase>($"The method for {command} command is invalid.");
                 throw new ArgumentException($"The method for {command} command is invalid.");
             }
         }

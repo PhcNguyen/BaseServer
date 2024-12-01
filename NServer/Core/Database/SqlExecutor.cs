@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
-using NServer.Core.Interfaces.Database;
+﻿using NServer.Core.Interfaces.Database;
+using System.Threading.Tasks;
 
 namespace NServer.Core.Database
 {
-    internal partial class SqlExecutor(IDatabaseConnectionFactory connectionFactory)
+    public partial class SqlExecutor(IDatabaseConnectionFactory connectionFactory)
     {
         private readonly IDatabaseConnectionFactory _connectionFactory = connectionFactory;
 

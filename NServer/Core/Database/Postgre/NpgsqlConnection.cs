@@ -1,20 +1,19 @@
-﻿using System;
+﻿using NServer.Core.Interfaces.Database;
+using NServer.Infrastructure.Configuration;
+using NServer.Infrastructure.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Configuration;
-using NServer.Core.Interfaces.Database;
-
 namespace NServer.Core.Database.Postgre
 {
-    internal class NpgsqlConnection : IDatabaseConnection
+    public class NpgsqlConnection : IDatabaseConnection
     {
         private readonly Npgsql.NpgsqlConnection _connection;
 
         public NpgsqlConnection()
         {
-            _connection = new Npgsql.NpgsqlConnection(PostgreConfig.ConnectionString);
+            _connection = new Npgsql.NpgsqlConnection(SqlConfig.ConnectionString);
         }
 
         public void OpenConnection(CancellationToken cancellationToken = default)

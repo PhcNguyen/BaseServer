@@ -3,7 +3,7 @@
     /// <summary>
     /// Lớp xử lý giới hạn số lượng kết nối đồng thời từ mỗi địa chỉ IP.
     /// </summary>
-    internal interface IConnLimiter
+    public interface IConnLimiter
     {
         /// <summary>
         /// Kiểm tra xem kết nối từ địa chỉ IP có được phép hay không, dựa trên số lượng kết nối hiện tại.

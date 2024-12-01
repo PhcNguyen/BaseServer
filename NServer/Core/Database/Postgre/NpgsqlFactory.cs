@@ -2,7 +2,7 @@
 
 namespace NServer.Core.Database.Postgre
 {
-    internal class NpgsqlFactory: IDatabaseConnectionFactory
+    public class NpgsqlFactory : IDatabaseConnectionFactory
     {
         public IDatabaseConnection CreateConnection()
         {

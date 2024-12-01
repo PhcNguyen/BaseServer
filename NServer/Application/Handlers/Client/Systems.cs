@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-
-using NServer.Core.Interfaces.Packets;
+﻿using NServer.Application.Handlers.Enums;
 using NServer.Application.Handlers.Packets;
+using NServer.Core.Interfaces.Packets;
+using System.Threading.Tasks;
 
 namespace NServer.Application.Handlers.Client
 {

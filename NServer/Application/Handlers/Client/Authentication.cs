@@ -1,13 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-
-using NServer.Core.Database;
-using NServer.Core.Security;
-using NServer.Core.Interfaces.Packets;
-
-using NServer.Infrastructure.Helper;
-using NServer.Application.Handlers.Base;
+﻿using NServer.Application.Handlers.Base;
+using NServer.Application.Handlers.Enums;
 using NServer.Application.Handlers.Packets;
+using NServer.Core.Database;
+using NServer.Core.Helper;
+using NServer.Core.Interfaces.Packets;
+using NServer.Core.Security;
+using System;
+using System.Threading.Tasks;
 
 namespace NServer.Application.Handlers.Client
 {
@@ -41,7 +40,7 @@ namespace NServer.Application.Handlers.Client
 
             try
             {
-                var hashedPassword = PBKDF2.HashPassword(password);
+                var hashedPassword = Pbkdf2Cyptography.GenerateHash(password);
                 bool success = await SqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, hashedPassword);
 
                 return success
@@ -88,7 +87,7 @@ namespace NServer.Application.Handlers.Client
                 if (lastLogin.HasValue && (DateTime.UtcNow - lastLogin.Value).TotalSeconds < 20)
                     return PacketUtils.Response(Cmd.ERROR, "Please wait 20 seconds before trying again.");
 
-                if (!PBKDF2.VerifyPassword(hashedPassword, password))
+                if (!Pbkdf2Cyptography.ValidatePassword(hashedPassword, password))
                 {
                     await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_LAST_LOGIN, email); // Log failed attempt
                     return PacketUtils.Response(Cmd.ERROR, "Invalid email or password.");
@@ -129,7 +128,7 @@ namespace NServer.Application.Handlers.Client
             {
                 // Thực hiện các xử lý đăng xuất tại đây (ví dụ: cập nhật trạng thái người dùng)
                 await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, false, email);
-                
+
                 return PacketUtils.EmptyPacket;
             }
             catch (Exception ex)
@@ -161,10 +160,10 @@ namespace NServer.Application.Handlers.Client
             {
                 var storedPasswordHash = await SqlExecutor.ExecuteScalarAsync<string>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
 
-                if (!PBKDF2.VerifyPassword(currentPassword, storedPasswordHash))
+                if (!Pbkdf2Cyptography.ValidatePassword(currentPassword, storedPasswordHash))
                     return PacketUtils.Response(Cmd.ERROR, "Incorrect current password.");
 
-                var hashedNewPassword = PBKDF2.HashPassword(newPassword);
+                var hashedNewPassword = Pbkdf2Cyptography.GenerateHash(newPassword);
                 bool updateSuccess = await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, hashedNewPassword);
 
                 return updateSuccess

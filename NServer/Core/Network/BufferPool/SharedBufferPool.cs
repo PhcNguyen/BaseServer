@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Buffers;
-using System.Threading;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace NServer.Core.Network.BufferPool
 {
     /// <summary>
     /// Quản lý một pool của các bộ đệm dùng chung.
     /// </summary>
-    public class SharedBufferPool
+    public sealed class SharedBufferPool : IDisposable
     {
         private static readonly ConcurrentDictionary<int, SharedBufferPool> GlobalPools = new();
         private readonly ConcurrentQueue<byte[]> _freeBuffers;
@@ -57,7 +57,18 @@ namespace NServer.Core.Network.BufferPool
         /// <returns>Đối tượng <see cref="SharedBufferPool"/> cho kích thước bộ đệm chỉ định.</returns>
         public static SharedBufferPool GetOrCreatePool(int bufferSize, int initialCapacity)
         {
-            return GlobalPools.GetOrAdd(bufferSize, _ => new SharedBufferPool(bufferSize, initialCapacity));
+            if (!GlobalPools.TryGetValue(bufferSize, out var pool))
+            {
+                lock (GlobalPools) // Đảm bảo thread safety khi truy cập từ nhiều luồng
+                {
+                    if (!GlobalPools.TryGetValue(bufferSize, out pool))
+                    {
+                        pool = new SharedBufferPool(bufferSize, initialCapacity);
+                        GlobalPools[bufferSize] = pool;
+                    }
+                }
+            }
+            return pool;
         }
 
         /// <summary>
@@ -161,23 +172,49 @@ namespace NServer.Core.Network.BufferPool
         /// </summary>
         public void Dispose()
         {
-            if (!_disposed)
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Thực hiện giải phóng tài nguyên.
+        /// </summary>
+        /// <param name="disposing">Chỉ định liệu việc giải phóng có được gọi từ Dispose hay không.</param>
+        private void Dispose(bool disposing)
+        {
+            if (_disposed)
             {
-                lock (_disposeLock)
-                {
-                    if (!_disposed)
-                    {
-                        _disposed = true;
-
-                        while (_freeBuffers.TryDequeue(out var buffer))
-                        {
-                            _arrayPool.Return(buffer);
-                        }
-
-                        GlobalPools.TryRemove(_bufferSize, out _);
-                    }
-                }
+                return;
             }
+
+            lock (_disposeLock)
+            {
+                if (_disposed)
+                {
+                    return;
+                }
+
+                if (disposing)
+                {
+                    // Giải phóng tài nguyên được quản lý
+                    while (_freeBuffers.TryDequeue(out var buffer))
+                    {
+                        _arrayPool.Return(buffer);
+                    }
+
+                    GlobalPools.TryRemove(_bufferSize, out _);
+                }
+
+                // Nếu cần, thêm giải phóng tài nguyên không được quản lý ở đây
+
+                _disposed = true;
+            }
+        }
+
+        // Finalizer (chỉ sử dụng nếu cần giải phóng tài nguyên không được quản lý)
+        ~SharedBufferPool()
+        {
+            Dispose(disposing: false);
         }
     }
 }

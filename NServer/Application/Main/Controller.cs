@@ -1,15 +1,12 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-
+﻿using NServer.Core.Interfaces.Session;
 using NServer.Core.Session;
-using NServer.Core.Packets.Utils;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Interfaces.Packets;
+using System;
+using System.Linq;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NServer.Application.Main
 {
@@ -21,7 +18,6 @@ namespace NServer.Application.Main
         private readonly CancellationToken _token;
         private readonly SessionMonitor _sessionMonitor;
         private readonly ISessionManager _sessionManager;
-        private readonly IPacketIncoming _packetIncoming;
         private readonly PacketContainer _packetContainer;
 
         /// <summary>
@@ -31,7 +27,6 @@ namespace NServer.Application.Main
         public Controller(CancellationToken token)
         {
             _token = token;
-            _packetIncoming = Singleton.GetInstance<IPacketIncoming>();
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
 
             _packetContainer = new PacketContainer(_token);
@@ -57,25 +52,15 @@ namespace NServer.Application.Main
                 }
                 catch (OperationCanceledException)
                 {
-                    NLog.Instance.Info("Operation was canceled.");
+                    NLog.Instance.Info<Controller>("Operation was canceled.");
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error($"Error during initialization: {ex.Message}");
+                    NLog.Instance.Error<Controller>($"Error during initialization: {ex.Message}");
                 }
-
             }, _token);
         }
 
-        private void ProcessFunc(UniqueId id, byte[] data)
-        {
-            if (PacketValidation.IsValidPacket(data)) return;
-            IPacket packet = PacketExtensions.FromByteArray(data);
-            packet.SetId(id);
-
-            _packetIncoming.AddPacket(packet);
-        }
-            
         /// <summary>
         /// Lấy số lượng phiên đang hoạt động.
         /// </summary>
@@ -92,7 +77,7 @@ namespace NServer.Application.Main
             if (_sessionManager.AddSession(session))
             {
                 await session.ConnectAsync().ConfigureAwait(false);
-                session.Receive(this.ProcessFunc);
+                session.Receive(_packetContainer.EnqueueIncomingPacket);
                 return;
             }
 
@@ -117,7 +102,7 @@ namespace NServer.Application.Main
                 await Task.WhenAll(batch).ConfigureAwait(false);
             }
 
-            NLog.Instance.Info("All connections closed successfully.");
+            NLog.Instance.Info<Controller>("All connections closed successfully.");
         }
     }
 }

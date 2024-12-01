@@ -6,7 +6,7 @@ namespace NServer.Core.Interfaces.Network
     /// <summary>
     /// Interface xử lý giới hạn số lượng yêu cầu của mỗi địa chỉ IP trong một khoảng thời gian nhất định.
     /// </summary>
-    internal interface IRequestLimiter
+    public interface IRequestLimiter
     {
         /// <summary>
         /// Kiểm tra xem địa chỉ IP có được phép gửi yêu cầu hay không, dựa trên số lượng yêu cầu và tình trạng khóa.

@@ -1,17 +1,17 @@
-﻿using System;
+﻿using NServer.Core.Interfaces.Network;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using NServer.Core.Interfaces.Network;
 
 namespace NServer.Core.Network.Firewall
 {
     /// <summary>
     /// Lớp xử lý giới hạn số lượng yêu cầu từ mỗi địa chỉ IP trong một cửa sổ thời gian.
     /// </summary>
-    internal class RequestLimiter((int MaxRequests, TimeSpan TimeWindow) requestLimit, int lockoutDuration = 300) : IRequestLimiter
+    public class RequestLimiter((int MaxRequests, TimeSpan TimeWindow) requestLimit, int lockoutDuration = 300) : IRequestLimiter
     {
         private readonly (int MaxRequests, TimeSpan TimeWindow) _requestLimit = requestLimit;
         private readonly int _lockoutDuration = lockoutDuration;
@@ -82,7 +82,7 @@ namespace NServer.Core.Network.Firewall
                 {
                     var ipInfo = _ipData[ip];
                     // Xóa yêu cầu hết hạn trong cửa sổ thời gian
-                    while (ipInfo.Requests.Count > 0 && 
+                    while (ipInfo.Requests.Count > 0 &&
                         (currentTime - ipInfo.Requests.Peek()).TotalSeconds > _requestLimit.TimeWindow.TotalSeconds)
                     {
                         ipInfo.Requests.Dequeue();  // Loại bỏ yêu cầu cũ nhất

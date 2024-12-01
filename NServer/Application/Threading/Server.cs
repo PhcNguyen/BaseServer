@@ -1,50 +1,45 @@
-﻿using System;
+﻿using NServer.Application.Main;
+using NServer.Core.Helper;
+using NServer.Core.Network.BufferPool;
+using NServer.Core.Network.Firewall;
+using NServer.Core.Network.Listeners;
+using NServer.Infrastructure.Configuration;
+using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Services;
+using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-using NServer.Application.Main;
-
-using NServer.Core.Network;
-using NServer.Core.Network.Firewall;
-using NServer.Core.Network.BufferPool;
-
-using NServer.Infrastructure.Helper;
-using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Services;
-using NServer.Infrastructure.Configuration;
-
 namespace NServer.Application.Threading
 {
-    internal class Server : IDisposable
+    internal class Server
     {
-        private bool _disposed;
-        private int _isRunning; 
+        private int _isRunning;
         private bool _isInMaintenanceMode;
 
         private Controller _controller;
         private readonly SocketListener _networkListener;
 
-        private CancellationTokenSource _cts;
+        private CancellationTokenSource _ctokens;
         private readonly MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
         private readonly RequestLimiter _requestLimiter = Singleton.GetInstance<RequestLimiter>();
 
         public Server()
         {
             _isRunning = 0;
-            _disposed = false;
             _isInMaintenanceMode = false;
 
             _multiSizeBuffer.AllocateBuffers();
-            _cts = new CancellationTokenSource();
+            _ctokens = new CancellationTokenSource();
             _networkListener = new SocketListener();
-            _controller = new Controller(_cts.Token);
+            _controller = new Controller(_ctokens.Token);
         }
 
         private void InitializeComponents()
         {
-            _cts = new CancellationTokenSource();
-            _controller = new Controller(_cts.Token);
+            _ctokens = new CancellationTokenSource();
+            _controller = new Controller(_ctokens.Token);
         }
 
         public void StartServer()
@@ -64,7 +59,7 @@ namespace NServer.Application.Threading
             // Khởi tạo lại các thành phần
             InitializeComponents();
 
-            var token = _cts.Token;
+            var token = _ctokens.Token;
 
             _networkListener.StartListening(ipAddress: null, port: Setting.Port);
 
@@ -125,11 +120,11 @@ namespace NServer.Application.Threading
                 }
                 catch (SocketException ex)
                 {
-                    NLog.Instance.Error($"Socket error: {ex.SocketErrorCode}, Message: {ex.Message}");
+                    NLog.Instance.Error<Server>($"Socket error: {ex.SocketErrorCode}, Message: {ex.Message}");
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error($"Unexpected error: {ex.Message}");
+                    NLog.Instance.Error<Server>($"Unexpected error: {ex.Message}");
                 }
             }
         }
@@ -142,7 +137,7 @@ namespace NServer.Application.Threading
                 return;
             }
 
-            _cts.Cancel();
+            _ctokens.Cancel();
 
             Task.Run(async () =>
             {
@@ -152,7 +147,7 @@ namespace NServer.Application.Threading
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error($"Error during disconnecting clients: {ex.Message}");
+                    NLog.Instance.Error<Server>($"Error during disconnecting clients: {ex.Message}");
                 }
 
                 try
@@ -163,7 +158,7 @@ namespace NServer.Application.Threading
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error($"Error during socket cleanup: {ex.Message}");
+                    NLog.Instance.Error<Server>($"Error during socket cleanup: {ex.Message}");
                 }
             });
 
@@ -210,16 +205,10 @@ namespace NServer.Application.Threading
             return _isRunning == 1;
         }
 
-        public void Dispose()
+        public void CancelOperation()
         {
-            if (_disposed)
-                return;
-
-            // Hủy bỏ các tài nguyên được quản lý
-            _cts?.Cancel();
-            _networkListener?.Dispose();
-
-            _disposed = true;
+            _ctokens.Cancel();
+            _ctokens.Dispose(); // Disposes the token source
         }
     }
 }

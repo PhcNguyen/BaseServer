@@ -1,6 +1,6 @@
-﻿using System.Threading;
+﻿using NServer.Core.Packets.Queue;
+using System.Threading;
 using System.Threading.Tasks;
-using NServer.Core.Interfaces.Packets;
 
 namespace NServer.Application.Handlers.Packets
 {
@@ -15,19 +15,19 @@ namespace NServer.Application.Handlers.Packets
         /// <summary>
         /// Hàng đợi các gói tin đến.
         /// </summary>
-        public IPacketIncoming IncomingPacketQueue { get; }
+        public PacketIncoming IncomingPacketQueue { get; }
 
         /// <summary>
         /// Hàng đợi các gói tin đi.
         /// </summary>
-        public IPacketOutgoing OutgoingPacketQueue { get; }
+        public PacketOutgoing OutgoingPacketQueue { get; }
 
         /// <summary>
         /// Khởi tạo một đối tượng <see cref="PacketQueue"/> mới.
         /// </summary>
         /// <param name="incomingQueue">Hàng đợi các gói tin đến.</param>
         /// <param name="outgoingQueue">Hàng đợi các gói tin đi.</param>
-        public PacketQueue(IPacketIncoming incomingQueue, IPacketOutgoing outgoingQueue)
+        public PacketQueue(PacketIncoming incomingQueue, PacketOutgoing outgoingQueue)
         {
             IncomingPacketQueue = incomingQueue;
             OutgoingPacketQueue = outgoingQueue;

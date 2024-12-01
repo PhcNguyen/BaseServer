@@ -8,9 +8,9 @@ namespace NServer.Application.Handlers
     internal class CommandDispatcher : CommandDispatcherBase
     {
         private static readonly string[] TargetNamespaces =
-        {
+        [
             "NServer.Application.Handlers.Client",
-        };
+        ];
 
         /// <summary>
         /// Khởi tạo một đối tượng <see cref="CommandDispatcher"/> mới.

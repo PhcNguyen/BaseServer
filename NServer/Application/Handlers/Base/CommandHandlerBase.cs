@@ -1,15 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
-
+﻿using NServer.Application.Handlers.Enums;
+using NServer.Application.Handlers.Packets;
 using NServer.Core.Database;
 using NServer.Core.Database.Postgre;
-using NServer.Core.Interfaces.Session;
 using NServer.Core.Interfaces.Packets;
-
+using NServer.Core.Interfaces.Session;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
-using NServer.Application.Handlers.Packets;
+using System;
+using System.Threading.Tasks;
 
 namespace NServer.Application.Handlers.Base
 {
@@ -40,7 +39,7 @@ namespace NServer.Application.Handlers.Base
                 {
                     session.Authenticator = true;
                     return true;
-                }    
+                }
             }
 
             return false;

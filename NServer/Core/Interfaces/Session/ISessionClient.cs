@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace NServer.Core.Interfaces.Session
 {
-    internal interface ISessionClient
+    public interface ISessionClient
     {
         UniqueId Id { get; }
         byte[] Key { get; }
@@ -14,13 +14,17 @@ namespace NServer.Core.Interfaces.Session
         bool IsConnected { get; }
 
         Task ConnectAsync();
+
         Task DisconnectAsync();
+
         Task<bool> SendAsync(object data);
+
         ValueTask DisposeAsync();
 
         void UpdateLastActivityTime();
+
         bool IsSessionTimedOut();
+
         bool IsSocketInvalid();
     }
 }
-

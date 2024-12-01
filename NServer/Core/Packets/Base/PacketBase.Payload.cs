@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NServer.Core.Packets.Base
 {
-    internal partial class PacketBase
+    public partial class PacketBase
     {
         private Memory<byte> _payload;
 
@@ -92,6 +92,5 @@ namespace NServer.Core.Packets.Base
 
             _payload = new Memory<byte>(combined);
         }
-
     }
 }

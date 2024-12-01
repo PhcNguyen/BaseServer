@@ -1,16 +1,16 @@
-﻿using System;
+﻿using NServer.Core.Interfaces.Session;
+using NServer.Infrastructure.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-
-using NServer.Infrastructure.Logging;
-using NServer.Core.Interfaces.Session;
 
 namespace NServer.Core.Session
 {
     /// <summary>
     /// Giám sát và quản lý trạng thái của các phiên làm việc.
     /// <para>
-    /// Lớp này chịu trách nhiệm giám sát các phiên làm việc, kiểm tra trạng thái kết nối của các phiên làm việc và đóng các kết nối không hợp lệ hoặc đã hết thời gian.
+    /// Lớp này chịu trách nhiệm giám sát các phiên làm việc, kiểm tra trạng thái kết nối của các
+    /// phiên làm việc và đóng các kết nối không hợp lệ hoặc đã hết thời gian.
     /// </para>
     /// </summary>
     /// <remarks>
@@ -18,7 +18,7 @@ namespace NServer.Core.Session
     /// </remarks>
     /// <param name="sessionManager">Quản lý các phiên làm việc.</param>
     /// <param name="cancellationToken">Mã thông báo hủy để kiểm soát việc dừng giám sát.</param>
-    internal class SessionMonitor(ISessionManager sessionManager, CancellationToken cancellationToken)
+    public class SessionMonitor(ISessionManager sessionManager, CancellationToken cancellationToken)
                 : ISessionMonitor
     {
         private readonly ISessionManager _sessionManager = sessionManager;
@@ -43,7 +43,7 @@ namespace NServer.Core.Session
                     }
                     catch (Exception ex)
                     {
-                        NLog.Instance.Error($"Error monitoring session {session.Id}: {ex.Message}");
+                        NLog.Instance.Error<SessionMonitor>($"Error monitoring session {session.Id}: {ex.Message}");
                     }
                 }
 
@@ -65,7 +65,7 @@ namespace NServer.Core.Session
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error closing connection for session {session.Id}: {ex.Message}");
+                NLog.Instance.Error<SessionMonitor>($"Error closing connection for session {session.Id}: {ex.Message}");
             }
         }
     }

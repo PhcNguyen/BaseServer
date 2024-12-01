@@ -1,11 +1,10 @@
-﻿using System;
-
-using NServer.Core.Packets.Enums;
+﻿using NServer.Core.Packets.Enums;
 using NServer.Core.Packets.Metadata;
+using System;
 
 namespace NServer.Core.Packets.Base
 {
-    internal partial class PacketBase
+    public partial class PacketBase
     {
         private const int _headerSize = PacketMetadata.HEADERSIZE;
 
@@ -17,7 +16,7 @@ namespace NServer.Core.Packets.Base
         /// <summary>
         /// Cờ trạng thái của gói tin.
         /// </summary>
-        public PacketFlags Flags { get; protected set; } = PacketFlags.NONE;
+        public Enums.Packet Flags { get; protected set; } = Enums.Packet.NONE;
 
         /// <summary>
         /// Command để xác định loại gói tin.
@@ -32,17 +31,17 @@ namespace NServer.Core.Packets.Base
         /// <summary>
         /// Phương thức để thêm cờ trạng thái
         /// </summary>
-        public void AddFlag(PacketFlags flag) => Flags |= flag;
+        public void AddFlag(Enums.Packet flag) => Flags |= flag;
 
         /// <summary>
         /// Phương thức để loại bỏ cờ trạng thái
         /// </summary>
-        public void RemoveFlag(PacketFlags flag) => Flags &= ~flag;
+        public void RemoveFlag(Enums.Packet flag) => Flags &= ~flag;
 
         /// <summary>
         /// Kiểm tra xem flag có tồn tại hay không.
         /// </summary>
-        public bool HasFlag(PacketFlags flag) => Flags.HasFlag(flag);
+        public bool HasFlag(Enums.Packet flag) => Flags.HasFlag(flag);
 
         /// <summary>
         /// Set Command mới cho gói tin.

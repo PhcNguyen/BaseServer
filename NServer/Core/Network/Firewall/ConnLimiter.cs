@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Collections.Concurrent;
-using NServer.Core.Interfaces.Network;
+﻿using NServer.Core.Interfaces.Network;
 using NServer.Infrastructure.Configuration;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace NServer.Core.Network.Firewall
 {
     /// <summary>
     /// Lớp xử lý giới hạn số lượng kết nối đồng thời từ mỗi địa chỉ IP.
     /// </summary>
-    internal class ConnLimiter : IConnLimiter
+    public class ConnLimiter : IConnLimiter
     {
         private readonly int _maxConnectionsPerIp = Setting.MaxConnectionsPerIpAddress;
         private readonly ConcurrentDictionary<string, int> _ipConnectionCounts = new();
@@ -23,7 +23,7 @@ namespace NServer.Core.Network.Firewall
             if (string.IsNullOrEmpty(ipAddress)) return false;
             if (this.GetCurrentConnectionCount(ipAddress) >= _maxConnectionsPerIp) return false;
 
-                // Cập nhật số lượng kết nối của IP trong dictionary
+            // Cập nhật số lượng kết nối của IP trong dictionary
             int newConnectionCount = _ipConnectionCounts.AddOrUpdate(
                 ipAddress,
                 1,  // Initialize to 1 if the IP is not found

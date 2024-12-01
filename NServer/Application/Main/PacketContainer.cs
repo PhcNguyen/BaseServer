@@ -1,13 +1,13 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
+﻿using NServer.Application.Handlers.Packets;
 using NServer.Core.Interfaces.Packets;
 using NServer.Core.Interfaces.Session;
+using NServer.Core.Packets.Queue;
+using NServer.Core.Packets.Utils;
 using NServer.Infrastructure.Services;
-
-using NServer.Application.Handlers.Packets;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NServer.Application.Main
 {
@@ -17,32 +17,41 @@ namespace NServer.Application.Main
     internal class PacketContainer
     {
         private readonly CancellationToken _token;
-        private readonly PacketQueue _packetQueue;
+        private readonly Handlers.Packets.PacketQueue _packetQueue;
         private readonly PacketProcessor _packetHandler;
+        private readonly PacketOutgoing _outgoingPacket;
+        private readonly PacketIncoming _incomingPacket;
         private readonly ISessionManager _sessionManager;
         private readonly ParallelOptions _parallelOptions;
-        private readonly IPacketOutgoing _outgoingPacketQueue;
-        private readonly IPacketIncoming _incomingPacketQueue;
 
-    /// <summary>
-    /// Khởi tạo một đối tượng <see cref="PacketContainer"/> mới.
-    /// </summary>
-    /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
-    public PacketContainer(CancellationToken token)
+        /// <summary>
+        /// Khởi tạo một đối tượng <see cref="PacketContainer"/> mới.
+        /// </summary>
+        /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
+        public PacketContainer(CancellationToken token)
         {
             _token = token;
+            _outgoingPacket = Singleton.GetInstance<PacketOutgoing>();
+            _incomingPacket = Singleton.GetInstance<PacketIncoming>();
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
-            _incomingPacketQueue = Singleton.GetInstanceOfInterface<IPacketIncoming>();
-            _outgoingPacketQueue = Singleton.GetInstanceOfInterface<IPacketOutgoing>();
-            
+
             _packetHandler = new PacketProcessor(_sessionManager);
-            _packetQueue = new PacketQueue(_incomingPacketQueue, _outgoingPacketQueue);
+            _packetQueue = new Handlers.Packets.PacketQueue(_incomingPacket, _outgoingPacket);
 
             _parallelOptions = new()
             {
-                MaxDegreeOfParallelism = Environment.ProcessorCount, 
+                MaxDegreeOfParallelism = Environment.ProcessorCount,
                 CancellationToken = _token
             };
+        }
+
+        public void EnqueueIncomingPacket(UniqueId id, byte[] data)
+        {
+            if (PacketValidation.IsValidPacket(data)) return;
+            IPacket packet = PacketExtensions.FromByteArray(data);
+            packet.SetId(id);
+
+            _incomingPacket.Enqueue(packet);
         }
 
         /// <summary>

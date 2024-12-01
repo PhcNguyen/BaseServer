@@ -1,17 +1,15 @@
-﻿using System;
-
+﻿using NServer.Core.Interfaces.Packets;
 using NServer.Core.Packets.Base;
 using NServer.Core.Packets.Enums;
 using NServer.Core.Packets.Metadata;
-using NServer.Core.Interfaces.Packets;
-
+using System;
 
 namespace NServer.Core.Packets
 {
     /// <summary>
     /// Gói tin cơ bản, kế thừa từ PacketBase.
     /// </summary>
-    internal class Packet : PacketBase, IPacket
+    public class Packet : PacketBase, IPacket
     {
         /// <summary>
         /// Constructor để tạo Packet với Command và Payload.
@@ -22,19 +20,18 @@ namespace NServer.Core.Packets
                     ? (PacketType)type
                     : PacketType.NONE;
 
-            Flags = flags is not null && Enum.IsDefined((PacketFlags)flags)
-                    ? (PacketFlags)flags
-                    : PacketFlags.NONE;
+            Flags = flags is not null && Enum.IsDefined((Enums.Packet)flags)
+                    ? (Enums.Packet)flags
+                    : Enums.Packet.NONE;
 
             Cmd = command ?? 0;
 
             if (payload != null && payload.Length + PacketMetadata.HEADERSIZE > int.MaxValue)
             {
-                throw new ArgumentOutOfRangeException(nameof(payload), "Payload quá lớn.");
+                throw new ArgumentOutOfRangeException(nameof(payload), "The payload is too large.");
             }
 
             Payload = payload?.Length > 0 ? new Memory<byte>(payload) : Memory<byte>.Empty;
         }
     }
 }
-

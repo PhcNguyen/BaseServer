@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading;
 using System.Security.Cryptography;
+using System.Threading;
 
 namespace NServer.Infrastructure.Services
 {
@@ -39,15 +39,17 @@ namespace NServer.Infrastructure.Services
         /// <returns>Chuỗi đại diện ID.</returns>
         public override string ToString()
         {
-            var value = _value;
-            Span<char> buffer = stackalloc char[13]; // Tối đa cần 13 ký tự để biểu diễn uint bằng Base36
+            var mvalue = _value;
+            const int bufferSize = 13; // Tối đa cần 13 ký tự để biểu diễn uint bằng Base36
+            Span<char> buffer = stackalloc char[bufferSize];
             int index = buffer.Length;
 
+            // Tính toán ký tự Base36
             do
             {
-                buffer[--index] = Alphabet[(int)(value % Base)];
-                value /= Base;
-            } while (value > 0);
+                buffer[--index] = Alphabet[(int)(mvalue % Base)];
+                mvalue /= Base;
+            } while (mvalue > 0);
 
             // Đảm bảo độ dài của chuỗi là 7 ký tự
             return new string(buffer[index..]).PadLeft(7, '0');
@@ -69,7 +71,7 @@ namespace NServer.Infrastructure.Services
                 {
                     throw new ArgumentException($"Invalid character '{c}' in input string.", nameof(input));
                 }
-                value = (uint)(value * Base + charIndex);
+                value = (uint)((value * Base) + charIndex);
             }
 
             return new UniqueId(value);

@@ -1,6 +1,6 @@
 ﻿namespace NServer.Core.Database
 {
-    internal enum SqlCommand
+    public enum SqlCommand
     {
         INSERT_ACCOUNT,
         DELETE_ACCOUNT,

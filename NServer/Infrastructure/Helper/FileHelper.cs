@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 
 namespace NServer.Infrastructure.Helper
 {
-    internal static class FileHelper
+    public static class FileHelper
     {
         /// <summary>
-        /// Ghi nội dung vào tệp văn bản. 
+        /// Ghi nội dung vào tệp văn bản.
         /// </summary>
         /// <param name="filePath">Đường dẫn tới tệp.</param>
         /// <param name="content">Nội dung cần ghi.</param>
@@ -25,7 +25,7 @@ namespace NServer.Infrastructure.Helper
                     File.WriteAllText(filePath, content);
                 }
             }
-            catch (Exception) { }
+            catch { /*Pass*/ }
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace NServer.Infrastructure.Helper
                 using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
                 fileStream.Write(data, 0, data.Length);
             }
-            catch (Exception) { }
+            catch { /*Pass*/ }
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace NServer.Infrastructure.Helper
         }
 
         /// <summary>
-        /// Ghi nội dung vào tệp văn bản bất đồng bộ. 
+        /// Ghi nội dung vào tệp văn bản bất đồng bộ.
         /// </summary>
         /// <param name="filePath">Đường dẫn tới tệp.</param>
         /// <param name="content">Nội dung cần ghi.</param>
@@ -97,7 +97,7 @@ namespace NServer.Infrastructure.Helper
                     await File.WriteAllTextAsync(filePath, content);
                 }
             }
-            catch (Exception ) { }
+            catch { /*Pass*/ }
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace NServer.Infrastructure.Helper
                 using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
                 await fileStream.WriteAsync(data);
             }
-            catch (Exception) { }
+            catch { /*Pass*/ }
         }
 
         /// <summary>

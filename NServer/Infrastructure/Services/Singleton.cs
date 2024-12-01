@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
 namespace NServer.Infrastructure.Services
 {
     /// <summary>
     /// Lớp Singleton dùng để quản lý và khởi tạo các instance duy nhất của các class.
     /// </summary>
-    internal class Singleton
+    public static class Singleton
     {
         private static readonly ConcurrentDictionary<Type, object> _instances = new();
 
@@ -43,12 +43,10 @@ namespace NServer.Infrastructure.Services
         /// <param name="initializer">Hàm khởi tạo tùy chọn.</param>
         /// <returns>Instance duy nhất của class.</returns>
         /// <exception cref="ArgumentNullException">Ném ra nếu hàm khởi tạo trả về null.</exception>
-        public static T GetInstance<T>(Func<T>? initializer = null) where T : class
+        public static T GetInstance<T>(Func<T>? initializer) where T : class
         {
-            var instance = (T)_instances.GetOrAdd(typeof(T), _ => initializer?.Invoke() ?? Activator.CreateInstance<T>());
-            if (instance == null)
-                throw new ArgumentNullException(nameof(instance), "Initializer function returned null.");
-            return instance;
+            return _instances.GetOrAdd(typeof(T), _ => initializer?.Invoke() ?? Activator.CreateInstance<T>()) as T
+                ?? throw new ArgumentNullException(nameof(initializer), "Initializer function returned null.");
         }
 
         /// <summary>
@@ -57,13 +55,24 @@ namespace NServer.Infrastructure.Services
         /// <typeparam name="T">Loại của class cần lấy instance.</typeparam>
         /// <param name="args">Các tham số khởi tạo.</param>
         /// <returns>Instance duy nhất của class.</returns>
-        /// <exception cref="ArgumentNullException">Ném ra nếu instance được khởi tạo là null.</exception>
+        /// <exception cref="InvalidOperationException">Ném ra nếu không thể tạo instance.</exception>
         public static T GetInstance<T>(params object[] args) where T : class
         {
-            var instance = (T)_instances.GetOrAdd(typeof(T), _ => (T)Activator.CreateInstance(typeof(T), args)!);
-            if (instance == null)
-                throw new ArgumentNullException(nameof(instance), "Instance created with parameters is null.");
-            return instance;
+            try
+            {
+                // Kiểm tra nếu instance là null và ném ngoại lệ nếu cần
+                if (_instances.GetOrAdd(typeof(T), _ => Activator.CreateInstance(typeof(T), args)!) is not T instance)
+                {
+                    throw new InvalidOperationException($"Failed to create instance of {typeof(T)}");
+                }
+
+                return instance;
+            }
+            catch (Exception ex)
+            {
+                // Xử lý ngoại lệ nếu không thể tạo instance.
+                throw new InvalidOperationException($"Failed to create instance of {typeof(T)}", ex);
+            }
         }
 
         /// <summary>

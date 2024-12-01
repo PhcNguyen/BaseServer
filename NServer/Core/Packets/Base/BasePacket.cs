@@ -1,15 +1,14 @@
-﻿using System;
-using System.Buffers;
-
-using NServer.Core.Packets.Metadata;
+﻿using NServer.Core.Packets.Metadata;
 using NServer.Infrastructure.Services;
+using System;
+using System.Buffers;
 
 namespace NServer.Core.Packets.Base
 {
     /// <summary>
     /// Lớp cơ sở cho tất cả các gói tin mạng.
     /// </summary>
-    internal abstract partial class PacketBase
+    public abstract partial class PacketBase
     {
         /// <summary>
         /// Id gói tin.
@@ -22,7 +21,7 @@ namespace NServer.Core.Packets.Base
         public int Length => _headerSize + _payload.Length;
 
         /// <summary>
-        /// Phương thức để thêm ID 
+        /// Phương thức để thêm ID
         /// </summary>
         public void SetId(UniqueId id) => Id = id;
 
@@ -44,7 +43,7 @@ namespace NServer.Core.Packets.Base
                 span[PacketMetadata.TYPEOFFSET] = (byte)Type;
                 span[PacketMetadata.FLAGSOFFSET] = (byte)Flags;
                 BitConverter.TryWriteBytes(span[PacketMetadata.COMMANDOFFSET..], Cmd);
-                
+
                 // Payload
                 _payload.Span.CopyTo(span[PacketMetadata.PAYLOADOFFSET..]);
 
