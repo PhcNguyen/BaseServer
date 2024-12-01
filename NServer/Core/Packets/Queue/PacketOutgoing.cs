@@ -5,6 +5,8 @@
     /// </summary>
     public class PacketOutgoing : PacketQueue
     {
-        public PacketOutgoing() : base() { }
+        public PacketOutgoing() : base()
+        {
+        }
     }
 }

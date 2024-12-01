@@ -24,7 +24,6 @@ namespace NServer.Core.Packets.Utils
             return 0; // Không có cờ ưu tiên nào
         }
 
-
         /// <summary>
         /// Lấy danh sách các cờ trạng thái hiện tại của gói tin.
         /// </summary>

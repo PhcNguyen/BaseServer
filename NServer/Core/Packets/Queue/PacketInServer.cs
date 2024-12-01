@@ -5,6 +5,8 @@
     /// </summary>
     public class PacketInServer : PacketQueue
     {
-        public PacketInServer() : base() { }
+        public PacketInServer() : base()
+        {
+        }
     }
 }

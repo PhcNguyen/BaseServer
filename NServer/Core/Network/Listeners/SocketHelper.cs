@@ -1,7 +1,7 @@
-﻿using System;
+﻿using NServer.Core.Helper;
+using System;
 using System.Net;
 using System.Net.Sockets;
-using NServer.Core.Helper;
 
 namespace NServer.Core.Network.Listeners
 {

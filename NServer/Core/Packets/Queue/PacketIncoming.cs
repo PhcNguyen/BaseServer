@@ -5,6 +5,8 @@
     /// </summary>
     public class PacketIncoming : PacketQueue
     {
-        public PacketIncoming() : base() { }
+        public PacketIncoming() : base()
+        {
+        }
     }
 }

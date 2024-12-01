@@ -1,8 +1,8 @@
 ﻿using NServer.Core.Interfaces.Packets;
 using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NServer.Core.Packets.Queue
 {
@@ -119,13 +119,13 @@ namespace NServer.Core.Packets.Queue
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposed) return; 
+            if (_disposed) return;
 
             if (disposing)
-            { 
-                Clear(); 
-                PacketAdded = null; 
-            } 
+            {
+                Clear();
+                PacketAdded = null;
+            }
             _disposed = true;
         }
 

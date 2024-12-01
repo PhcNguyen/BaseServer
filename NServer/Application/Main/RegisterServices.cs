@@ -29,7 +29,7 @@ namespace NServer.Application.Main
             new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration));
 
             Singleton.Register<IConnLimiter, ConnLimiter>();
-            Singleton.Register<ISessionManager, SessionManager>(); 
+            Singleton.Register<ISessionManager, SessionManager>();
         }
     }
 }

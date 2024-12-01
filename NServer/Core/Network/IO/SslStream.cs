@@ -1,10 +1,10 @@
-﻿using System;
+﻿using NServer.Infrastructure.Configuration;
+using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using NServer.Infrastructure.Configuration;
+using System.Threading.Tasks;
 
 namespace NServer.Core.Network.IO
 {

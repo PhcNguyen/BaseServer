@@ -1,9 +1,8 @@
-﻿using System;
-
-using NServer.Application.Main;
+﻿using NServer.Application.Main;
 using NServer.Core.Network.BufferPool;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
+using System;
 
 namespace NServer.Application.Threading
 {

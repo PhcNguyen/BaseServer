@@ -56,7 +56,6 @@ namespace NServer.Core.Packets.Utils
         /// </summary>
         public static int GetPacketLength(this byte[] packet) =>
            BitConverter.ToInt32(packet, PacketMetadata.LENGHTOFFSET);
-        
 
         /// <summary>
         /// Lấy cờ (flags) từ gói tin.
@@ -64,12 +63,10 @@ namespace NServer.Core.Packets.Utils
         public static byte GetPacketFlags(this byte[] packet) =>
             packet[PacketMetadata.FLAGSOFFSET];
 
-
         /// <summary>
         /// Lấy lệnh (command) từ gói tin.
         /// </summary>
         public static short GetPacketCommand(this byte[] packet) =>
             BitConverter.ToInt16(packet, PacketMetadata.COMMANDOFFSET);
-        
     }
 }
