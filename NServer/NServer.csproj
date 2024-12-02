@@ -4,7 +4,7 @@
 		<!-- Đầu ra là file thực thi (EXE) -->
 		<OutputType>Exe</OutputType>
 		<!-- Nhắm mục tiêu framework .NET 8.0 -->
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net9.0</TargetFramework>
 		<!-- Bật using ngầm (giảm viết using thủ công) -->
 		<ImplicitUsings>disable</ImplicitUsings>
 		<!-- Bật tính năng Nullability (cảnh báo lỗi nullable) -->
@@ -15,6 +15,7 @@
 		<AssemblyName>NServer</AssemblyName>
 		<!-- Cho phép sử dụng code unsafe -->
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<StartupObject>NServer.Application.Threading.Program</StartupObject>
 	</PropertyGroup>
 
 	<!-- Cấu hình khi chạy ở chế độ Debug -->

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NServer.Core.Security
+namespace NServer.Infrastructure.Security
 {
     /// <summary>
     /// Tiện ích bảo mật xử lý checksum cho dữ liệu.

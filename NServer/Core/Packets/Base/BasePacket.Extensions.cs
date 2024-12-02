@@ -3,7 +3,7 @@ using System.Text;
 
 namespace NServer.Core.Packets.Base
 {
-    public partial class PacketBase
+    public partial class BasePacket
     {
         /// <summary>
         /// Phương thức để đặt lại gói tin về trạng thái ban đầu.

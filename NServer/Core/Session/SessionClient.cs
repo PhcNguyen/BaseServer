@@ -2,10 +2,10 @@
 using NServer.Core.Interfaces.Session;
 using NServer.Core.Network.IO;
 using NServer.Core.Packets;
-using NServer.Core.Security;
 using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Helper;
 using NServer.Infrastructure.Logging;
+using NServer.Infrastructure.Security;
 using NServer.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
@@ -259,7 +259,7 @@ namespace NServer.Core.Session
             await _cts.CancelAsync();
             _socketReader.DataReceived -= OnDataReceived!;
 
-            await _socketWriter.DisposeAsync();
+            _socketWriter.Dispose();
             await _socketReader.DisposeAsync();
 
             _socket.Dispose();

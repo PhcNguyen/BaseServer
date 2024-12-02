@@ -4,7 +4,7 @@ using System;
 
 namespace NServer.Core.Packets.Base
 {
-    public partial class PacketBase
+    public partial class BasePacket
     {
         private const int _headerSize = PacketMetadata.HEADERSIZE;
 

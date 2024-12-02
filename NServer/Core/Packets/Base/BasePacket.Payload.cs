@@ -5,7 +5,7 @@ using System.Text;
 
 namespace NServer.Core.Packets.Base
 {
-    public partial class PacketBase
+    public partial class BasePacket
     {
         private Memory<byte> _payload;
 

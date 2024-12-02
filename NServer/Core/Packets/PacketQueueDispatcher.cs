@@ -4,12 +4,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace NServer.Core.Packets.Queue
+namespace NServer.Core.Packets
 {
     /// <summary>
     /// Lớp cơ sở cho các hàng đợi gói tin, cung cấp các phương thức chung để quản lý hàng đợi.
     /// </summary>
-    public abstract class PacketQueue : IDisposable
+    public abstract class PacketQueueDispatcher : IDisposable
     {
         private readonly ConcurrentQueue<IPacket> _queue = new();
         private bool _disposed;
@@ -115,7 +115,7 @@ namespace NServer.Core.Packets.Queue
         }
 
         /// <summary>
-        /// Giải phóng tài nguyên được sử dụng bởi <see cref="PacketQueue"/>.
+        /// Giải phóng tài nguyên được sử dụng bởi <see cref="PacketQueueDispatcher"/>.
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {

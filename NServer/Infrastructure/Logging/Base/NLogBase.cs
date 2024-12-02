@@ -63,7 +63,7 @@ namespace NServer.Infrastructure.Logging.Base
         /// </summary>
         protected static (string CallingClass, string CallingMethod) GetCallerInfo()
         {
-            var stackFrame = new StackTrace().GetFrame(2); // Bỏ qua các frame không cần thiết
+            var stackFrame = new StackTrace().GetFrame(3); // Bỏ qua các frame không cần thiết
             var methodBase = stackFrame?.GetMethod();
             var callingClass = methodBase?.ReflectedType?.Name ?? "UnknownClass";
             var callingMethod = methodBase?.Name ?? "UnknownMethod";
@@ -75,7 +75,7 @@ namespace NServer.Infrastructure.Logging.Base
         /// </summary>
         protected static string GetCallerMethodName()
         {
-            var method = new StackTrace().GetFrame(2)?.GetMethod();
+            var method = new StackTrace().GetFrame(3)?.GetMethod();
             return method?.Name ?? "UnknownMethod";
         }
     }

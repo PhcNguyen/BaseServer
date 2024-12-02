@@ -9,7 +9,7 @@ namespace NServer.Core.Packets
     /// <summary>
     /// Gói tin cơ bản, kế thừa từ PacketBase.
     /// </summary>
-    public class Packet : PacketBase, IPacket
+    public class Packet : BasePacket, IPacket
     {
         /// <summary>
         /// Constructor để tạo Packet với Command và Payload.

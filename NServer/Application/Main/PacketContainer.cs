@@ -1,7 +1,7 @@
 ﻿using NServer.Application.Handlers.Packets;
+using NServer.Application.Handlers.Packets.Queue;
 using NServer.Core.Interfaces.Packets;
 using NServer.Core.Interfaces.Session;
-using NServer.Core.Packets.Queue;
 using NServer.Core.Packets.Utils;
 using NServer.Infrastructure.Services;
 using System;
@@ -17,12 +17,13 @@ namespace NServer.Application.Main
     internal class PacketContainer
     {
         private readonly CancellationToken _token;
-        private readonly Handlers.Packets.PacketQueue _packetQueue;
         private readonly PacketProcessor _packetHandler;
         private readonly PacketOutgoing _outgoingPacket;
         private readonly PacketIncoming _incomingPacket;
+        private readonly PacketInserver _inserverPacket;
         private readonly ISessionManager _sessionManager;
         private readonly ParallelOptions _parallelOptions;
+        private readonly PacketQueueManager _packetQueueManager;
 
         /// <summary>
         /// Khởi tạo một đối tượng <see cref="PacketContainer"/> mới.
@@ -32,11 +33,12 @@ namespace NServer.Application.Main
         {
             _token = token;
             _outgoingPacket = Singleton.GetInstance<PacketOutgoing>();
+            _inserverPacket = Singleton.GetInstance<PacketInserver>();
             _incomingPacket = Singleton.GetInstance<PacketIncoming>();
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
 
             _packetHandler = new PacketProcessor(_sessionManager);
-            _packetQueue = new Handlers.Packets.PacketQueue(_incomingPacket, _outgoingPacket);
+            _packetQueueManager = new PacketQueueManager(_inserverPacket, _incomingPacket, _outgoingPacket);
 
             _parallelOptions = new()
             {
@@ -61,8 +63,8 @@ namespace NServer.Application.Main
         {
             while (!_token.IsCancellationRequested)
             {
-                await _packetQueue.WaitForIncomingSignal(_token);
-                List<IPacket> packetsBatch = _packetQueue.IncomingPacketQueue.DequeueBatch(50);
+                await _packetQueueManager.WaitForIncoming(_token);
+                List<IPacket> packetsBatch = _packetQueueManager.IncomingPacketQueue.DequeueBatch(50);
 
                 await HandleIncomingPacketBatch(packetsBatch);
             }
@@ -75,8 +77,8 @@ namespace NServer.Application.Main
         {
             while (!_token.IsCancellationRequested)
             {
-                await _packetQueue.WaitForOutgoingSignal(_token);
-                List<IPacket> packetsBatch = _packetQueue.OutgoingPacketQueue.DequeueBatch(50);
+                await _packetQueueManager.WaitForOutgoing(_token);
+                List<IPacket> packetsBatch = _packetQueueManager.OutgoingPacketQueue.DequeueBatch(50);
 
                 await HandleOutgoingPacketBatch(packetsBatch);
             }
@@ -90,7 +92,7 @@ namespace NServer.Application.Main
         {
             await Parallel.ForEachAsync(packetsBatch, _parallelOptions, async (packet, token) =>
             {
-                await _packetHandler.HandleIncomingPacket(packet, _packetQueue.OutgoingPacketQueue);
+                await _packetHandler.HandleIncomingPacket(packet, _packetQueueManager.OutgoingPacketQueue);
             });
         }
 

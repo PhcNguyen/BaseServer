@@ -1,5 +1,4 @@
-﻿using NServer.Application.Handlers.Enums;
-using NServer.Application.Handlers.Packets;
+﻿using NServer.Application.Handlers.Packets;
 using NServer.Core.Database;
 using NServer.Core.Database.Postgre;
 using NServer.Core.Interfaces.Packets;
@@ -27,8 +26,8 @@ namespace NServer.Application.Handlers.Base
         protected static Task<IPacket> HandleError(string message, Exception? ex = null)
         {
             if (ex != null)
-                NLog.Instance.Error(ex.Message);
-            return Task.FromResult(PacketUtils.Response(Cmd.ERROR, message));
+                NLog.Instance.Error<CommandHandlerBase>(ex.Message);
+            return Task.FromResult(PacketUtils.Response(Command.ERROR, message));
         }
 
         protected static bool Authenticator(UniqueId id)

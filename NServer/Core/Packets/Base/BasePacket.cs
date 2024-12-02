@@ -8,7 +8,7 @@ namespace NServer.Core.Packets.Base
     /// <summary>
     /// Lớp cơ sở cho tất cả các gói tin mạng.
     /// </summary>
-    public abstract partial class PacketBase
+    public abstract partial class BasePacket
     {
         /// <summary>
         /// Id gói tin.

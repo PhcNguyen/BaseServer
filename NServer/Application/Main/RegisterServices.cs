@@ -1,9 +1,9 @@
 ﻿using NServer.Application.Handlers;
+using NServer.Application.Handlers.Packets.Queue;
 using NServer.Core.Interfaces.Network;
 using NServer.Core.Interfaces.Session;
 using NServer.Core.Network.BufferPool;
 using NServer.Core.Network.Firewall;
-using NServer.Core.Packets.Queue;
 using NServer.Core.Session;
 using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Services;
@@ -18,7 +18,7 @@ namespace NServer.Application.Main
         /// <summary>
         /// Đăng ký các instance của dịch vụ vào Singleton.
         /// </summary>
-        public static void Register()
+        public static void RegisterServices()
         {
             Singleton.GetInstance<PacketOutgoing>();
             Singleton.GetInstance<PacketIncoming>();

@@ -19,7 +19,7 @@ namespace NServer.Application.Threading
 
         private static void Initialization()
         {
-            ServiceRegistry.Register();
+            ServiceRegistry.RegisterServices();
             NLog.Instance.DefaultInitialization();
         }
 

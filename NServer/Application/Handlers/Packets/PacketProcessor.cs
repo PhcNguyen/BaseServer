@@ -1,7 +1,6 @@
-﻿using NServer.Application.Handlers.Enums;
+﻿using NServer.Application.Handlers.Packets.Queue;
 using NServer.Core.Interfaces.Packets;
 using NServer.Core.Interfaces.Session;
-using NServer.Core.Packets.Queue;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using System;
@@ -17,10 +16,10 @@ namespace NServer.Application.Handlers.Packets
     {
         private readonly ISessionManager _sessionManager = sessionManager;
 
-        private readonly HashSet<Cmd> _commandsWithoutLoginRequired =
+        private readonly HashSet<Command> _commandsWithoutLoginRequired =
         [
-            Cmd.PONG, Cmd.PING, Cmd.NONE, Cmd.HEARTBEAT,
-            Cmd.CLOSE, Cmd.GET_KEY, Cmd.REGISTER, Cmd.LOGIN
+            Command.PONG, Command.PING, Command.NONE, Command.HEARTBEAT,
+            Command.CLOSE, Command.GET_KEY, Command.REGISTER, Command.LOGIN
         ];
 
         private readonly CommandDispatcher _commandDispatcher = Singleton.GetInstance<CommandDispatcher>();
@@ -35,9 +34,9 @@ namespace NServer.Application.Handlers.Packets
                 if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                     return;
 
-                if (!session.Authenticator && !_commandsWithoutLoginRequired.Contains((Cmd)packet.Cmd))
+                if (!session.Authenticator && !_commandsWithoutLoginRequired.Contains((Command)packet.Cmd))
                 {
-                    outgoingQueue.Enqueue(PacketUtils.Response(Cmd.ERROR, "You must log in first."));
+                    outgoingQueue.Enqueue(PacketUtils.Response(Command.ERROR, "You must log in first."));
                     return;
                 }
 

@@ -1,6 +1,6 @@
-﻿namespace NServer.Application.Handlers.Enums
+﻿namespace NServer.Application.Handlers
 {
-    internal enum Cmd : short
+    public enum Command : short
     {
         NONE = 0,
 
