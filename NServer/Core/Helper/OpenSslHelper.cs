@@ -8,6 +8,9 @@ namespace NServer.Core.Helper
     {
         private static readonly string OpenSSLPath = "openssl";
 
+        /// <summary>
+        /// Generates an SSL certificate using OpenSSL by executing a series of commands.
+        /// </summary>
         public static void GenerateSslCertificate()
         {
             try
@@ -28,30 +31,31 @@ namespace NServer.Core.Helper
                 // Chạy các lệnh OpenSSL theo thứ tự
                 foreach (var (command, args) in commands)
                 {
-                    RunOpenSslCommand(string.Format(command, args));
+                    var formattedCommand = string.Format(command, args);
+                    RunOpenSslCommand(formattedCommand);
                 }
             }
             catch (Exception ex)
             {
-                // Ném ngoại lệ ra với thông báo chi tiết
                 throw new InvalidOperationException("Error generating SSL certificate: " + ex.Message, ex);
             }
         }
 
+        /// <summary>
+        /// Checks if OpenSSL is installed and accessible.
+        /// </summary>
         public static void CheckOpenSslInstallation()
         {
             try
             {
-                // Kiểm tra xem OpenSSL có cài đặt hay không
                 string output = RunOpenSslCommand("version");
                 if (string.IsNullOrEmpty(output))
                 {
-                    throw new InvalidOperationException("OpenSSL không có sẵn trong hệ thống.");
+                    throw new InvalidOperationException("OpenSSL is not available on the system.");
                 }
             }
             catch (Exception ex)
             {
-                // Ném ngoại lệ ra với thông báo chi tiết
                 throw new InvalidOperationException("Error checking OpenSSL installation: " + ex.Message, ex);
             }
         }
@@ -80,7 +84,7 @@ namespace NServer.Core.Helper
                 // Kiểm tra lỗi từ OpenSSL
                 if (!string.IsNullOrEmpty(error))
                 {
-                    throw new InvalidOperationException($"OpenSSL error: {error}");
+                    throw new InvalidOperationException($"OpenSSL error: {error} while executing command: {arguments}");
                 }
 
                 process.WaitForExit();
@@ -89,8 +93,8 @@ namespace NServer.Core.Helper
             }
             catch (Exception ex)
             {
-                // Ném ngoại lệ ra với thông báo chi tiết
-                throw new InvalidOperationException("Error running OpenSSL command: " + ex.Message, ex);
+                // Ném ngoại lệ ra với thông báo chi tiết, bao gồm lệnh gặp lỗi
+                throw new InvalidOperationException($"Error running OpenSSL command: {arguments} - " + ex.Message, ex);
             }
         }
     }

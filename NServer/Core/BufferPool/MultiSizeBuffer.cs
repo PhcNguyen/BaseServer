@@ -58,8 +58,8 @@ namespace NServer.Core.BufferPool
             {
                 if (_pools.TryGetValue(suitableBuffer, out var pool) && pool.FreeBuffers <= pool.TotalBuffers * 0.2)
                     // Nếu số lượng bộ đệm rảnh ít hơn ngưỡng tối thiểu, tăng bộ đệm
-                    IncreaseBufferPoolSize(suitableBuffer, pool.TotalBuffers / 2).Wait();  
-                
+                    IncreaseBufferPoolSize(suitableBuffer, pool.TotalBuffers / 2).Wait();
+
                 _rentedCount = 0; // Reset đếm sau mỗi 10 lần thuê
             }
             return buffer;

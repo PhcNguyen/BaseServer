@@ -1,8 +1,8 @@
-﻿using NServer.Application.Handlers.Base;
+﻿using NServer.Application.Handlers.Enums;
 using NServer.Application.Handlers.Packets;
+using NServer.Application.Helper;
 using NServer.Core.Database;
 using NServer.Core.Handlers;
-using NServer.Core.Helper;
 using NServer.Core.Interfaces.Packets;
 using NServer.Infrastructure.Security;
 using System;
@@ -16,7 +16,7 @@ namespace NServer.Application.Handlers.Client
     /// Lớp này chịu trách nhiệm xử lý các yêu cầu đăng ký, đăng nhập và cập nhật mật khẩu từ phía khách hàng.
     /// </para>
     /// </summary>
-    internal class Authentication : CommandHandlerBase
+    internal class Authentication : RequestHandlerBase
     {
         /// <summary>
         /// Phương thức đăng ký người dùng mới.
@@ -28,14 +28,14 @@ namespace NServer.Application.Handlers.Client
         {
             byte[] data = packet.Payload.ToArray();
 
-            string[]? input = ParseInput(data, 2);
+            string[]? input = DataValidator.ParseInput(data, 2);
 
             if (input == null)
                 return PacketUtils.Response(Command.ERROR, "Invalid registration data format.");
 
             var (email, password) = (input[0].Trim(), input[1].Trim());
 
-            if (!ValidationHelper.IsEmailValid(email) || !ValidationHelper.IsPasswordValid(password))
+            if (!EmailValidator.IsEmailValid(email) || !PasswordValidator.IsPasswordValid(password))
                 return PacketUtils.Response(Command.ERROR, "Invalid email or weak password.");
 
             try
@@ -53,7 +53,7 @@ namespace NServer.Application.Handlers.Client
             }
             catch (Exception ex)
             {
-                return await HandleError("Registration error.", ex);
+                return HandleRequestError<Authentication>("Registration error.", ex);
             }
         }
 
@@ -67,14 +67,14 @@ namespace NServer.Application.Handlers.Client
         {
             byte[] data = packet.Payload.ToArray();
 
-            string[]? input = ParseInput(data, 2);
+            string[]? input = DataValidator.ParseInput(data, 2);
 
             if (input == null)
                 return PacketUtils.Response(Command.ERROR, "Invalid login data format.");
 
             var (email, password) = (input[0].Trim(), input[1].Trim());
 
-            if (!ValidationHelper.IsEmailValid(email))
+            if (!EmailValidator.IsEmailValid(email))
                 return PacketUtils.Response(Command.ERROR, "Invalid email or password.");
 
             try
@@ -93,18 +93,13 @@ namespace NServer.Application.Handlers.Client
                     return PacketUtils.Response(Command.ERROR, "Invalid email or password.");
                 }
 
-                if (!Authenticator(packet.Id))
-                {
-                    return PacketUtils.Response(Command.SUCCESS, "Login faild.");
-                }
-
                 await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, true, email);
 
                 return PacketUtils.Response(Command.SUCCESS, "Login successful.");
             }
             catch (Exception ex)
             {
-                return await HandleError("Login error.", ex);
+                return HandleRequestError<Authentication>("Login error.", ex);
             }
         }
 
@@ -118,7 +113,7 @@ namespace NServer.Application.Handlers.Client
         {
             byte[] data = packet.Payload.ToArray();
 
-            string[]? input = ParseInput(data, 1);
+            string[]? input = DataValidator.ParseInput(data, 1);
             if (input == null)
                 return PacketUtils.Response(Command.ERROR, "Invalid logout data format.");
 
@@ -133,7 +128,7 @@ namespace NServer.Application.Handlers.Client
             }
             catch (Exception ex)
             {
-                return await HandleError("Logout error.", ex);
+                return HandleRequestError<Authentication>("Logout error.", ex);
             }
         }
 
@@ -147,13 +142,13 @@ namespace NServer.Application.Handlers.Client
         {
             byte[] data = packet.Payload.ToArray();
 
-            string[]? input = ParseInput(data, 3);
+            string[]? input = DataValidator.ParseInput(data, 3);
             if (input == null)
                 return PacketUtils.Response(Command.ERROR, "Invalid data format.");
 
             var (email, currentPassword, newPassword) = (input[0].Trim(), input[1].Trim(), input[2].Trim());
 
-            if (!ValidationHelper.IsPasswordValid(newPassword))
+            if (!PasswordValidator.IsPasswordValid(newPassword))
                 return PacketUtils.Response(Command.ERROR, "New password is too weak.");
 
             try
@@ -172,7 +167,7 @@ namespace NServer.Application.Handlers.Client
             }
             catch (Exception ex)
             {
-                return await HandleError("Password update error.", ex);
+                return HandleRequestError<Authentication>("Update password failed.", ex);
             }
         }
     }

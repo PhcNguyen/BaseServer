@@ -1,4 +1,5 @@
-﻿using NServer.Application.Handlers.Packets;
+﻿using NServer.Application.Handlers.Enums;
+using NServer.Application.Handlers.Packets;
 using NServer.Core.Handlers;
 using NServer.Core.Interfaces.Packets;
 using NServer.Infrastructure.Logging;
@@ -10,9 +11,9 @@ namespace NServer.Application.Handlers
     internal class CommandDispatcher : CommandDispatcherBase<Command>
     {
         private static readonly string[] TargetNamespaces =
-        {
-            "NServer.Application.Handlers.Client", // Kiểm tra xem namespace này có chính xác không
-        };
+        [
+            "NServer.Application.Handlers.Client",
+        ];
 
         public CommandDispatcher() : base(TargetNamespaces)
         {
@@ -27,8 +28,7 @@ namespace NServer.Application.Handlers
 
             try
             {
-                // Kiểm tra kiểu của tham số trước khi gọi delegate.
-                IPacket result = await func(packet); // Truyền vào null nếu không có payload
+                IPacket result = await func(packet);
                 result.SetId(packet.Id);
                 return result;
             }

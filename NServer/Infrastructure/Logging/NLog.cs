@@ -42,7 +42,6 @@ namespace NServer.Infrastructure.Logging
         /// <returns>True nếu mức độ nhật ký lớn hơn hoặc bằng mức độ mặc định, ngược lại False.</returns>
         public bool ShouldLog(NLogLevel level) => level >= DefaultLevel;
 
-
         /// <summary>
         /// Ghi một thông điệp với mức độ mặc định.
         /// </summary>
@@ -72,7 +71,6 @@ namespace NServer.Infrastructure.Logging
             base.Log(level, message, callingClass, callingMethod);
         }
 
-
         /// <summary>
         /// Ghi một thông điệp với mức độ INFO.
         /// </summary>
@@ -88,7 +86,6 @@ namespace NServer.Infrastructure.Logging
 
         public void Warning<TClass>(string message) where TClass : class =>
             Log<TClass>(NLogLevel.WARNING, message);
-
 
         /// <summary>
         /// Ghi một thông điệp lỗi với một ngoại lệ.
