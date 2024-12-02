@@ -32,13 +32,10 @@ namespace NServer.Application.Handlers.Base
 
         protected static bool Authenticator(UniqueId id)
         {
-            if (_sessionManager.TryGetSession(id, out ISessionClient? session))
+            if (_sessionManager.TryGetSession(id, out ISessionClient? session) && session != null)
             {
-                if (session != null)
-                {
-                    session.Authenticator = true;
-                    return true;
-                }
+                session.Authenticator = true;
+                return true;
             }
 
             return false;

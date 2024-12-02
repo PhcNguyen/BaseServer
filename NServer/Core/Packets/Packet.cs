@@ -20,9 +20,9 @@ namespace NServer.Core.Packets
                     ? (PacketType)type
                     : PacketType.NONE;
 
-            Flags = flags is not null && Enum.IsDefined((Enums.Packet)flags)
-                    ? (Enums.Packet)flags
-                    : Enums.Packet.NONE;
+            Flags = flags is not null && Enum.IsDefined((Enums.PacketFlags)flags)
+                    ? (Enums.PacketFlags)flags
+                    : Enums.PacketFlags.NONE;
 
             Cmd = command ?? 0;
 

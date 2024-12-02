@@ -18,10 +18,7 @@ namespace NServer.Application.Main
     {
         private readonly CancellationToken _token;
         private readonly PacketProcessor _packetHandler;
-        private readonly PacketOutgoing _outgoingPacket;
         private readonly PacketIncoming _incomingPacket;
-        private readonly PacketInserver _inserverPacket;
-        private readonly ISessionManager _sessionManager;
         private readonly ParallelOptions _parallelOptions;
         private readonly PacketQueueManager _packetQueueManager;
 
@@ -32,13 +29,12 @@ namespace NServer.Application.Main
         public PacketContainer(CancellationToken token)
         {
             _token = token;
-            _outgoingPacket = Singleton.GetInstance<PacketOutgoing>();
-            _inserverPacket = Singleton.GetInstance<PacketInserver>();
             _incomingPacket = Singleton.GetInstance<PacketIncoming>();
-            _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
 
-            _packetHandler = new PacketProcessor(_sessionManager);
-            _packetQueueManager = new PacketQueueManager(_inserverPacket, _incomingPacket, _outgoingPacket);
+            _packetHandler = new PacketProcessor(Singleton.GetInstanceOfInterface<ISessionManager>());
+            _packetQueueManager = new PacketQueueManager(
+                Singleton.GetInstance<PacketInserver>(), _incomingPacket, Singleton.GetInstance<PacketOutgoing>()
+            );
 
             _parallelOptions = new()
             {

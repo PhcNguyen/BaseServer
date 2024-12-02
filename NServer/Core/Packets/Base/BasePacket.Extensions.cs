@@ -10,7 +10,7 @@ namespace NServer.Core.Packets.Base
         /// </summary>
         public void Reset()
         {
-            Flags = Enums.Packet.NONE;
+            Flags = Enums.PacketFlags.NONE;
             Cmd = (short)0;
             Payload = Memory<byte>.Empty;
         }

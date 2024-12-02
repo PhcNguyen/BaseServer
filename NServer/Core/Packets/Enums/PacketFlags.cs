@@ -3,7 +3,7 @@
 namespace NServer.Core.Packets.Enums
 {
     [Flags]
-    public enum Packet : byte
+    public enum PacketFlags : byte
     {
         NONE = 0,         // Không có cờ nào
         ISCOMPRESSED = 1, // Cờ đánh dấu gói tin đã được nén

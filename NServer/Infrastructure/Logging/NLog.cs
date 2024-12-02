@@ -42,53 +42,11 @@ namespace NServer.Infrastructure.Logging
         /// <returns>True nếu mức độ nhật ký lớn hơn hoặc bằng mức độ mặc định, ngược lại False.</returns>
         public bool ShouldLog(NLogLevel level) => level >= DefaultLevel;
 
+
         /// <summary>
         /// Ghi một thông điệp với mức độ mặc định.
         /// </summary>
         public void Log(string message) => Log(DefaultLevel, message);
-
-        /// <summary>
-        /// Ghi một thông điệp với mức độ INFO.
-        /// </summary>
-        public void Info(string message) => Log(NLogLevel.INFO, message);
-
-        /// <summary>
-        /// Ghi một thông điệp lỗi với một ngoại lệ.
-        /// </summary>
-        public void Error(Exception exception) =>
-            Log(NLogLevel.ERROR, NLogFormatter.FormatExceptionMessage(exception));
-
-        /// <summary>
-        /// Ghi một thông điệp lỗi với một thông điệp và ngoại lệ.
-        /// </summary>
-        public void Error(string message, Exception exception) =>
-            Log(NLogLevel.ERROR, $"{message}: {NLogFormatter.FormatExceptionMessage(exception)}");
-
-        /// <summary>
-        /// Ghi một thông điệp cảnh báo.
-        /// </summary>
-        public void Warning(string message) => Log(NLogLevel.WARNING, message);
-
-        /// <summary>
-        /// Ghi một thông điệp cảnh báo với một ngoại lệ.
-        /// </summary>
-        public void Warning(Exception exception) =>
-            Log(NLogLevel.WARNING, NLogFormatter.FormatExceptionMessage(exception));
-
-        public void Info<TClass>(string message) where TClass : class =>
-            Log<TClass>(NLogLevel.INFO, message);
-
-        public void Warning<TClass>(string message) where TClass : class =>
-            Log<TClass>(NLogLevel.WARNING, message);
-
-        public void Error<TClass>(string message) where TClass : class =>
-            Log<TClass>(NLogLevel.ERROR, message);
-
-        public void Error<TClass>(Exception exception) where TClass : class =>
-            Log<TClass>(NLogLevel.ERROR, NLogFormatter.FormatExceptionMessage(exception));
-
-        public void Error<TClass>(string message, Exception exception) where TClass : class =>
-            Log<TClass>(NLogLevel.ERROR, $"{message}: {NLogFormatter.FormatExceptionMessage(exception)}");
 
         /// <summary>
         /// Ghi một thông điệp với mức độ chỉ định và thông tin chi tiết từ stack trace.
@@ -113,5 +71,44 @@ namespace NServer.Infrastructure.Logging
             string callingMethod = GetCallerMethodName();
             base.Log(level, message, callingClass, callingMethod);
         }
+
+
+        /// <summary>
+        /// Ghi một thông điệp với mức độ INFO.
+        /// </summary>
+        public void Info(string message) => Log(NLogLevel.INFO, message);
+
+        public void Info<TClass>(string message) where TClass : class =>
+            Log<TClass>(NLogLevel.INFO, message);
+
+        /// <summary>
+        /// Ghi một thông điệp cảnh báo.
+        /// </summary>
+        public void Warning(string message) => Log(NLogLevel.WARNING, message);
+
+        public void Warning<TClass>(string message) where TClass : class =>
+            Log<TClass>(NLogLevel.WARNING, message);
+
+
+        /// <summary>
+        /// Ghi một thông điệp lỗi với một ngoại lệ.
+        /// </summary>
+        public void Error(Exception exception) =>
+            Log(NLogLevel.ERROR, NLogFormatter.FormatExceptionMessage(exception));
+
+        /// <summary>
+        /// Ghi một thông điệp lỗi với một thông điệp và ngoại lệ.
+        /// </summary>
+        public void Error(string message, Exception exception) =>
+            Log(NLogLevel.ERROR, $"{message}: {NLogFormatter.FormatExceptionMessage(exception)}");
+
+        public void Error<TClass>(string message) where TClass : class =>
+            Log<TClass>(NLogLevel.ERROR, message);
+
+        public void Error<TClass>(Exception exception) where TClass : class =>
+            Log<TClass>(NLogLevel.ERROR, NLogFormatter.FormatExceptionMessage(exception));
+
+        public void Error<TClass>(string message, Exception exception) where TClass : class =>
+            Log<TClass>(NLogLevel.ERROR, $"{message}: {NLogFormatter.FormatExceptionMessage(exception)}");
     }
 }

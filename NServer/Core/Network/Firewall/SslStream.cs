@@ -6,7 +6,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Network.IO
+namespace NServer.Core.Network.Firewall
 {
     /// <summary>
     /// Cung cấp các phương thức để thiết lập và quản lý kết nối SSL cho server.

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Network.BufferPool
+namespace NServer.Core.BufferPool
 {
     public class MultiSizeBuffer : IDisposable
     {
@@ -56,14 +56,10 @@ namespace NServer.Core.Network.BufferPool
             // Không điều chỉnh khi thuê bộ đệm, chỉ đếm số lần thuê
             if (_rentedCount++ >= MaxRentsBeforeAdjustment)
             {
-                if (_pools.TryGetValue(suitableBuffer, out var pool))
-                {
-                    if (pool.FreeBuffers <= pool.TotalBuffers * 0.2)
-                    {
-                        // Nếu số lượng bộ đệm rảnh ít hơn ngưỡng tối thiểu, tăng bộ đệm
-                        IncreaseBufferPoolSize(suitableBuffer, pool.TotalBuffers / 2).Wait();
-                    }
-                }
+                if (_pools.TryGetValue(suitableBuffer, out var pool) && pool.FreeBuffers <= pool.TotalBuffers * 0.2)
+                    // Nếu số lượng bộ đệm rảnh ít hơn ngưỡng tối thiểu, tăng bộ đệm
+                    IncreaseBufferPoolSize(suitableBuffer, pool.TotalBuffers / 2).Wait();  
+                
                 _rentedCount = 0; // Reset đếm sau mỗi 10 lần thuê
             }
             return buffer;

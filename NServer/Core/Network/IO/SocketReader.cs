@@ -1,4 +1,4 @@
-﻿using NServer.Core.Network.BufferPool;
+﻿using NServer.Core.BufferPool;
 using NServer.Infrastructure.Services;
 using System;
 using System.Linq;

@@ -34,7 +34,7 @@ namespace NServer.Core.Helper
             catch (Exception ex)
             {
                 // Ném ngoại lệ ra với thông báo chi tiết
-                throw new Exception("Error generating SSL certificate: " + ex.Message, ex);
+                throw new InvalidOperationException("Error generating SSL certificate: " + ex.Message, ex);
             }
         }
 
@@ -46,13 +46,13 @@ namespace NServer.Core.Helper
                 string output = RunOpenSslCommand("version");
                 if (string.IsNullOrEmpty(output))
                 {
-                    throw new Exception("OpenSSL không có sẵn trong hệ thống.");
+                    throw new InvalidOperationException("OpenSSL không có sẵn trong hệ thống.");
                 }
             }
             catch (Exception ex)
             {
                 // Ném ngoại lệ ra với thông báo chi tiết
-                throw new Exception("Error checking OpenSSL installation: " + ex.Message, ex);
+                throw new InvalidOperationException("Error checking OpenSSL installation: " + ex.Message, ex);
             }
         }
 
@@ -80,7 +80,7 @@ namespace NServer.Core.Helper
                 // Kiểm tra lỗi từ OpenSSL
                 if (!string.IsNullOrEmpty(error))
                 {
-                    throw new Exception($"OpenSSL error: {error}");
+                    throw new InvalidOperationException($"OpenSSL error: {error}");
                 }
 
                 process.WaitForExit();
@@ -90,7 +90,7 @@ namespace NServer.Core.Helper
             catch (Exception ex)
             {
                 // Ném ngoại lệ ra với thông báo chi tiết
-                throw new Exception("Error running OpenSSL command: " + ex.Message, ex);
+                throw new InvalidOperationException("Error running OpenSSL command: " + ex.Message, ex);
             }
         }
     }

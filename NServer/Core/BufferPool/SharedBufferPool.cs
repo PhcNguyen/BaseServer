@@ -4,7 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace NServer.Core.Network.BufferPool
+namespace NServer.Core.BufferPool
 {
     /// <summary>
     /// Quản lý một pool của các bộ đệm dùng chung.

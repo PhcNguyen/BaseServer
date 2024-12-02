@@ -10,14 +10,14 @@ namespace NServer.Core.Handlers
 {
     internal abstract class CommandDispatcherBase<TCommand> where TCommand : notnull
     {
-        private static readonly BindingFlags CommandBindingFlags =
+        private readonly BindingFlags CommandBindingFlags =
             BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance;
 
         protected readonly ConcurrentDictionary<TCommand, Func<IPacket?, Task<IPacket>>> CommandDelegateCache;
 
         protected CommandDispatcherBase(string[] targetNamespaces)
         {
-            var commandMethods = LoadCommandMethods(targetNamespaces);
+            var commandMethods = this.LoadCommandMethods(targetNamespaces);
             CommandDelegateCache = new ConcurrentDictionary<TCommand, Func<IPacket?, Task<IPacket>>>();
 
             foreach (var (command, method) in commandMethods)
@@ -26,13 +26,13 @@ namespace NServer.Core.Handlers
             }
         }
 
-        private static Dictionary<TCommand, MethodInfo> LoadCommandMethods(string[] targetNamespaces)
+        private Dictionary<TCommand, MethodInfo> LoadCommandMethods(string[] targetNamespaces)
         {
             var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
 
             return assembly.GetTypes()
                 .Where(t => targetNamespaces.Contains(t.Namespace))
-                .SelectMany(t => t.GetMethods(CommandBindingFlags))
+                .SelectMany(t => t.GetMethods(this.CommandBindingFlags))
                 .Where(m => m.GetCustomAttribute<CommandAttribute<TCommand>>() != null)
                 .ToDictionary(
                     m =>

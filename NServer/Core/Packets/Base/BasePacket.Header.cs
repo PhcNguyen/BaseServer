@@ -16,7 +16,7 @@ namespace NServer.Core.Packets.Base
         /// <summary>
         /// Cờ trạng thái của gói tin.
         /// </summary>
-        public Enums.Packet Flags { get; protected set; } = Enums.Packet.NONE;
+        public Enums.PacketFlags Flags { get; protected set; } = Enums.PacketFlags.NONE;
 
         /// <summary>
         /// Command để xác định loại gói tin.
@@ -31,17 +31,17 @@ namespace NServer.Core.Packets.Base
         /// <summary>
         /// Phương thức để thêm cờ trạng thái
         /// </summary>
-        public void AddFlag(Enums.Packet flag) => Flags |= flag;
+        public void AddFlag(Enums.PacketFlags flag) => Flags |= flag;
 
         /// <summary>
         /// Phương thức để loại bỏ cờ trạng thái
         /// </summary>
-        public void RemoveFlag(Enums.Packet flag) => Flags &= ~flag;
+        public void RemoveFlag(Enums.PacketFlags flag) => Flags &= ~flag;
 
         /// <summary>
         /// Kiểm tra xem flag có tồn tại hay không.
         /// </summary>
-        public bool HasFlag(Enums.Packet flag) => Flags.HasFlag(flag);
+        public bool HasFlag(Enums.PacketFlags flag) => Flags.HasFlag(flag);
 
         /// <summary>
         /// Set Command mới cho gói tin.

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 
@@ -47,19 +48,20 @@ namespace NServer.Core.Helper
 
             foreach (var c in password)
             {
-                switch (c)
-                {
-                    case var _ when char.IsLower(c): hasLowerCase = true; break;
-                    case var _ when char.IsUpper(c): hasUpperCase = true; break;
-                    case var _ when char.IsDigit(c): hasDigit = true; break;
-                    case var _ when specialChars.Contains(c): hasSpecialChar = true; break;
-                }
+                if (char.IsLower(c))
+                    hasLowerCase = true;
+                else if (char.IsUpper(c))
+                    hasUpperCase = true;
+                else if (char.IsDigit(c))
+                    hasDigit = true;
+                else if (specialChars.Contains(c))
+                    hasSpecialChar = true;
 
-                if (hasLowerCase && hasUpperCase && hasDigit && hasSpecialChar)
-                    return true;
+                // No need to check the condition here, just continue the loop
             }
 
-            return false;
+            // Return true only if all conditions are met
+            return hasLowerCase && hasUpperCase && hasDigit && hasSpecialChar;
         }
 
         /// <summary>
@@ -111,10 +113,9 @@ namespace NServer.Core.Helper
         /// </summary>
         /// <param name="dateTime">Chuỗi ngày tháng cần kiểm tra.</param>
         /// <returns>True nếu hợp lệ, ngược lại là false.</returns>
-        public static bool IsDateTimeValid(string dateTime)
-        {
-            return !string.IsNullOrEmpty(dateTime) && DateTime.TryParse(dateTime, out _);
-        }
+        public static bool IsDateTimeValid(string dateTime) =>
+            !string.IsNullOrEmpty(dateTime) && DateTime.TryParseExact(
+                dateTime, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
 
         /// <summary>
         /// Kiểm tra phần local-part của email có hợp lệ không.
