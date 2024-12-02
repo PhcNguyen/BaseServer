@@ -60,7 +60,7 @@ namespace NServer.Infrastructure.Security
             ObjectDisposedException.ThrowIf(_disposed, this);
 
             _rsa.ImportParameters(privatekey);
-            return Encoding.UTF8.GetString(_rsa.Decrypt(ciphertext, RSAEncryptionPadding.Pkcs1));
+            return Encoding.UTF8.GetString(_rsa.Decrypt(ciphertext, RSAEncryptionPadding.OaepSHA256));
         }
 
         /// <summary>
