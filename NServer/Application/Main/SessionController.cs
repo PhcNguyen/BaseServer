@@ -1,5 +1,6 @@
 ﻿using NServer.Core.Interfaces.Session;
 using NServer.Core.Session;
+using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Logging;
 using NServer.Infrastructure.Services;
 using System;
@@ -13,7 +14,7 @@ namespace NServer.Application.Main
     /// <summary>
     /// Lớp điều khiển các phiên làm việc và xử lý gói tin từ người dùng.
     /// </summary>
-    internal class Controller
+    internal class SessionController
     {
         private readonly CancellationToken _token;
         private readonly SessionMonitor _sessionMonitor;
@@ -21,10 +22,10 @@ namespace NServer.Application.Main
         private readonly PacketContainer _packetContainer;
 
         /// <summary>
-        /// Khởi tạo một <see cref="Controller"/> mới.
+        /// Khởi tạo một <see cref="SessionController"/> mới.
         /// </summary>
         /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
-        public Controller(CancellationToken token)
+        public SessionController(CancellationToken token)
         {
             _token = token;
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
@@ -52,11 +53,11 @@ namespace NServer.Application.Main
                 }
                 catch (OperationCanceledException)
                 {
-                    NLog.Instance.Info<Controller>("Operation was canceled.");
+                    NLog.Instance.Info<SessionController>("Operation was canceled.");
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error<Controller>($"Error during initialization: {ex.Message}");
+                    NLog.Instance.Error<SessionController>($"Error during initialization: {ex.Message}");
                 }
             }, _token);
         }
@@ -70,18 +71,22 @@ namespace NServer.Application.Main
         /// Chấp nhận kết nối từ client mới.
         /// </summary>
         /// <param name="clientSocket">Cổng kết nối của client.</param>
-        public async Task AcceptClientAsync(Socket clientSocket)
+        public void AcceptClient(Socket clientSocket)
         {
-            SessionClient session = new(clientSocket);
+            SessionClient session = new(clientSocket, Setting.Timeout);
 
             if (_sessionManager.AddSession(session))
             {
-                await session.ConnectAsync().ConfigureAwait(false);
-                session.Receive(_packetContainer.EnqueueIncomingPacket);
+                session.Connect();
+                session.Network.DataReceived += data =>
+                {
+                    _packetContainer.EnqueueIncomingPacket(session.Id, data);
+                };
+
                 return;
             }
 
-            await session.DisposeAsync().ConfigureAwait(false);
+            session.Dispose();
         }
 
         /// <summary>
@@ -91,18 +96,30 @@ namespace NServer.Application.Main
         {
             var closeTasks = _sessionManager.GetAllSessions()
                 .Where(session => session.IsConnected)
-                .Select(async session => await _sessionMonitor.CloseConnectionAsync(session).ConfigureAwait(false))
-                .ToList(); // Chuyển sang List để kiểm soát số lượng task đồng thời
+                .Select(session =>
+                {
+                    _sessionMonitor.CloseConnection(session);
+                    return Task.CompletedTask;
+                })
+                .ToList();
 
+            var batchSize = 10;
             while (closeTasks.Count != 0)
             {
-                var batch = closeTasks.Take(10).ToList(); // Giới hạn tối đa 10 kết nối cùng lúc
-                closeTasks = closeTasks.Skip(10).ToList();
+                var batch = closeTasks.Take(batchSize).ToList();
+                closeTasks.RemoveRange(0, batch.Count);
 
-                await Task.WhenAll(batch).ConfigureAwait(false);
+                try
+                {
+                    await Task.WhenAll(batch).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    NLog.Instance.Error<SessionController>($"Error occurred while disconnecting clients: {ex.Message}");
+                }
             }
 
-            NLog.Instance.Info<Controller>("All connections closed successfully.");
+            NLog.Instance.Info<SessionController>("All connections closed successfully.");
         }
     }
 }

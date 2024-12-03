@@ -65,7 +65,7 @@ namespace NServer.Application.Handlers.Packets
                 if (packet.Payload.Length == 0)
                     return;
 
-                await RetryAsync(() => session.SendAsync(packet), maxRetries: 3, delayMs: 100).ConfigureAwait(false);
+                await RetryAsync(() => session.Network.Send(packet.ToByteArray()), maxRetries: 3, delayMs: 100);
             }
             catch (Exception ex)
             {
@@ -76,13 +76,13 @@ namespace NServer.Application.Handlers.Packets
         /// <summary>
         /// Thực hiện lại hành động không đồng bộ nhiều lần nếu thất bại.
         /// </summary>
-        private static async Task RetryAsync(Func<Task<bool>> action, int maxRetries, int delayMs)
+        private static async Task RetryAsync(Func<bool> action, int maxRetries, int delayMs)
         {
             for (int attempt = 0; attempt < maxRetries; attempt++)
             {
                 try
                 {
-                    if (await action().ConfigureAwait(false))
+                    if (action())
                         return;
                 }
                 catch (Exception ex) when (attempt < maxRetries - 1)

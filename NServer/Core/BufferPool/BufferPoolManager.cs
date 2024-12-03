@@ -1,88 +1,88 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Concurrent;
+using System.Linq;
 
-namespace NServer.Core.BufferPool
+namespace NServer.Core.BufferPool;
+
+public class BufferPoolManager
 {
-    public class BufferPoolManager
+    private readonly ConcurrentDictionary<int, SharedBufferPool> _pools = new();
+    private readonly ConcurrentDictionary<int, int> _adjustmentCounters = new();
+    private int[] _sortedKeys = [];
+
+    public event Action<SharedBufferPool>? EventIncrease;
+
+    public event Action<SharedBufferPool>? EventShrink;
+
+    // Tạo pool
+    public void CreatePool(int bufferSize, int initialCapacity)
     {
-        private readonly ConcurrentDictionary<int, SharedBufferPool> _pools = new();
-        private readonly ConcurrentDictionary<int, int> _adjustmentCounters = new();
-        private int[] _sortedKeys = [];
-
-        public event Action<SharedBufferPool>? EventIncrease;
-        public event Action<SharedBufferPool>? EventShrink;
-
-        // Tạo pool
-        public void CreatePool(int bufferSize, int initialCapacity)
+        if (_pools.TryAdd(bufferSize, SharedBufferPool.GetOrCreatePool(bufferSize, initialCapacity)))
         {
-            if (_pools.TryAdd(bufferSize, SharedBufferPool.GetOrCreatePool(bufferSize, initialCapacity)))
-            {
-                // Cập nhật danh sách kích thước đã sắp xếp
-                _sortedKeys = [.. _pools.Keys.OrderBy(k => k)];
-            }
+            // Cập nhật danh sách kích thước đã sắp xếp
+            _sortedKeys = [.. _pools.Keys.OrderBy(k => k)];
         }
+    }
 
-        // Thuê buffer
-        public byte[] RentBuffer(int size)
+    // Thuê buffer
+    public byte[] RentBuffer(int size)
+    {
+        int poolSize = FindSuitablePoolSize(size);
+        if (poolSize == 0)
+            throw new ArgumentException("Requested buffer size exceeds maximum available pool size.");
+
+        var pool = _pools[poolSize];
+        var buffer = pool.AcquireBuffer();
+
+        if (TriggerBufferAdjustment(poolSize, EventIncrease))
+            EventIncrease?.Invoke(pool);
+
+        return buffer;
+    }
+
+    // Trả buffer
+    public void ReturnBuffer(byte[] buffer)
+    {
+        if (buffer == null || !_pools.TryGetValue(buffer.Length, out var pool))
+            throw new ArgumentException("Invalid buffer size.");
+
+        pool.ReleaseBuffer(buffer);
+
+        if (TriggerBufferAdjustment(buffer.Length, EventShrink))
+            EventShrink?.Invoke(pool);
+    }
+
+    // Tìm kích thước pool phù hợp
+    private int FindSuitablePoolSize(int size)
+    {
+        foreach (var key in _sortedKeys)
         {
-            int poolSize = FindSuitablePoolSize(size);
-            if (poolSize == 0)
-                throw new ArgumentException("Requested buffer size exceeds maximum available pool size.");
-
-            var pool = _pools[poolSize];
-            var buffer = pool.AcquireBuffer();
-
-            if (TriggerBufferAdjustment(poolSize, EventIncrease))
-                EventIncrease?.Invoke(pool);
-
-            return buffer;
+            if (key >= size)
+                return key;
         }
+        return 0;
+    }
 
-        // Trả buffer
-        public void ReturnBuffer(byte[] buffer)
+    // Điều chỉnh buffer
+    private bool TriggerBufferAdjustment(int poolSize, Action<SharedBufferPool>? eventAction)
+    {
+        var counter = _adjustmentCounters.AddOrUpdate(poolSize, 1, (_, current) => current + 1);
+        if (counter >= 10)
         {
-            if (buffer == null || !_pools.TryGetValue(buffer.Length, out var pool))
-                throw new ArgumentException("Invalid buffer size.");
-
-            pool.ReleaseBuffer(buffer);
-
-            if (TriggerBufferAdjustment(buffer.Length, EventShrink))
-                EventShrink?.Invoke(pool);
+            _adjustmentCounters[poolSize] = 0;
+            return true;
         }
+        return false;
+    }
 
-        // Tìm kích thước pool phù hợp
-        private int FindSuitablePoolSize(int size)
+    // Giải phóng tài nguyên
+    public void Dispose()
+    {
+        foreach (var pool in _pools.Values)
         {
-            foreach (var key in _sortedKeys)
-            {
-                if (key >= size)
-                    return key;
-            }
-            return 0;
+            pool.Dispose();
         }
-
-        // Điều chỉnh buffer
-        private bool TriggerBufferAdjustment(int poolSize, Action<SharedBufferPool>? eventAction)
-        {
-            var counter = _adjustmentCounters.AddOrUpdate(poolSize, 1, (_, current) => current + 1);
-            if (counter >= 10)
-            {
-                _adjustmentCounters[poolSize] = 0;
-                return true;
-            }
-            return false;
-        }
-
-        // Giải phóng tài nguyên
-        public void Dispose()
-        {
-            foreach (var pool in _pools.Values)
-            {
-                pool.Dispose();
-            }
-            _pools.Clear();
-            _sortedKeys = [];
-        }
+        _pools.Clear();
+        _sortedKeys = [];
     }
 }

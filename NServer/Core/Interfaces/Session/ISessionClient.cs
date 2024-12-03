@@ -1,25 +1,22 @@
 ﻿using NServer.Infrastructure.Services;
-using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace NServer.Core.Interfaces.Session
 {
     public interface ISessionClient
     {
         UniqueId Id { get; }
+        ISessionNetwork Network { get; }
+
         byte[] Key { get; }
+        bool IsConnected { get; }
         string IpAddress { get; }
         bool Authenticator { get; set; }
-        Socket Socket { get; }
-        bool IsConnected { get; }
 
-        Task ConnectAsync();
+        void Connect();
 
-        Task DisconnectAsync();
+        void Disconnect();
 
-        Task<bool> SendAsync(object data);
-
-        ValueTask DisposeAsync();
+        void Dispose();
 
         void UpdateLastActivityTime();
 

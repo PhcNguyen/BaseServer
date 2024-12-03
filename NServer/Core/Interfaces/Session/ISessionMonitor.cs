@@ -6,6 +6,6 @@ namespace NServer.Core.Interfaces.Session
     {
         Task MonitorSessionsAsync();
 
-        Task CloseConnectionAsync(ISessionClient session);
+        void CloseConnection(ISessionClient session);
     }
 }

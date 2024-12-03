@@ -2,16 +2,15 @@
 using NServer.Infrastructure.Logging.Interfaces;
 using System;
 
-namespace NServer.Infrastructure.Logging.Handlers
+namespace NServer.Infrastructure.Logging.Handlers;
+
+public class NLogConsole(INLogFormatter loggerFormatter) : INLogHandler
 {
-    public class NLogConsole(INLogFormatter loggerFormatter) : INLogHandler
-    {
-        private readonly INLogFormatter _loggerFormatter = loggerFormatter;
+    private readonly INLogFormatter _loggerFormatter = loggerFormatter;
 
-        public NLogConsole() : this(new NLogFormatter())
-        { }
+    public NLogConsole() : this(new NLogFormatter())
+    { }
 
-        public void Publish(LogMessage logMessage) =>
-            Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
-    }
+    public void Publish(LogMessage logMessage) =>
+        Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
 }

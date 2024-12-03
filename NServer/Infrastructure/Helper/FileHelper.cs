@@ -2,164 +2,163 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace NServer.Infrastructure.Helper
+namespace NServer.Infrastructure.Helper;
+
+public static class FileHelper
 {
-    public static class FileHelper
+    /// <summary>
+    /// Ghi nội dung vào tệp văn bản.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <param name="content">Nội dung cần ghi.</param>
+    /// <param name="append">Thêm vào tệp nếu true, ghi đè nếu false.</param>
+    public static void WriteToFile(string filePath, string content, bool append = false)
     {
-        /// <summary>
-        /// Ghi nội dung vào tệp văn bản.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <param name="content">Nội dung cần ghi.</param>
-        /// <param name="append">Thêm vào tệp nếu true, ghi đè nếu false.</param>
-        public static void WriteToFile(string filePath, string content, bool append = false)
+        try
         {
-            try
+            if (append)
             {
-                if (append)
-                {
-                    File.AppendAllText(filePath, content);
-                }
-                else
-                {
-                    File.WriteAllText(filePath, content);
-                }
+                File.AppendAllText(filePath, content);
             }
-            catch { /*Pass*/ }
-        }
-
-        /// <summary>
-        /// Đọc nội dung từ tệp văn bản.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <returns>Nội dung tệp.</returns>
-        public static string ReadFromFile(string filePath)
-        {
-            try
+            else
             {
-                return File.ReadAllText(filePath);
-            }
-            catch (Exception)
-            {
-                return string.Empty;
+                File.WriteAllText(filePath, content);
             }
         }
+        catch { /*Pass*/ }
+    }
 
-        /// <summary>
-        /// Ghi dữ liệu byte vào tệp.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <param name="data">Dữ liệu byte cần ghi.</param>
-        /// <param name="append">Thêm vào tệp nếu true, ghi đè nếu false.</param>
-        public static void WriteBytesToFile(string filePath, byte[] data, bool append = false)
+    /// <summary>
+    /// Đọc nội dung từ tệp văn bản.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <returns>Nội dung tệp.</returns>
+    public static string ReadFromFile(string filePath)
+    {
+        try
         {
-            try
-            {
-                using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
-                fileStream.Write(data, 0, data.Length);
-            }
-            catch { /*Pass*/ }
+            return File.ReadAllText(filePath);
         }
-
-        /// <summary>
-        /// Đọc dữ liệu byte từ tệp.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <returns>Dữ liệu byte từ tệp.</returns>
-        public static byte[] ReadBytesFromFile(string filePath)
+        catch (Exception)
         {
-            try
-            {
-                return File.ReadAllBytes(filePath);
-            }
-            catch (Exception)
-            {
-                return [];
-            }
+            return string.Empty;
         }
+    }
 
-        /// <summary>
-        /// Ghi nội dung vào tệp văn bản bất đồng bộ.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <param name="content">Nội dung cần ghi.</param>
-        /// <param name="append">Thêm vào tệp nếu false, ghi đè nếu true.</param>
-        public static async Task WriteToFileAsync(string filePath, string content, bool append = false)
+    /// <summary>
+    /// Ghi dữ liệu byte vào tệp.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <param name="data">Dữ liệu byte cần ghi.</param>
+    /// <param name="append">Thêm vào tệp nếu true, ghi đè nếu false.</param>
+    public static void WriteBytesToFile(string filePath, byte[] data, bool append = false)
+    {
+        try
         {
-            try
-            {
-                if (append)
-                {
-                    await File.AppendAllTextAsync(filePath, content);
-                }
-                else
-                {
-                    await File.WriteAllTextAsync(filePath, content);
-                }
-            }
-            catch { /*Pass*/ }
+            using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
+            fileStream.Write(data, 0, data.Length);
         }
+        catch { /*Pass*/ }
+    }
 
-        /// <summary>
-        /// Đọc nội dung từ tệp văn bản bất đồng bộ.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <returns>Nội dung tệp.</returns>
-        public static async Task<string> ReadFromFileAsync(string filePath)
+    /// <summary>
+    /// Đọc dữ liệu byte từ tệp.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <returns>Dữ liệu byte từ tệp.</returns>
+    public static byte[] ReadBytesFromFile(string filePath)
+    {
+        try
         {
-            try
-            {
-                return await File.ReadAllTextAsync(filePath);
-            }
-            catch (Exception)
-            {
-                return string.Empty;
-            }
+            return File.ReadAllBytes(filePath);
         }
-
-        /// <summary>
-        /// Ghi dữ liệu byte vào tệp bất đồng bộ.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <param name="data">Dữ liệu byte cần ghi.</param>
-        /// <param name="append">Thêm vào tệp nếu true, ghi đè nếu false.</param>
-        public static async Task WriteBytesToFileAsync(string filePath, byte[] data, bool append = false)
+        catch (Exception)
         {
-            try
-            {
-                using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
-                await fileStream.WriteAsync(data);
-            }
-            catch { /*Pass*/ }
+            return [];
         }
+    }
 
-        /// <summary>
-        /// Đọc dữ liệu byte từ tệp bất đồng bộ.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <returns>Dữ liệu byte từ tệp.</returns>
-        public static async Task<byte[]> ReadBytesFromFileAsync(string filePath)
+    /// <summary>
+    /// Ghi nội dung vào tệp văn bản bất đồng bộ.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <param name="content">Nội dung cần ghi.</param>
+    /// <param name="append">Thêm vào tệp nếu false, ghi đè nếu true.</param>
+    public static async Task WriteToFileAsync(string filePath, string content, bool append = false)
+    {
+        try
         {
-            try
+            if (append)
             {
-                return await File.ReadAllBytesAsync(filePath);
+                await File.AppendAllTextAsync(filePath, content);
             }
-            catch (Exception)
+            else
             {
-                return [];
+                await File.WriteAllTextAsync(filePath, content);
             }
         }
+        catch { /*Pass*/ }
+    }
 
-        public static bool FileExists(string filePath) => File.Exists(filePath);
-
-        /// <summary>
-        /// Kiểm tra sự tồn tại của tệp bất đồng bộ.
-        /// </summary>
-        /// <param name="filePath">Đường dẫn tới tệp.</param>
-        /// <returns>Trả về true nếu tệp tồn tại, ngược lại là false.</returns>
-        public static async Task<bool> FileExistsAsync(string filePath)
+    /// <summary>
+    /// Đọc nội dung từ tệp văn bản bất đồng bộ.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <returns>Nội dung tệp.</returns>
+    public static async Task<string> ReadFromFileAsync(string filePath)
+    {
+        try
         {
-            return await Task.Run(() => File.Exists(filePath));
+            return await File.ReadAllTextAsync(filePath);
         }
+        catch (Exception)
+        {
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Ghi dữ liệu byte vào tệp bất đồng bộ.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <param name="data">Dữ liệu byte cần ghi.</param>
+    /// <param name="append">Thêm vào tệp nếu true, ghi đè nếu false.</param>
+    public static async Task WriteBytesToFileAsync(string filePath, byte[] data, bool append = false)
+    {
+        try
+        {
+            using var fileStream = new FileStream(filePath, append ? FileMode.Append : FileMode.Create, FileAccess.Write);
+            await fileStream.WriteAsync(data);
+        }
+        catch { /*Pass*/ }
+    }
+
+    /// <summary>
+    /// Đọc dữ liệu byte từ tệp bất đồng bộ.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <returns>Dữ liệu byte từ tệp.</returns>
+    public static async Task<byte[]> ReadBytesFromFileAsync(string filePath)
+    {
+        try
+        {
+            return await File.ReadAllBytesAsync(filePath);
+        }
+        catch (Exception)
+        {
+            return [];
+        }
+    }
+
+    public static bool FileExists(string filePath) => File.Exists(filePath);
+
+    /// <summary>
+    /// Kiểm tra sự tồn tại của tệp bất đồng bộ.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn tới tệp.</param>
+    /// <returns>Trả về true nếu tệp tồn tại, ngược lại là false.</returns>
+    public static async Task<bool> FileExistsAsync(string filePath)
+    {
+        return await Task.Run(() => File.Exists(filePath));
     }
 }

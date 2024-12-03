@@ -1,6 +1,6 @@
 ﻿using NServer.Application.Main;
 using NServer.Core.BufferPool;
-using NServer.Core.Helper;
+using NServer.Core.Helpers;
 using NServer.Core.Network.Firewall;
 using NServer.Core.Network.Listeners;
 using NServer.Infrastructure.Configuration;
@@ -18,7 +18,7 @@ namespace NServer.Application.Threading
         private int _isRunning;
         private bool _isInMaintenanceMode;
 
-        private Controller _controller;
+        private SessionController _controller;
         private readonly SocketListener _networkListener;
 
         private CancellationTokenSource _ctokens;
@@ -32,14 +32,14 @@ namespace NServer.Application.Threading
 
             _multiSizeBuffer.AllocateBuffers();
             _ctokens = new CancellationTokenSource();
-            _networkListener = new SocketListener();
-            _controller = new Controller(_ctokens.Token);
+            _networkListener = new SocketListener(Setting.MaxConnections);
+            _controller = new SessionController(_ctokens.Token);
         }
 
         private void InitializeComponents()
         {
             _ctokens = new CancellationTokenSource();
-            _controller = new Controller(_ctokens.Token);
+            _controller = new SessionController(_ctokens.Token);
         }
 
         public void StartServer()
@@ -116,7 +116,7 @@ namespace NServer.Application.Threading
                         continue;
                     }
 
-                    await _controller.AcceptClientAsync(acceptSocket);
+                    _controller.AcceptClient(acceptSocket);
                 }
                 catch (SocketException ex)
                 {
