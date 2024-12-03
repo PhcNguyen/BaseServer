@@ -4,6 +4,7 @@ using NServer.Infrastructure.Logging.Formatter;
 using NServer.Infrastructure.Logging.Interfaces;
 using System;
 using System.IO;
+using System.Threading;
 
 namespace NServer.Infrastructure.Logging.Handlers
 {
@@ -11,7 +12,7 @@ namespace NServer.Infrastructure.Logging.Handlers
     {
         private readonly string _directory = directory ?? throw new ArgumentNullException(nameof(directory));
         private readonly INLogFormatter _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
-        private static readonly object _lock = new(); // Đối tượng khóa dùng để đồng bộ hóa việc ghi log
+        private static readonly Lock _lock = new(); // Đối tượng khóa dùng để đồng bộ hóa việc ghi log
 
         public NLogFile() : this(new NLogFormatter(), LoggingCongfig.LogDirectory)
         {

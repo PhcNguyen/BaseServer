@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace NServer.Core.BufferPool
 {
@@ -11,14 +11,33 @@ namespace NServer.Core.BufferPool
     /// </summary>
     public sealed class SharedBufferPool : IDisposable
     {
+        /// <summary>
+        /// Dictionary toàn cầu lưu trữ các pool bộ đệm, được xác định bởi kích thước bộ đệm.
+        /// </summary>
         private static readonly ConcurrentDictionary<int, SharedBufferPool> GlobalPools = new();
+
+        /// <summary>
+        /// Hàng đợi đồng bộ lưu trữ các bộ đệm rảnh.
+        /// </summary>
         private readonly ConcurrentQueue<byte[]> _freeBuffers;
+
+        /// <summary>
+        /// Pool mảng dùng chung để quản lý các bộ đệm.
+        /// </summary>
         private readonly ArrayPool<byte> _arrayPool;
+
+        /// <summary>
+        /// Kích thước của mỗi bộ đệm trong pool.
+        /// </summary>
         private readonly int _bufferSize;
         private int _totalBuffers;
         private bool _disposed;
         private int _misses;
-        private readonly object _disposeLock = new();
+
+        /// <summary>
+        /// Khóa để đảm bảo an toàn luồng khi giải phóng tài nguyên.
+        /// </summary>
+        private readonly Lock _disposeLock = new();
 
         /// <summary>
         /// Tổng số lượng bộ đệm trong pool.
@@ -57,18 +76,7 @@ namespace NServer.Core.BufferPool
         /// <returns>Đối tượng <see cref="SharedBufferPool"/> cho kích thước bộ đệm chỉ định.</returns>
         public static SharedBufferPool GetOrCreatePool(int bufferSize, int initialCapacity)
         {
-            if (!GlobalPools.TryGetValue(bufferSize, out var pool))
-            {
-                lock (GlobalPools) // Đảm bảo thread safety khi truy cập từ nhiều luồng
-                {
-                    if (!GlobalPools.TryGetValue(bufferSize, out pool))
-                    {
-                        pool = new SharedBufferPool(bufferSize, initialCapacity);
-                        GlobalPools[bufferSize] = pool;
-                    }
-                }
-            }
-            return pool;
+            return GlobalPools.GetOrAdd(bufferSize, _ => new SharedBufferPool(bufferSize, initialCapacity));
         }
 
         /// <summary>
@@ -96,7 +104,7 @@ namespace NServer.Core.BufferPool
         {
             if (buffer == null || buffer.Length != _bufferSize)
             {
-                return;
+                throw new ArgumentException("Invalid buffer.");
             }
 
             _freeBuffers.Enqueue(buffer);
@@ -182,17 +190,11 @@ namespace NServer.Core.BufferPool
         /// <param name="disposing">Chỉ định liệu việc giải phóng có được gọi từ Dispose hay không.</param>
         private void Dispose(bool disposing)
         {
-            if (_disposed)
-            {
-                return;
-            }
+            if (_disposed) return;
 
             lock (_disposeLock)
             {
-                if (_disposed)
-                {
-                    return;
-                }
+                if (_disposed) return;
 
                 if (disposing)
                 {
@@ -205,13 +207,13 @@ namespace NServer.Core.BufferPool
                     GlobalPools.TryRemove(_bufferSize, out _);
                 }
 
-                // Nếu cần, thêm giải phóng tài nguyên không được quản lý ở đây
-
                 _disposed = true;
             }
         }
 
-        // Finalizer (chỉ sử dụng nếu cần giải phóng tài nguyên không được quản lý)
+        /// <summary>
+        /// Finalizer (chỉ sử dụng nếu cần giải phóng tài nguyên không được quản lý).
+        /// </summary>
         ~SharedBufferPool()
         {
             Dispose(disposing: false);

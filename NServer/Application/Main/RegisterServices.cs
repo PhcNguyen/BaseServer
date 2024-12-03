@@ -22,9 +22,11 @@ namespace NServer.Application.Main
         {
             Singleton.GetInstance<PacketOutgoing>();
             Singleton.GetInstance<PacketIncoming>();
-
-            Singleton.GetInstance<MultiSizeBuffer>();
             Singleton.GetInstance<CommandDispatcher>();
+
+            Singleton.GetInstance<MultiSizeBuffer>(() =>
+            new MultiSizeBuffer(Setting.BufferAllocations, Setting.TotalBuffers));
+
             Singleton.GetInstance<RequestLimiter>(() =>
             new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration));
 
