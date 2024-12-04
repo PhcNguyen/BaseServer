@@ -2,8 +2,8 @@
 using NServer.Application.Handlers.Packets.Queue;
 using NServer.Core.Interfaces.Packets;
 using NServer.Core.Interfaces.Session;
+using NServer.Core.Services;
 using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ namespace NServer.Application.Handlers.Packets
             Command.CLOSE, Command.GET_KEY, Command.REGISTER, Command.LOGIN
         ];
 
-        private readonly CommandDispatcher _commandDispatcher = Singleton.GetInstance<CommandDispatcher>();
+        private readonly CommandDispatcher _commandDispatcher = Singleton.GetInstanceOfInterface<CommandDispatcher>();
 
         /// <summary>
         /// Xử lý gói tin đến.

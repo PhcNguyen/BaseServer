@@ -1,4 +1,4 @@
-﻿using NServer.Infrastructure.Services;
+﻿using NServer.Core.Services;
 
 namespace NServer.Core.Interfaces.Session
 {

@@ -1,12 +1,13 @@
 ﻿using NServer.Application.Handlers;
 using NServer.Application.Handlers.Packets.Queue;
-using NServer.Core.BufferPool;
-using NServer.Core.Interfaces.Network;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Network.Firewall;
 using NServer.Core.Session;
+using NServer.Core.BufferPool;
+using NServer.Core.Network.Firewall;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Interfaces.Network;
+using NServer.Core.Interfaces.BufferPool;
 using NServer.Infrastructure.Configuration;
-using NServer.Infrastructure.Services;
+using NServer.Core.Services;
 
 namespace NServer.Application.Main
 {
@@ -20,15 +21,15 @@ namespace NServer.Application.Main
         /// </summary>
         public static void RegisterServices()
         {
-            Singleton.GetInstance<PacketOutgoing>();
-            Singleton.GetInstance<PacketIncoming>();
-            Singleton.GetInstance<CommandDispatcher>();
+            Singleton.Register<PacketOutgoing>();
+            Singleton.Register<PacketIncoming>();
+            Singleton.Register<CommandDispatcher>();
 
-            Singleton.GetInstance<MultiSizeBuffer>(() =>
-            new MultiSizeBuffer(Setting.BufferAllocations, Setting.TotalBuffers));
-
-            Singleton.GetInstance<RequestLimiter>(() =>
+            Singleton.Register<RequestLimiter>(() =>
             new RequestLimiter(Setting.RateLimit, Setting.ConnectionLockoutDuration));
+
+            Singleton.Register<IMultiSizeBuffer, MultiSizeBuffer>(() =>
+            new MultiSizeBuffer(Setting.BufferAllocations, Setting.TotalBuffers));
 
             Singleton.Register<IConnLimiter, ConnLimiter>();
             Singleton.Register<ISessionManager, SessionManager>();

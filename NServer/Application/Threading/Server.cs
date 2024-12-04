@@ -3,9 +3,9 @@ using NServer.Core.BufferPool;
 using NServer.Core.Helpers;
 using NServer.Core.Network.Firewall;
 using NServer.Core.Network.Listeners;
+using NServer.Core.Services;
 using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Services;
 using System;
 using System.Net.Sockets;
 using System.Threading;
@@ -22,7 +22,6 @@ namespace NServer.Application.Threading
         private readonly SocketListener _networkListener;
 
         private CancellationTokenSource _ctokens;
-        private readonly MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
         private readonly RequestLimiter _requestLimiter = Singleton.GetInstance<RequestLimiter>();
 
         public Server()
@@ -30,7 +29,6 @@ namespace NServer.Application.Threading
             _isRunning = 0;
             _isInMaintenanceMode = false;
 
-            _multiSizeBuffer.AllocateBuffers();
             _ctokens = new CancellationTokenSource();
             _networkListener = new SocketListener(Setting.MaxConnections);
             _controller = new SessionController(_ctokens.Token);

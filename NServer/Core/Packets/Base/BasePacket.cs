@@ -1,5 +1,5 @@
 ﻿using NServer.Core.Packets.Metadata;
-using NServer.Infrastructure.Services;
+using NServer.Core.Services;
 using System;
 using System.Buffers;
 

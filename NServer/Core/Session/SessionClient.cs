@@ -1,7 +1,8 @@
-﻿using NServer.Core.Interfaces.Session;
+﻿using NServer.Core.Interfaces.BufferPool;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Services;
 using NServer.Core.Session.Utils;
 using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Services;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -15,13 +16,14 @@ namespace NServer.Core.Session;
 /// Lớp này chịu trách nhiệm kết nối, xác thực, gửi/nhận dữ liệu và quản lý trạng thái của phiên làm việc từ phía khách hàng.
 /// </para>
 /// </summary>
-public class SessionClient(Socket socket, TimeSpan timeout) : ISessionClient
+public class SessionClient(Socket socket, TimeSpan timeout, IMultiSizeBuffer multiSizeBuffer) 
+    : ISessionClient
 {
     private bool _isDisposed = false;
 
     private readonly UniqueId _id = UniqueId.NewId();
-    private readonly SessionNetwork _network = new(socket);
     private readonly SessionConnection _connection = new(socket, timeout);
+    private readonly SessionNetwork _network = new(socket, multiSizeBuffer);   
 
     /// <summary>
     /// Kiểm tra trạng thái kết nối của phiên làm việc.

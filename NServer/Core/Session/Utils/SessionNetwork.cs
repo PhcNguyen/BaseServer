@@ -1,4 +1,5 @@
-﻿using NServer.Core.Interfaces.Session;
+﻿using NServer.Core.Interfaces.BufferPool;
+using NServer.Core.Interfaces.Session;
 using NServer.Core.Network.IO;
 using NServer.Infrastructure.Security;
 using System;
@@ -34,10 +35,10 @@ public class SessionNetwork : IDisposable, ISessionNetwork
     /// Khởi tạo một thể hiện mới của lớp <see cref="SessionNetwork"/>.
     /// </summary>
     /// <param name="socket">Socket của khách hàng.</param>
-    public SessionNetwork(Socket socket)
+    public SessionNetwork(Socket socket, IMultiSizeBuffer multiSizeBuffer)
     {
-        SocketWriter = new(socket);
-        SocketReader = new(socket);
+        SocketWriter = new(socket, multiSizeBuffer);
+        SocketReader = new(socket, multiSizeBuffer);
         SocketReader.DataReceived += OnDataReceived!;
     }
 

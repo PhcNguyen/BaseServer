@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NServer.Infrastructure.Configuration;
+﻿namespace NServer.Infrastructure.Configuration.Internal;
 
 /// <summary>
 /// Lớp cấu hình mạng, cung cấp các cấu hình liên quan đến kết nối mạng.
@@ -30,12 +28,12 @@ internal static class NetworkConfig
     /// <summary>
     /// Thời gian phiên làm việc của client trước khi hết hạn (20 giây).
     /// </summary>
-    public static readonly TimeSpan ClientSessionTimeout = TimeSpan.FromSeconds(20);
+    public static readonly System.TimeSpan ClientSessionTimeout = System.TimeSpan.FromSeconds(20);
 
     /// <summary>
     /// Giới hạn yêu cầu tối đa trong một cửa sổ thời gian (ví dụ: 10 yêu cầu trong 0.1 giây).
     /// </summary>
-    public static readonly (int MaxRequests, TimeSpan TimeWindow) RateLimit = (10, TimeSpan.FromSeconds(0.1));
+    public static readonly (int MaxRequests, System.TimeSpan TimeWindow) RateLimit = (10, System.TimeSpan.FromSeconds(0.1));
 
     /// <summary>
     /// Thời gian khóa kết nối khi vượt quá giới hạn yêu cầu (300 giây).

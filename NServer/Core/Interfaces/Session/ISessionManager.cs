@@ -1,4 +1,4 @@
-﻿using NServer.Infrastructure.Services;
+﻿using NServer.Core.Services;
 using System.Collections.Generic;
 
 namespace NServer.Core.Interfaces.Session

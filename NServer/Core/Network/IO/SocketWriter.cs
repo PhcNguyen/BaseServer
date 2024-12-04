@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NServer.Core.Interfaces.BufferPool;
+using System;
 using System.Net.Sockets;
 
 namespace NServer.Core.Network.IO;
@@ -6,11 +7,12 @@ namespace NServer.Core.Network.IO;
 /// <summary>
 /// Lớp này quản lý việc gửi dữ liệu bất đồng bộ qua socket.
 /// </summary>
-public class SocketWriter(Socket socket) : IDisposable
+public class SocketWriter(Socket socket, IMultiSizeBuffer multiSizeBuffer) : IDisposable
 {
     private bool _disposed = false;
     private readonly SocketAsyncEventArgs _sendEventArgs = new();
     private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+    private readonly IMultiSizeBuffer _multiSizeBuffer = multiSizeBuffer ?? throw new ArgumentNullException(nameof(multiSizeBuffer));
 
     public static void OnCompleted(object? sender, SocketAsyncEventArgs e)
     {
@@ -26,27 +28,28 @@ public class SocketWriter(Socket socket) : IDisposable
     public bool Send(byte[] data)
     {
         ObjectDisposedException.ThrowIf(_disposed, nameof(SocketWriter));
-
         ArgumentNullException.ThrowIfNull(data);
 
-        _sendEventArgs.SetBuffer(data, 0, data.Length);
-        _sendEventArgs.Completed += OnCompleted;
+        byte[] buffer = _multiSizeBuffer.RentBuffer(data.Length);
 
         try
         {
-            // Kiểm tra xem có gửi dữ liệu đồng bộ ngay lập tức được không
+            Array.Copy(data, buffer, data.Length);
+
+            _sendEventArgs.SetBuffer(buffer, 0, data.Length);
+            _sendEventArgs.Completed += OnCompleted;
+
             if (!_socket.SendAsync(_sendEventArgs))
             {
-                // Gửi xong ngay lập tức
                 return _sendEventArgs.SocketError == SocketError.Success;
             }
 
-            // Nếu không thể gửi ngay lập tức, chờ callback hoàn thành
             return _sendEventArgs.SocketError == SocketError.Success;
         }
         finally
         {
             _sendEventArgs.Completed -= OnCompleted;
+            _multiSizeBuffer.ReturnBuffer(buffer);
         }
     }
 

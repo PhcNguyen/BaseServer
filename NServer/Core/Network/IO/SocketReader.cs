@@ -1,5 +1,4 @@
-﻿using NServer.Core.BufferPool;
-using NServer.Infrastructure.Services;
+﻿using NServer.Core.Interfaces.BufferPool;
 using System;
 using System.Linq;
 using System.Net.Sockets;
@@ -14,9 +13,9 @@ namespace NServer.Core.Network.IO;
 public class SocketReader : IDisposable
 {
     private readonly Socket _socket;
+    private readonly IMultiSizeBuffer _multiSizeBuffer;
     private readonly SocketAsyncEventArgs _receiveEventArgs;
-    private readonly MultiSizeBuffer _multiSizeBuffer = Singleton.GetInstance<MultiSizeBuffer>();
-
+    
     private byte[] _buffer;
     private bool _disposed = false;
     private CancellationTokenSource? _cts;
@@ -34,16 +33,16 @@ public class SocketReader : IDisposable
     /// </summary>
     /// <param name="socket">Socket dùng để nhận dữ liệu.</param>
     /// <exception cref="ArgumentNullException">Ném ra khi socket là null.</exception>
-    public SocketReader(Socket socket)
+    public SocketReader(Socket socket, IMultiSizeBuffer multiSizeBuffer)
     {
+        _cts = new CancellationTokenSource();
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+        _multiSizeBuffer = multiSizeBuffer ?? throw new ArgumentNullException(nameof(multiSizeBuffer));
 
         _buffer = _multiSizeBuffer.RentBuffer(256);
         _receiveEventArgs = new SocketAsyncEventArgs();
         _receiveEventArgs.SetBuffer(_buffer, 0, _buffer.Length);
-        _receiveEventArgs.Completed += OnReceiveCompleted!;
-
-        _cts = new CancellationTokenSource();
+        _receiveEventArgs.Completed += OnReceiveCompleted!;     
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using NServer.Core.Interfaces.Network;
 using NServer.Core.Interfaces.Session;
-using NServer.Infrastructure.Services;
+using NServer.Core.Services;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -18,7 +18,7 @@ public class SessionManager : ISessionManager
     // Lưu trữ tất cả các session hiện tại trong một ConcurrentDictionary.
     private readonly ConcurrentDictionary<UniqueId, ISessionClient> _activeSessions = new();
 
-    private readonly IConnLimiter _connLimiter = Singleton.GetInstanceOfInterface<IConnLimiter>();
+    private readonly IConnLimiter _connLimiter = Singleton.GetInstance<IConnLimiter>();
 
     // Biến đếm số lượng session hiện tại.
     private int _sessionCount = 0;

@@ -9,12 +9,12 @@ namespace NServer.Core.BufferPool;
 /// <summary>
 /// Quản lý một pool của các bộ đệm dùng chung.
 /// </summary>
-public sealed class SharedBufferPool : IDisposable
+public sealed class BufferPoolShared : IDisposable
 {
     /// <summary>
     /// Dictionary toàn cầu lưu trữ các pool bộ đệm, được xác định bởi kích thước bộ đệm.
     /// </summary>
-    private static readonly ConcurrentDictionary<int, SharedBufferPool> GlobalPools = new();
+    private static readonly ConcurrentDictionary<int, BufferPoolShared> GlobalPools = new();
 
     /// <summary>
     /// Hàng đợi đồng bộ lưu trữ các bộ đệm rảnh.
@@ -51,11 +51,11 @@ public sealed class SharedBufferPool : IDisposable
     public int FreeBuffers => _freeBuffers.Count;
 
     /// <summary>
-    /// Khởi tạo một thể hiện mới của lớp <see cref="SharedBufferPool"/>.
+    /// Khởi tạo một thể hiện mới của lớp <see cref="BufferPoolShared"/>.
     /// </summary>
     /// <param name="bufferSize">Kích thước của mỗi bộ đệm trong pool.</param>
     /// <param name="initialCapacity">Số lượng bộ đệm ban đầu để cấp phát.</param>
-    private SharedBufferPool(int bufferSize, int initialCapacity)
+    private BufferPoolShared(int bufferSize, int initialCapacity)
     {
         _bufferSize = bufferSize;
         _arrayPool = ArrayPool<byte>.Shared;
@@ -74,10 +74,10 @@ public sealed class SharedBufferPool : IDisposable
     /// </summary>
     /// <param name="bufferSize">Kích thước của mỗi bộ đệm trong pool.</param>
     /// <param name="initialCapacity">Số lượng bộ đệm ban đầu để cấp phát.</param>
-    /// <returns>Đối tượng <see cref="SharedBufferPool"/> cho kích thước bộ đệm chỉ định.</returns>
-    public static SharedBufferPool GetOrCreatePool(int bufferSize, int initialCapacity)
+    /// <returns>Đối tượng <see cref="BufferPoolShared"/> cho kích thước bộ đệm chỉ định.</returns>
+    public static BufferPoolShared GetOrCreatePool(int bufferSize, int initialCapacity)
     {
-        return GlobalPools.GetOrAdd(bufferSize, _ => new SharedBufferPool(bufferSize, initialCapacity));
+        return GlobalPools.GetOrAdd(bufferSize, _ => new BufferPoolShared(bufferSize, initialCapacity));
     }
 
     /// <summary>
@@ -215,7 +215,7 @@ public sealed class SharedBufferPool : IDisposable
     /// <summary>
     /// Finalizer (chỉ sử dụng nếu cần giải phóng tài nguyên không được quản lý).
     /// </summary>
-    ~SharedBufferPool()
+    ~BufferPoolShared()
     {
         Dispose(disposing: false);
     }

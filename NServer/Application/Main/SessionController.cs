@@ -1,8 +1,9 @@
-﻿using NServer.Core.Interfaces.Session;
+﻿using NServer.Core.Interfaces.BufferPool;
+using NServer.Core.Interfaces.Session;
+using NServer.Core.Services;
 using NServer.Core.Session;
 using NServer.Infrastructure.Configuration;
 using NServer.Infrastructure.Logging;
-using NServer.Infrastructure.Services;
 using System;
 using System.Linq;
 using System.Net.Sockets;
@@ -16,10 +17,11 @@ namespace NServer.Application.Main
     /// </summary>
     internal class SessionController
     {
-        private readonly CancellationToken _token;
+        private readonly CancellationToken _canceltoken;
         private readonly SessionMonitor _sessionMonitor;
         private readonly ISessionManager _sessionManager;
         private readonly PacketContainer _packetContainer;
+        private readonly IMultiSizeBuffer _multiSizeBuffer;
 
         /// <summary>
         /// Khởi tạo một <see cref="SessionController"/> mới.
@@ -27,11 +29,12 @@ namespace NServer.Application.Main
         /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
         public SessionController(CancellationToken token)
         {
-            _token = token;
+            _canceltoken = token;
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
+            _multiSizeBuffer = Singleton.GetInstanceOfInterface<IMultiSizeBuffer>();
 
-            _packetContainer = new PacketContainer(_token);
-            _sessionMonitor = new SessionMonitor(_sessionManager, _token);
+            _packetContainer = new PacketContainer(_canceltoken);
+            _sessionMonitor = new SessionMonitor(_sessionManager, _canceltoken);
 
             this.Initialization();
         }
@@ -59,7 +62,7 @@ namespace NServer.Application.Main
                 {
                     NLog.Instance.Error<SessionController>($"Error during initialization: {ex.Message}");
                 }
-            }, _token);
+            }, _canceltoken);
         }
 
         /// <summary>
@@ -73,7 +76,7 @@ namespace NServer.Application.Main
         /// <param name="clientSocket">Cổng kết nối của client.</param>
         public void AcceptClient(Socket clientSocket)
         {
-            SessionClient session = new(clientSocket, Setting.Timeout);
+            SessionClient session = new(clientSocket, Setting.Timeout, _multiSizeBuffer);
 
             if (_sessionManager.AddSession(session))
             {
