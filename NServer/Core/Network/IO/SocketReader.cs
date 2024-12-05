@@ -1,4 +1,4 @@
-﻿using NServer.Core.Interfaces.BufferPool;
+﻿using NServer.Core.Interfaces.Pooling;
 using System;
 using System.Linq;
 using System.Net.Sockets;
@@ -10,10 +10,10 @@ namespace NServer.Core.Network.IO;
 /// <summary>
 /// Lớp SocketReader dùng để đọc dữ liệu từ socket một cách không đồng bộ.
 /// </summary>
-public class SocketReader : IDisposable
+public partial class SocketReader : IDisposable
 {
     private readonly Socket _socket;
-    private readonly IMultiSizeBuffer _multiSizeBuffer;
+    private readonly IMultiSizeBufferPool _multiSizeBuffer;
     private readonly SocketAsyncEventArgs _receiveEventArgs;
     
     private byte[] _buffer;
@@ -33,7 +33,7 @@ public class SocketReader : IDisposable
     /// </summary>
     /// <param name="socket">Socket dùng để nhận dữ liệu.</param>
     /// <exception cref="ArgumentNullException">Ném ra khi socket là null.</exception>
-    public SocketReader(Socket socket, IMultiSizeBuffer multiSizeBuffer)
+    public SocketReader(Socket socket, IMultiSizeBufferPool multiSizeBuffer)
     {
         _cts = new CancellationTokenSource();
         _socket = socket ?? throw new ArgumentNullException(nameof(socket));

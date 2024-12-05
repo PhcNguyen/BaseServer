@@ -4,12 +4,12 @@ using System.Threading;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace NServer.Core.BufferPool;
+namespace NServer.Core.Buffers;
 
 /// <summary>
 /// Quản lý một pool của các bộ đệm dùng chung.
 /// </summary>
-public sealed class BufferPoolShared : IDisposable
+internal sealed class BufferPoolShared : IDisposable
 {
     /// <summary>
     /// Dictionary toàn cầu lưu trữ các pool bộ đệm, được xác định bởi kích thước bộ đệm.

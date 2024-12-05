@@ -1,5 +1,4 @@
-﻿using NServer.Application.Handlers.Enums;
-using NServer.Application.Handlers.Packets;
+﻿using NServer.Application.Handlers.Packets;
 using NServer.Core.Database;
 using NServer.Core.Database.Postgre;
 using NServer.Core.Interfaces.Packets;

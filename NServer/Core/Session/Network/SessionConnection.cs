@@ -1,19 +1,21 @@
 ﻿using NServer.Core.Helpers;
+using NServer.Core.Interfaces.Session;
 using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 
-namespace NServer.Core.Session.Utils;
+namespace NServer.Core.Session.Network;
 
 /// <summary>
 /// Quản lý kết nối socket của khách hàng và theo dõi thời gian hoạt động.
 /// </summary>
-public class SessionConnection(Socket socket, TimeSpan timeout)
+internal class SessionConnection(Socket socket, TimeSpan timeout) : ISessionConnection
 {
     private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-    private readonly TimeSpan _timeout = timeout;
     private readonly Stopwatch _activityTimer = Stopwatch.StartNew();
     private readonly string _clientIp = NetworkHelper.GetClientIP(socket);
+
+    private TimeSpan _timeout = timeout;
 
     /// <summary>
     /// Kiểm tra trạng thái kết nối của phiên làm việc.
@@ -29,6 +31,8 @@ public class SessionConnection(Socket socket, TimeSpan timeout)
     /// Cập nhật thời gian hoạt động của phiên làm việc.
     /// </summary>
     public void UpdateLastActivity() => _activityTimer.Restart();
+
+    public void SetTimeout(TimeSpan timeout) { _timeout = timeout; }
 
     /// <summary>
     /// Kiểm tra xem phiên làm việc có hết thời gian chờ không.

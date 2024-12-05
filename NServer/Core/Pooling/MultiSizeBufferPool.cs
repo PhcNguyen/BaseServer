@@ -1,13 +1,14 @@
-﻿using NServer.Core.Interfaces.BufferPool;
+﻿using NServer.Core.Buffers;
+using NServer.Core.Interfaces.Pooling;
 using System;
 using System.Linq;
 
-namespace NServer.Core.BufferPool
+namespace NServer.Core.Pooling
 {
     /// <summary>
     /// Quản lý các bộ đệm có nhiều kích thước khác nhau.
     /// </summary>
-    public class MultiSizeBuffer : IMultiSizeBuffer
+    public class MultiSizeBufferPool : IMultiSizeBufferPool
     {
         private readonly (int BufferSize, double Allocation)[] _bufferAllocations;
         private readonly int _totalBuffers;
@@ -16,11 +17,11 @@ namespace NServer.Core.BufferPool
         private readonly BufferPoolManager _poolManager = new();
 
         /// <summary>
-        /// Khởi tạo một thể hiện mới của lớp <see cref="MultiSizeBuffer"/> với các cấu hình phân bổ bộ đệm và tổng số bộ đệm.
+        /// Khởi tạo một thể hiện mới của lớp <see cref="MultiSizeBufferPool"/> với các cấu hình phân bổ bộ đệm và tổng số bộ đệm.
         /// </summary>
         /// <param name="bufferAllocations">Mảng các cấu hình phân bổ bộ đệm.</param>
         /// <param name="totalBuffers">Tổng số bộ đệm.</param>
-        public MultiSizeBuffer((int BufferSize, double Allocation)[] bufferAllocations, int totalBuffers)
+        public MultiSizeBufferPool((int BufferSize, double Allocation)[] bufferAllocations, int totalBuffers)
         {
             _bufferAllocations = bufferAllocations;
             _totalBuffers = totalBuffers;

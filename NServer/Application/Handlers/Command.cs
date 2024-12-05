@@ -1,4 +1,4 @@
-﻿namespace NServer.Application.Handlers.Enums
+﻿namespace NServer.Application.Handlers
 {
     public enum Command : short
     {

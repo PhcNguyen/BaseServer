@@ -1,20 +1,19 @@
 ﻿using NServer.Core.Services;
 using System.Collections.Generic;
 
-namespace NServer.Core.Interfaces.Session
+namespace NServer.Core.Interfaces.Session;
+
+public interface ISessionManager
 {
-    public interface ISessionManager
-    {
-        bool AddSession(ISessionClient session);
+    bool AddSession(ISessionClient session);
 
-        ISessionClient? GetSession(UniqueId sessionId);
+    ISessionClient? GetSession(UniqueId sessionId);
 
-        bool TryGetSession(UniqueId sessionId, out ISessionClient? session);
+    bool TryGetSession(UniqueId sessionId, out ISessionClient? session);
 
-        bool RemoveSession(UniqueId sessionId);
+    bool RemoveSession(UniqueId sessionId);
 
-        IEnumerable<ISessionClient> GetAllSessions();
+    IEnumerable<ISessionClient> GetAllSessions();
 
-        int Count();
-    }
+    int Count();
 }

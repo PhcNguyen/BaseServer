@@ -9,7 +9,7 @@ namespace NServer.Core.Network.Listeners;
 /// <summary>
 /// SocketListener là lớp quản lý việc lắng nghe kết nối TCP đến server.
 /// </summary>
-public class SocketListener : IDisposable
+public partial class SocketListener : IDisposable
 {
     private Socket _listenerSocket;
     private readonly int _maxConnections;

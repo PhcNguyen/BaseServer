@@ -1,11 +1,10 @@
 ﻿using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Session
-{
-    public interface ISessionMonitor
-    {
-        Task MonitorSessionsAsync();
+namespace NServer.Core.Interfaces.Session;
 
-        void CloseConnection(ISessionClient session);
-    }
+public interface ISessionMonitor
+{
+    Task MonitorSessionsAsync();
+
+    void CloseConnection(ISessionClient session);
 }

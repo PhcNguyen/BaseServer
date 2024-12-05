@@ -1,11 +1,11 @@
-﻿using NServer.Core.Interfaces.BufferPool;
+﻿using NServer.Core.Interfaces.Pooling;
 using NServer.Core.Interfaces.Session;
 using NServer.Core.Network.IO;
 using NServer.Infrastructure.Security;
 using System;
 using System.Net.Sockets;
 
-namespace NServer.Core.Session.Utils;
+namespace NServer.Core.Session.Network;
 
 /// <summary>
 /// Quản lý vận chuyển phiên làm việc, bao gồm gửi và nhận dữ liệu qua socket.
@@ -35,7 +35,7 @@ public class SessionNetwork : IDisposable, ISessionNetwork
     /// Khởi tạo một thể hiện mới của lớp <see cref="SessionNetwork"/>.
     /// </summary>
     /// <param name="socket">Socket của khách hàng.</param>
-    public SessionNetwork(Socket socket, IMultiSizeBuffer multiSizeBuffer)
+    public SessionNetwork(Socket socket, IMultiSizeBufferPool multiSizeBuffer)
     {
         SocketWriter = new(socket, multiSizeBuffer);
         SocketReader = new(socket, multiSizeBuffer);

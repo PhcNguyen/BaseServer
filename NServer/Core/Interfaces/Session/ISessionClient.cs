@@ -1,27 +1,26 @@
 ﻿using NServer.Core.Services;
 
-namespace NServer.Core.Interfaces.Session
+namespace NServer.Core.Interfaces.Session;
+
+public interface ISessionClient
 {
-    public interface ISessionClient
-    {
-        UniqueId Id { get; }
-        ISessionNetwork Network { get; }
+    UniqueId Id { get; }
+    ISessionNetwork Network { get; }
 
-        byte[] Key { get; }
-        bool IsConnected { get; }
-        string IpAddress { get; }
-        bool Authenticator { get; set; }
+    byte[] Key { get; }
+    bool IsConnected { get; }
+    string IpAddress { get; }
+    bool Authenticator { get; set; }
 
-        void Connect();
+    void Connect();
 
-        void Disconnect();
+    void Disconnect();
 
-        void Dispose();
+    void Dispose();
 
-        void UpdateLastActivityTime();
+    void UpdateLastActivityTime();
 
-        bool IsSessionTimedOut();
+    bool IsSessionTimedOut();
 
-        bool IsSocketInvalid();
-    }
+    bool IsSocketInvalid();
 }

@@ -1,5 +1,4 @@
 ﻿using NServer.Core.Interfaces.Session;
-using NServer.Infrastructure.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,6 +24,16 @@ public class SessionMonitor(ISessionManager sessionManager, CancellationToken ca
     private readonly CancellationToken _token = cancellationToken;
 
     /// <summary>
+    /// Sự kiện thông tin.
+    /// </summary>
+    public event Action<string>? OnInfo;
+
+    /// <summary>
+    /// Sự kiện lỗi.
+    /// </summary>
+    public event Action<string, Exception>? OnError;
+
+    /// <summary>
     /// Giám sát các phiên làm việc không đồng bộ, kiểm tra và đóng các kết nối không hợp lệ.
     /// </summary>
     /// <returns>Task đại diện cho tác vụ giám sát phiên làm việc.</returns>
@@ -43,7 +52,7 @@ public class SessionMonitor(ISessionManager sessionManager, CancellationToken ca
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error<SessionMonitor>($"Error monitoring session {session.Id}: {ex.Message}");
+                    OnError?.Invoke($"Error monitoring session {session.Id}", ex);
                 }
             }
 
@@ -65,7 +74,7 @@ public class SessionMonitor(ISessionManager sessionManager, CancellationToken ca
         }
         catch (Exception ex)
         {
-            NLog.Instance.Error<SessionMonitor>($"Error closing connection for session {session.Id}: {ex.Message}");
+            OnError?.Invoke($"Error closing connection for session {session.Id}", ex);
         }
     }
 }

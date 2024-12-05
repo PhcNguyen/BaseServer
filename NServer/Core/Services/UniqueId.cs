@@ -17,6 +17,11 @@ namespace NServer.Core.Services
         private static readonly byte[] CharToValue = CreateCharToValueMap();
         private readonly uint _value = value;
 
+       /// <summary>
+       /// ID Default
+       /// </summary>
+       public static readonly UniqueId Empty = new(0);
+
         /// <summary>
         /// Tạo bảng ánh xạ ký tự sang giá trị số để tăng tốc độ tra cứu.
         /// </summary>

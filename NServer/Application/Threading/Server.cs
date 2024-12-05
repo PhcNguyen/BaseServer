@@ -1,5 +1,5 @@
 ﻿using NServer.Application.Main;
-using NServer.Core.BufferPool;
+using NServer.Core.Buffers;
 using NServer.Core.Helpers;
 using NServer.Core.Network.Firewall;
 using NServer.Core.Network.Listeners;

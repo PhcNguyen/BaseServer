@@ -3,7 +3,7 @@
 /// <summary>
 /// Metadata offsets and size for network packets.
 /// </summary>
-public struct PacketMetadata
+public partial struct PacketMetadata
 {
     /// <summary>
     /// Size of the length (4 bytes).

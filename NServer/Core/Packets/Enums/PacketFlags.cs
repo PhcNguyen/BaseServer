@@ -11,5 +11,5 @@ public enum PacketFlags : byte
     LOW = 8,          // Ưu tiên thấp
     MEDIUM = 16,      // Ưu tiên trung bình
     HIGH = 32,        // Ưu tiên cao
-    ISURGENT = 64     // Cờ đánh dấu gói tin là khẩn cấp
+    URGENT = 64       // Cờ đánh dấu gói tin là khẩn cấp
 }

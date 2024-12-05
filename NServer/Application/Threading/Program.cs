@@ -1,29 +1,20 @@
 ﻿using NServer.Application.Main;
-using NServer.Infrastructure.Logging;
-using System;
 
-namespace NServer.Application.Threading
+namespace NServer.Application.Threading;
+
+internal static class Program
 {
-    internal static class Program
+    private static void Main(string[] args)
     {
-        private static void Initialization()
-        {
-            ServiceRegistry.RegisterServices();
-            NLog.Instance.DefaultInitialization();
-        }
+        ServiceController.Register();
+        ServiceController.Initialization();
 
-        private static void Main(string[] args)
-        {
-            Initialization();
-            // Tạo instance của ServerEngine
-            Server serverEngine = new();
+        // Tạo instance của ServerEngine
+        Server serverEngine = new();
 
-            // Bắt đầu server
-            serverEngine.StartServer();
+        // Bắt đầu server
+        serverEngine.StartServer();
 
-            Console.ReadKey();
-
-            serverEngine.StopServer();
-        }
+        serverEngine.StopServer();
     }
 }

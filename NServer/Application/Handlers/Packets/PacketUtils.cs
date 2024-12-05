@@ -1,5 +1,4 @@
-﻿using NServer.Application.Handlers.Enums;
-using NServer.Core.Interfaces.Packets;
+﻿using NServer.Core.Interfaces.Packets;
 using NServer.Core.Packets;
 
 namespace NServer.Application.Handlers.Packets

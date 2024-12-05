@@ -1,6 +1,6 @@
-﻿namespace NServer.Core.Interfaces.BufferPool;
+﻿namespace NServer.Core.Interfaces.Pooling;
 
-public interface IMultiSizeBuffer
+public interface IMultiSizeBufferPool
 {
     void AllocateBuffers();
 

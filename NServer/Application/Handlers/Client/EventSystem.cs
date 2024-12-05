@@ -1,5 +1,4 @@
-﻿using NServer.Application.Handlers.Enums;
-using NServer.Application.Handlers.Packets;
+﻿using NServer.Application.Handlers.Packets;
 using NServer.Core.Handlers;
 using NServer.Core.Interfaces.Packets;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ namespace NServer.Application.Handlers.Client
     /// Lớp này cung cấp các phương thức để xử lý các lệnh hệ thống như ping, pong, heartbeat và close từ phía khách hàng.
     /// </para>
     /// </summary>
-    internal static class SystemCommandHandler
+    internal static class EventSystem
     {
         /// <summary>
         /// Phương thức xử lý lệnh ping.

@@ -1,5 +1,4 @@
-﻿using NServer.Application.Handlers.Enums;
-using NServer.Application.Handlers.Packets;
+﻿using NServer.Application.Handlers.Packets;
 using NServer.Core.Handlers;
 using NServer.Core.Interfaces.Packets;
 using NServer.Infrastructure.Logging;

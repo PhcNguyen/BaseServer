@@ -16,7 +16,7 @@ public partial class BasePacket
     /// <summary>
     /// Cờ trạng thái của gói tin.
     /// </summary>
-    public Enums.PacketFlags Flags { get; protected set; } = Enums.PacketFlags.NONE;
+    public PacketFlags Flags { get; protected set; } = PacketFlags.NONE;
 
     /// <summary>
     /// Command để xác định loại gói tin.
@@ -31,17 +31,17 @@ public partial class BasePacket
     /// <summary>
     /// Phương thức để thêm cờ trạng thái
     /// </summary>
-    public void AddFlag(Enums.PacketFlags flag) => Flags |= flag;
+    public void AddFlag(PacketFlags flag) => Flags |= flag;
 
     /// <summary>
     /// Phương thức để loại bỏ cờ trạng thái
     /// </summary>
-    public void RemoveFlag(Enums.PacketFlags flag) => Flags &= ~flag;
+    public void RemoveFlag(PacketFlags flag) => Flags &= ~flag;
 
     /// <summary>
     /// Kiểm tra xem flag có tồn tại hay không.
     /// </summary>
-    public bool HasFlag(Enums.PacketFlags flag) => Flags.HasFlag(flag);
+    public bool HasFlag(PacketFlags flag) => Flags.HasFlag(flag);
 
     /// <summary>
     /// Set Command mới cho gói tin.

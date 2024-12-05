@@ -1,6 +1,6 @@
-﻿using NServer.Application.Handlers.Enums;
-using NServer.Application.Handlers.Packets.Queue;
+﻿using NServer.Application.Handlers.Packets.Queue;
 using NServer.Core.Interfaces.Packets;
+using NServer.Core.Interfaces.Pooling;
 using NServer.Core.Interfaces.Session;
 using NServer.Core.Services;
 using NServer.Infrastructure.Logging;
@@ -15,6 +15,7 @@ namespace NServer.Application.Handlers.Packets
     /// </summary>
     internal class PacketProcessor(ISessionManager sessionManager)
     {
+        private readonly IPacketPool _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
         private readonly ISessionManager _sessionManager = sessionManager;
 
         private readonly HashSet<Command> _commandsWithoutLoginRequired =
@@ -41,7 +42,9 @@ namespace NServer.Application.Handlers.Packets
                     return;
                 }
 
-                var responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
+                IPacket responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
+                _packetPool.ReturnPacket(packet);
+
                 outgoingQueue.Enqueue(responsePacket);
             }
             catch (Exception ex)
@@ -66,6 +69,8 @@ namespace NServer.Application.Handlers.Packets
                     return;
 
                 await RetryAsync(() => session.Network.Send(packet.ToByteArray()), maxRetries: 3, delayMs: 100);
+
+                _packetPool.ReturnPacket(packet);
             }
             catch (Exception ex)
             {

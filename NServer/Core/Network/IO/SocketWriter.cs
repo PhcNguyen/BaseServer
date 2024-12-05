@@ -1,4 +1,4 @@
-﻿using NServer.Core.Interfaces.BufferPool;
+﻿using NServer.Core.Interfaces.Pooling;
 using System;
 using System.Net.Sockets;
 
@@ -7,12 +7,12 @@ namespace NServer.Core.Network.IO;
 /// <summary>
 /// Lớp này quản lý việc gửi dữ liệu bất đồng bộ qua socket.
 /// </summary>
-public class SocketWriter(Socket socket, IMultiSizeBuffer multiSizeBuffer) : IDisposable
+public partial class SocketWriter(Socket socket, IMultiSizeBufferPool multiSizeBuffer) : IDisposable
 {
     private bool _disposed = false;
     private readonly SocketAsyncEventArgs _sendEventArgs = new();
     private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
-    private readonly IMultiSizeBuffer _multiSizeBuffer = multiSizeBuffer ?? throw new ArgumentNullException(nameof(multiSizeBuffer));
+    private readonly IMultiSizeBufferPool _multiSizeBuffer = multiSizeBuffer ?? throw new ArgumentNullException(nameof(multiSizeBuffer));
 
     public static void OnCompleted(object? sender, SocketAsyncEventArgs e)
     {
