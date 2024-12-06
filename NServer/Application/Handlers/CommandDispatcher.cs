@@ -1,11 +1,12 @@
-﻿using NServer.Application.Handlers.Packets;
-using NServer.Core.Handlers;
-using NServer.Core.Interfaces.Packets;
-using NServer.Infrastructure.Logging;
+﻿using NPServer.Application.Handlers.Packets;
+using NPServer.Core.Handlers;
+using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets.Utilities;
+using NPServer.Infrastructure.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace NServer.Application.Handlers
+namespace NPServer.Application.Handlers
 {
     internal class CommandDispatcher : CommandDispatcherBase<Command>
     {
@@ -23,7 +24,7 @@ namespace NServer.Application.Handlers
             Command command = (Command)packet.Cmd;
 
             if (!CommandDelegateCache.TryGetValue(command, out var func))
-                return PacketUtils.Response(Command.ERROR, $"Unknown command: {command}");
+                return PacketExtensions.ToResponsePacket((short)Command.ERROR, $"Unknown command: {command}");
 
             try
             {
@@ -34,7 +35,7 @@ namespace NServer.Application.Handlers
             catch (Exception ex)
             {
                 NLog.Instance.Error<CommandDispatcher>($"Error executing command: {command}. Exception: {ex.Message}");
-                return PacketUtils.Response(Command.ERROR, $"Error executing command: {command}");
+                return PacketExtensions.ToResponsePacket((short)Command.ERROR, $"Error executing command: {command}");
             }
         }
     }

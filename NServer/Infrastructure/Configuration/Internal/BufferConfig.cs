@@ -1,4 +1,4 @@
-﻿namespace NServer.Infrastructure.Configuration.Internal;
+﻿namespace NPServer.Infrastructure.Configuration.Internal;
 
 /// <summary>
 /// Lớp cấu hình bộ đệm, cung cấp các cấu hình liên quan đến việc phân bổ bộ đệm.

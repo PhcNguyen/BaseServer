@@ -1,14 +1,14 @@
-﻿using NServer.Application.Handlers.Packets.Queue;
-using NServer.Core.Interfaces.Packets;
-using NServer.Core.Interfaces.Pooling;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Services;
-using NServer.Infrastructure.Logging;
+﻿using NPServer.Application.Handlers.Packets.Queue;
+using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Interfaces.Pooling;
+using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Packets.Utilities;
+using NPServer.Core.Services;
+using NPServer.Infrastructure.Logging;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace NServer.Application.Handlers.Packets
+namespace NPServer.Application.Handlers.Packets
 {
     /// <summary>
     /// Lớp chịu trách nhiệm xử lý gói tin đến và đi.
@@ -18,7 +18,7 @@ namespace NServer.Application.Handlers.Packets
         private readonly IPacketPool _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
         private readonly ISessionManager _sessionManager = sessionManager;
 
-        private readonly HashSet<Command> _commandsWithoutLoginRequired =
+        private readonly Command[] _commandsWithoutLoginRequired =
         [
             Command.PONG, Command.PING, Command.NONE, Command.HEARTBEAT,
             Command.CLOSE, Command.GET_KEY, Command.REGISTER, Command.LOGIN
@@ -36,15 +36,15 @@ namespace NServer.Application.Handlers.Packets
                 if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                     return;
 
-                if (!session.Authenticator && !_commandsWithoutLoginRequired.Contains((Command)packet.Cmd))
+                if (!session.Authenticator && IsLoginRequired((Command)packet.Cmd))
                 {
-                    outgoingQueue.Enqueue(PacketUtils.Response(Command.ERROR, "You must log in first."));
+                    outgoingQueue.Enqueue(PacketExtensions.ToResponsePacket((short)Command.ERROR, "You must log in first."));
                     return;
                 }
 
                 IPacket responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
-                _packetPool.ReturnPacket(packet);
 
+                _packetPool.ReturnPacket(packet);
                 outgoingQueue.Enqueue(responsePacket);
             }
             catch (Exception ex)
@@ -78,6 +78,16 @@ namespace NServer.Application.Handlers.Packets
             }
         }
 
+        private bool IsLoginRequired(Command cmd)
+        {
+            Span<Command> commandsSpan = _commandsWithoutLoginRequired;
+            foreach (var command in commandsSpan)
+            {
+                if (command == cmd) return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// Thực hiện lại hành động không đồng bộ nhiều lần nếu thất bại.
         /// </summary>
@@ -92,7 +102,7 @@ namespace NServer.Application.Handlers.Packets
                 }
                 catch (Exception ex) when (attempt < maxRetries - 1)
                 {
-                    NLog.Instance.Warning($"[RetryAsync] Attempt {attempt + 1} failed: {ex.Message}");
+                    NLog.Instance.Warning<PacketProcessor>($"[RetryAsync] Attempt {attempt + 1} failed: {ex.Message}");
                 }
 
                 await Task.Delay(delayMs).ConfigureAwait(false);

@@ -1,13 +1,13 @@
-﻿using NServer.Core.Interfaces.Pooling;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Services;
-using NServer.Core.Session.Network;
+﻿using NPServer.Core.Interfaces.Pooling;
+using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Services;
+using NPServer.Core.Session.Network;
 using System;
 using System.IO;
-using System.Threading;
 using System.Net.Sockets;
+using System.Threading;
 
-namespace NServer.Core.Session;
+namespace NPServer.Core.Session;
 
 /// <summary>
 /// Quản lý phiên làm việc của khách hàng.

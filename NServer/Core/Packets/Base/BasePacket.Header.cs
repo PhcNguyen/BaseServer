@@ -1,8 +1,8 @@
-﻿using NServer.Core.Packets.Enums;
-using NServer.Core.Packets.Metadata;
+﻿using NPServer.Core.Packets.Enums;
+using NPServer.Core.Packets.Metadata;
 using System;
 
-namespace NServer.Core.Packets.Base;
+namespace NPServer.Core.Packets.Base;
 
 public partial class BasePacket
 {

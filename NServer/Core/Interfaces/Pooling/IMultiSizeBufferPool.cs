@@ -1,4 +1,4 @@
-﻿namespace NServer.Core.Interfaces.Pooling;
+﻿namespace NPServer.Core.Interfaces.Pooling;
 
 public interface IMultiSizeBufferPool
 {

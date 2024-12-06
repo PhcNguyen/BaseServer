@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NServer.Application.Helper
+namespace NPServer.Application.Helper
 {
     /// <summary>
     /// Cung cấp các phương thức để kiểm tra tính hợp lệ của số điện thoại.

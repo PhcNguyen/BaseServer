@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace NServer.Core.Services;
+namespace NPServer.Core.Services;
 
 /// <summary>
 /// Lớp Singleton dùng để quản lý và khởi tạo các instance duy nhất của các class.
@@ -139,7 +139,6 @@ public static class Singleton
             throw new InvalidOperationException($"Failed to create instance of {typeof(TClass)}", ex);
         }
     }
-
 
     /// <summary>
     /// Lấy instance của một interface từ Singleton.

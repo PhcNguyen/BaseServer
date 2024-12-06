@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace NServer.Core.Helpers;
+namespace NPServer.Core.Helpers;
 
 /// <summary>
 /// Provides helper methods for working with network information such as IP addresses.

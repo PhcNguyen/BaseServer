@@ -1,16 +1,16 @@
-﻿using NServer.Core.Interfaces.Pooling;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Services;
-using NServer.Core.Session;
-using NServer.Infrastructure.Configuration;
-using NServer.Infrastructure.Logging;
+﻿using NPServer.Core.Interfaces.Pooling;
+using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Services;
+using NPServer.Core.Session;
+using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Logging;
 using System;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Application.Main
+namespace NPServer.Application.Main
 {
     /// <summary>
     /// Lớp điều khiển các phiên làm việc và xử lý gói tin từ người dùng.
@@ -83,12 +83,12 @@ namespace NServer.Application.Main
 
             if (_sessionManager.AddSession(session))
             {
-                session.OnInfo += (message) => NLog.Instance.Info<SessionClient>(message);          
+                session.OnInfo += (message) => NLog.Instance.Info<SessionClient>(message);
                 session.OnWarning += (message) => NLog.Instance.Warning<SessionClient>(message);
                 session.OnError += (message, exception) => NLog.Instance.Error<SessionClient>(message, exception);
 
                 session.Connect();
-                
+
                 session.Network.DataReceived += data =>
                 {
                     _packetContainer.EnqueueIncomingPacket(session.Id, data);

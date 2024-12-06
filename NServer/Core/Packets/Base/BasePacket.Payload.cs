@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NServer.Core.Packets.Base;
+namespace NPServer.Core.Packets.Base;
 
 /// <summary>
 /// Lớp cơ sở cho các gói tin với khả năng quản lý dữ liệu payload.

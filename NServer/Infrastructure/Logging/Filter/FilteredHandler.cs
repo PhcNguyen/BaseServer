@@ -1,8 +1,8 @@
-﻿using NServer.Infrastructure.Logging.Formatter;
-using NServer.Infrastructure.Logging.Interfaces;
+﻿using NPServer.Infrastructure.Logging.Formatter;
+using NPServer.Infrastructure.Logging.Interfaces;
 using System;
 
-namespace NServer.Infrastructure.Logging.Filter;
+namespace NPServer.Infrastructure.Logging.Filter;
 
 /// <summary>
 /// Bộ lọc các thông điệp nhật ký trước khi xử lý bằng handler cụ thể.

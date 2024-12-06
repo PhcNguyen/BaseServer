@@ -1,10 +1,10 @@
-﻿using NServer.Core.Helpers;
+﻿using NPServer.Core.Helpers;
 using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Network.Listeners;
+namespace NPServer.Core.Network.Listeners;
 
 /// <summary>
 /// SocketListener là lớp quản lý việc lắng nghe kết nối TCP đến server.

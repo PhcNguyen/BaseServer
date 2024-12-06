@@ -1,11 +1,11 @@
-﻿using NServer.Core.Interfaces.Database;
-using NServer.Infrastructure.Configuration;
-using NServer.Infrastructure.Logging;
+﻿using NPServer.Database.Interfaces;
+using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Database.Postgre
+namespace NPServer.Database.Postgre
 {
     public class NpgsqlConnection : IDatabaseConnection
     {

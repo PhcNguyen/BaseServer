@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NServer.Core.Network.IO;
+namespace NPServer.Core.Network.IO;
 
 public partial class SocketReceivedEventArgs(byte[] data) : EventArgs
 {

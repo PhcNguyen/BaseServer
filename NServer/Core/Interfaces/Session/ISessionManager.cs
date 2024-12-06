@@ -1,7 +1,7 @@
-﻿using NServer.Core.Services;
+﻿using NPServer.Core.Services;
 using System.Collections.Generic;
 
-namespace NServer.Core.Interfaces.Session;
+namespace NPServer.Core.Interfaces.Session;
 
 public interface ISessionManager
 {

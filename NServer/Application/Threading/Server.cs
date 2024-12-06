@@ -1,17 +1,16 @@
-﻿using NServer.Application.Main;
-using NServer.Core.Buffers;
-using NServer.Core.Helpers;
-using NServer.Core.Network.Firewall;
-using NServer.Core.Network.Listeners;
-using NServer.Core.Services;
-using NServer.Infrastructure.Configuration;
-using NServer.Infrastructure.Logging;
+﻿using NPServer.Application.Main;
+using NPServer.Core.Helpers;
+using NPServer.Core.Network.Firewall;
+using NPServer.Core.Network.Listeners;
+using NPServer.Core.Services;
+using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Logging;
 using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Application.Threading
+namespace NPServer.Application.Threading
 {
     internal class Server
     {

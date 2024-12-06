@@ -1,6 +1,6 @@
-﻿using NServer.Infrastructure.Helper;
+﻿using NPServer.Infrastructure.Helper;
 
-namespace NServer.Application.Helper
+namespace NPServer.Application.Helper
 {
     public static class DataValidator
     {

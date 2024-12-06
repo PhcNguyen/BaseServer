@@ -1,4 +1,4 @@
-﻿namespace NServer.Core.Interfaces.Network
+﻿namespace NPServer.Core.Interfaces.Network
 {
     /// <summary>
     /// Lớp xử lý giới hạn số lượng kết nối đồng thời từ mỗi địa chỉ IP.

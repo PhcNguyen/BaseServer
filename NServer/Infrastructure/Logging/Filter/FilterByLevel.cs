@@ -1,7 +1,7 @@
-﻿using NServer.Infrastructure.Logging.Formatter;
+﻿using NPServer.Infrastructure.Logging.Formatter;
 using System;
 
-namespace NServer.Infrastructure.Logging.Filter;
+namespace NPServer.Infrastructure.Logging.Filter;
 
 /// <summary>
 /// Lớp dùng để lọc các thông điệp nhật ký dựa trên mức độ nhật ký.

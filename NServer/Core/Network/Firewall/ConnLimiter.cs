@@ -1,8 +1,8 @@
-﻿using NServer.Core.Interfaces.Network;
+﻿using NPServer.Core.Interfaces.Network;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace NServer.Core.Network.Firewall;
+namespace NPServer.Core.Network.Firewall;
 
 /// <summary>
 /// Lớp xử lý giới hạn số lượng kết nối đồng thời từ mỗi địa chỉ IP.

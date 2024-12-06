@@ -1,4 +1,4 @@
-﻿namespace NServer.Infrastructure.Logging.Filter;
+﻿namespace NPServer.Infrastructure.Logging.Filter;
 
 /// <summary>
 /// Lớp chứa các phương thức để lọc các thông điệp nhật ký dựa trên mức độ nhật ký.

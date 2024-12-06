@@ -1,9 +1,9 @@
-﻿using NServer.Core.Interfaces.Session;
+﻿using NPServer.Core.Interfaces.Session;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Session;
+namespace NPServer.Core.Session;
 
 /// <summary>
 /// Giám sát và quản lý trạng thái của các phiên làm việc.

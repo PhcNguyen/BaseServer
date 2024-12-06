@@ -1,16 +1,16 @@
-﻿using NServer.Application.Handlers;
-using NServer.Core.Session;
-using NServer.Core.Network.Firewall;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Interfaces.Network;
-using NServer.Core.Interfaces.Pooling;
-using NServer.Infrastructure.Configuration;
-using NServer.Core.Services;
-using NServer.Infrastructure.Logging;
-using NServer.Core.Pooling;
-using NServer.Application.Handlers.Packets.Queue;
+﻿using NPServer.Application.Handlers;
+using NPServer.Application.Handlers.Packets.Queue;
+using NPServer.Core.Interfaces.Network;
+using NPServer.Core.Interfaces.Pooling;
+using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Network.Firewall;
+using NPServer.Core.Pooling;
+using NPServer.Core.Services;
+using NPServer.Core.Session;
+using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Logging;
 
-namespace NServer.Application.Main
+namespace NPServer.Application.Main
 {
     /// <summary>
     /// Lớp ServiceRegistry chịu trách nhiệm đăng ký các dịch vụ trong hệ thống.
@@ -25,8 +25,8 @@ namespace NServer.Application.Main
             // Application
             Singleton.Register<PacketOutgoing>();
             Singleton.Register<PacketIncoming>();
+            Singleton.Register<PacketInserver>();
             Singleton.Register<CommandDispatcher>();
-
 
             // Core
             Singleton.Register<ISessionManager, SessionManager>();

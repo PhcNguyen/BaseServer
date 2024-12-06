@@ -1,4 +1,4 @@
-﻿namespace NServer.Core.Interfaces.Database
+﻿namespace NPServer.Database.Interfaces
 {
     public interface IDatabaseConnectionFactory
     {

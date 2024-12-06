@@ -1,9 +1,9 @@
-﻿using NServer.Infrastructure.Logging.Base;
-using NServer.Infrastructure.Logging.Formatter;
-using NServer.Infrastructure.Logging.Handlers;
+﻿using NPServer.Infrastructure.Logging.Base;
+using NPServer.Infrastructure.Logging.Formatter;
+using NPServer.Infrastructure.Logging.Handlers;
 using System;
 
-namespace NServer.Infrastructure.Logging;
+namespace NPServer.Infrastructure.Logging;
 
 /// <summary>
 /// Lớp chính cho hệ thống ghi nhật ký, cung cấp các phương thức để ghi nhật ký thông qua các handler khác nhau.

@@ -1,6 +1,6 @@
-﻿using NServer.Infrastructure.Random;
+﻿using NPServer.Infrastructure.Random;
 
-namespace NServer.Core.Services
+namespace NPServer.Core.Services
 {
     /// <summary>
     /// Đại diện cho một ID phiên duy nhất.
@@ -17,10 +17,10 @@ namespace NServer.Core.Services
         private static readonly byte[] CharToValue = CreateCharToValueMap();
         private readonly uint _value = value;
 
-       /// <summary>
-       /// ID Default
-       /// </summary>
-       public static readonly UniqueId Empty = new(0);
+        /// <summary>
+        /// ID Default
+        /// </summary>
+        public static readonly UniqueId Empty = new(0);
 
         /// <summary>
         /// Tạo bảng ánh xạ ký tự sang giá trị số để tăng tốc độ tra cứu.
@@ -58,7 +58,6 @@ namespace NServer.Core.Services
 
             return new UniqueId(uniqueValue);
         }
-
 
         /// <summary>
         /// Chuyển đổi ID thành chuỗi Base36.

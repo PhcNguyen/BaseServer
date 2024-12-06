@@ -1,15 +1,17 @@
-﻿using NServer.Core.Interfaces.Packets;
+﻿using NPServer.Core.Interfaces.Packets;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 
-namespace NServer.Core.Packets;
+namespace NPServer.Core.Packets;
 
 /// <summary>
 /// Lớp cơ sở cho các hàng đợi gói tin, cung cấp các phương thức chung để quản lý hàng đợi.
 /// </summary>
-public abstract class PacketQueueDispatcher : IDisposable
+public abstract class AbstractPacketQueue : IDisposable
 {
     private readonly ConcurrentQueue<IPacket> _queue = new();
     private bool _disposed;
@@ -55,9 +57,29 @@ public abstract class PacketQueueDispatcher : IDisposable
         {
             batch.Add(packet);
         }
-
         return batch;
     }
+
+    public async Task<List<IPacket>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken = default)
+    {
+        if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
+
+        var batch = new List<IPacket>(batchSize);
+
+        while (batch.Count < batchSize && !cancellationToken.IsCancellationRequested)
+        {
+            if (_queue.TryDequeue(out var packet))
+            {
+                batch.Add(packet);
+            }
+            else
+            {
+                await Task.Delay(10, cancellationToken);
+            }
+        }
+        return batch;
+    }
+
 
     /// <summary>
     /// Lấy gói tin đầu tiên từ hàng đợi mà không xóa nó.
@@ -111,11 +133,11 @@ public abstract class PacketQueueDispatcher : IDisposable
     /// <returns>Danh sách các gói tin phù hợp với điều kiện.</returns>
     public IEnumerable<IPacket> Filter(Func<IPacket, bool> predicate)
     {
-        return _queue.Where(predicate);
+        return _queue.AsEnumerable().Where(predicate);
     }
 
     /// <summary>
-    /// Giải phóng tài nguyên được sử dụng bởi <see cref="PacketQueueDispatcher"/>.
+    /// Giải phóng tài nguyên được sử dụng bởi <see cref="AbstractPacketQueue"/>.
     /// </summary>
     protected virtual void Dispose(bool disposing)
     {

@@ -1,4 +1,4 @@
-﻿namespace NServer.Infrastructure.Configuration;
+﻿namespace NPServer.Infrastructure.Configuration;
 
 /// <summary>
 /// Lớp cấu hình cho SQL, cung cấp các thông tin kết nối và cấu trúc bảng.

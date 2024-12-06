@@ -1,10 +1,10 @@
-﻿using NServer.Core.Interfaces.Packets;
-using NServer.Core.Packets.Base;
-using NServer.Core.Packets.Enums;
-using NServer.Core.Packets.Metadata;
+﻿using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets.Base;
+using NPServer.Core.Packets.Enums;
+using NPServer.Core.Packets.Metadata;
 using System;
 
-namespace NServer.Core.Packets;
+namespace NPServer.Core.Packets;
 
 /// <summary>
 /// Gói tin cơ bản, kế thừa từ PacketBase.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NServer.Core.Interfaces.Packets
+namespace NPServer.Core.Interfaces.Packets
 {
     public partial interface IPacket
     {

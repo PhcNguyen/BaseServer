@@ -1,8 +1,8 @@
-﻿using NServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Pooling;
 using System;
 using System.Net.Sockets;
 
-namespace NServer.Core.Network.IO;
+namespace NPServer.Core.Network.IO;
 
 /// <summary>
 /// Lớp này quản lý việc gửi dữ liệu bất đồng bộ qua socket.

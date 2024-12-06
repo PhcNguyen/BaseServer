@@ -1,17 +1,17 @@
-﻿using NServer.Core.Interfaces.Packets;
-using NServer.Core.Packets.Metadata;
+﻿using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets.Metadata;
 using System;
 
-namespace NServer.Core.Packets.Utilities;
+namespace NPServer.Core.Packets.Utilities;
 
 /// <summary>
 /// Cung cấp các tiện ích mở rộng cho việc xử lý gói tin.
 /// </summary>
 public static class PacketExtensions
 {
-    public static readonly Packet EmptyPacket = new(0, 0, 0, []);
+    public static readonly IPacket EmptyPacket = new Packet(0, 0, 0, []);
 
-    public static Packet ToResponsePacket(this short command, string message)
+    public static IPacket ToResponsePacket(this short command, string message)
     {
         var packet = new Packet();
 

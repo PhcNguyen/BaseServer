@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace NServer.Infrastructure.Helper;
+namespace NPServer.Infrastructure.Helper;
 
 public static class FileHelper
 {

@@ -1,10 +1,10 @@
-﻿using NServer.Core.Helpers;
-using NServer.Core.Interfaces.Session;
+﻿using NPServer.Core.Helpers;
+using NPServer.Core.Interfaces.Session;
 using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 
-namespace NServer.Core.Session.Network;
+namespace NPServer.Core.Session.Network;
 
 /// <summary>
 /// Quản lý kết nối socket của khách hàng và theo dõi thời gian hoạt động.
@@ -32,7 +32,8 @@ internal class SessionConnection(Socket socket, TimeSpan timeout) : ISessionConn
     /// </summary>
     public void UpdateLastActivity() => _activityTimer.Restart();
 
-    public void SetTimeout(TimeSpan timeout) { _timeout = timeout; }
+    public void SetTimeout(TimeSpan timeout)
+    { _timeout = timeout; }
 
     /// <summary>
     /// Kiểm tra xem phiên làm việc có hết thời gian chờ không.

@@ -1,7 +1,7 @@
-﻿using NServer.Core.Interfaces.Database;
+﻿using NPServer.Database.Interfaces;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Database
+namespace NPServer.Database
 {
     public partial class SqlExecutor(IDatabaseConnectionFactory connectionFactory)
     {

@@ -1,7 +1,7 @@
-﻿using NServer.Core.Services;
+﻿using NPServer.Core.Services;
 using System;
 
-namespace NServer.Core.Packets.Base;
+namespace NPServer.Core.Packets.Base;
 
 /// <summary>
 /// Lớp cơ sở cho tất cả các gói tin mạng.

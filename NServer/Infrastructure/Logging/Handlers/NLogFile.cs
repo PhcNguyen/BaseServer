@@ -1,11 +1,11 @@
-﻿using NServer.Infrastructure.Configuration;
-using NServer.Infrastructure.Logging.Formatter;
-using NServer.Infrastructure.Logging.Interfaces;
+﻿using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Logging.Formatter;
+using NPServer.Infrastructure.Logging.Interfaces;
 using System;
 using System.IO;
 using System.Threading;
 
-namespace NServer.Infrastructure.Logging.Handlers;
+namespace NPServer.Infrastructure.Logging.Handlers;
 
 public class NLogFile(INLogFormatter loggerFormatter, string directory) : INLogHandler
 {

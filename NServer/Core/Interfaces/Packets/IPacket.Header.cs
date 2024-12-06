@@ -1,6 +1,6 @@
-﻿using NServer.Core.Packets.Enums;
+﻿using NPServer.Core.Packets.Enums;
 
-namespace NServer.Core.Interfaces.Packets
+namespace NPServer.Core.Interfaces.Packets
 {
     public partial interface IPacket
     {

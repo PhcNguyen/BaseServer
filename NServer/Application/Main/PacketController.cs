@@ -1,17 +1,16 @@
-﻿using NServer.Core.Interfaces.Packets;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Packets.Utilities;
+﻿using NPServer.Application.Handlers.Packets;
+using NPServer.Application.Handlers.Packets.Queue;
+using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Interfaces.Pooling;
+using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Packets.Utilities;
+using NPServer.Core.Services;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using NServer.Core.Services;
-using NServer.Application.Handlers.Packets;
-using NServer.Application.Handlers.Packets.Queue;
-using NServer.Core.Interfaces.Pooling;
-using NServer.Core.Pooling;
 
-namespace NServer.Application.Main
+namespace NPServer.Application.Main
 {
     /// <summary>
     /// Lớp PacketContainer chịu trách nhiệm xử lý các gói tin đến và đi.
@@ -19,7 +18,7 @@ namespace NServer.Application.Main
     internal class PacketController
     {
         private readonly IPacketPool _packetPool;
-        private readonly CancellationToken _token;   
+        private readonly CancellationToken _token;
         private readonly PacketIncoming _incomingPacket;
         private readonly ParallelOptions _parallelOptions;
         private readonly PacketProcessor _packetProcessor;
@@ -31,7 +30,7 @@ namespace NServer.Application.Main
         /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
         public PacketController(CancellationToken token)
         {
-            _token = token;         
+            _token = token;
             _incomingPacket = Singleton.GetInstance<PacketIncoming>();
 
             _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
@@ -49,11 +48,12 @@ namespace NServer.Application.Main
 
         public void EnqueueIncomingPacket(UniqueId id, byte[] data)
         {
-            if (PacketValidation.ValidatePacketStructure(data)) return;
-            IPacket packet = _packetPool.RentPacket();
-            packet.SetId(id);
+            if (!PacketValidation.ValidatePacketStructure(data)) return;
 
-            packet = data.ParseFromBytes();   
+            IPacket packet = _packetPool.RentPacket();
+
+            packet.SetId(id);
+            packet.ParseFromBytes(data);
 
             _incomingPacket.Enqueue(packet);
         }

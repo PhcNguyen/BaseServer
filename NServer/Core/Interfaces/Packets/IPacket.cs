@@ -1,6 +1,7 @@
-﻿using NServer.Core.Services;
+﻿using NPServer.Core.Services;
+using System;
 
-namespace NServer.Core.Interfaces.Packets
+namespace NPServer.Core.Interfaces.Packets
 {
     public partial interface IPacket
     {
@@ -11,6 +12,8 @@ namespace NServer.Core.Interfaces.Packets
         string ToJson();
 
         byte[] ToByteArray();
+
+        void ParseFromBytes(ReadOnlySpan<byte> data);
 
         void SetId(UniqueId id);
     }

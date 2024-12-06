@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace NServer.Infrastructure.Security;
+namespace NPServer.Infrastructure.Security;
 
 /// <summary>
 /// Lớp RsaCipher cung cấp các chức năng mã hóa và giải mã sử dụng thuật toán RSA.

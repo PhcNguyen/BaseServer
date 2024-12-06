@@ -1,6 +1,6 @@
-﻿using NServer.Core.Interfaces.Packets;
+﻿using NPServer.Core.Interfaces.Packets;
 
-namespace NServer.Core.Interfaces.Pooling
+namespace NPServer.Core.Interfaces.Pooling
 {
     public interface IPacketPool
     {

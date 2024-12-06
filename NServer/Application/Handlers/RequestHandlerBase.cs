@@ -1,11 +1,11 @@
-﻿using NServer.Application.Handlers.Packets;
-using NServer.Core.Database;
-using NServer.Core.Database.Postgre;
-using NServer.Core.Interfaces.Packets;
-using NServer.Infrastructure.Logging;
+﻿using NPServer.Database.Postgre;
+using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets.Utilities;
+using NPServer.Database;
+using NPServer.Infrastructure.Logging;
 using System;
 
-namespace NServer.Application.Handlers
+namespace NPServer.Application.Handlers
 {
     internal abstract class RequestHandlerBase
     {
@@ -15,7 +15,7 @@ namespace NServer.Application.Handlers
         {
             if (ex != null)
                 NLog.Instance.Error<TClass>(ex.Message);
-            return PacketUtils.Response(Command.ERROR, message);
+            return PacketExtensions.ToResponsePacket((short)Command.ERROR, message);
         }
     }
 }

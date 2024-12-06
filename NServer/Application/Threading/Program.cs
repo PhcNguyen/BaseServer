@@ -1,6 +1,6 @@
-﻿using NServer.Application.Main;
+﻿using NPServer.Application.Main;
 
-namespace NServer.Application.Threading;
+namespace NPServer.Application.Threading;
 
 internal static class Program
 {

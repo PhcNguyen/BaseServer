@@ -1,4 +1,4 @@
-﻿namespace NServer.Core.Handlers
+﻿namespace NPServer.Core.Handlers
 {
     /// <summary>
     /// Attribute để đánh dấu các phương thức xử lý lệnh.

@@ -1,4 +1,4 @@
-﻿namespace NServer.Infrastructure.Logging;
+﻿namespace NPServer.Infrastructure.Logging;
 
 /// <summary>
 /// Defines the log level for logging messages.

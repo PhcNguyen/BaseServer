@@ -1,9 +1,9 @@
-﻿using NServer.Core.Buffers;
-using NServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Buffers;
+using NPServer.Core.Interfaces.Pooling;
 using System;
 using System.Linq;
 
-namespace NServer.Core.Pooling
+namespace NPServer.Core.Pooling
 {
     /// <summary>
     /// Quản lý các bộ đệm có nhiều kích thước khác nhau.

@@ -1,11 +1,11 @@
-﻿using NServer.Infrastructure.Logging.Formatter;
-using NServer.Infrastructure.Logging.Handlers;
-using NServer.Infrastructure.Logging.Interfaces;
+﻿using NPServer.Infrastructure.Logging.Formatter;
+using NPServer.Infrastructure.Logging.Handlers;
+using NPServer.Infrastructure.Logging.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace NServer.Infrastructure.Logging.Base;
+namespace NPServer.Infrastructure.Logging.Base;
 
 /// <summary>
 /// Lớp cơ sở cho hệ thống ghi nhật ký, cung cấp các phương thức cơ bản để ghi nhật ký.

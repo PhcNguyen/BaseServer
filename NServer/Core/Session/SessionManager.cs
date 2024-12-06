@@ -1,11 +1,11 @@
-﻿using NServer.Core.Interfaces.Network;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Services;
+﻿using NPServer.Core.Interfaces.Network;
+using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Services;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace NServer.Core.Session;
+namespace NPServer.Core.Session;
 
 /// <summary>
 /// Quản lý các phiên làm việc của khách hàng.

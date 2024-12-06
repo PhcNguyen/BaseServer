@@ -1,4 +1,4 @@
-﻿namespace NServer.Infrastructure.Configuration;
+﻿namespace NPServer.Infrastructure.Configuration;
 
 internal static class PathConfig
 {

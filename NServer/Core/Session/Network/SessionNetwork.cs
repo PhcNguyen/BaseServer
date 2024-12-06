@@ -1,11 +1,11 @@
-﻿using NServer.Core.Interfaces.Pooling;
-using NServer.Core.Interfaces.Session;
-using NServer.Core.Network.IO;
-using NServer.Infrastructure.Security;
+﻿using NPServer.Core.Interfaces.Pooling;
+using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Network.IO;
+using NPServer.Infrastructure.Security.Checksum;
 using System;
 using System.Net.Sockets;
 
-namespace NServer.Core.Session.Network;
+namespace NPServer.Core.Session.Network;
 
 /// <summary>
 /// Quản lý vận chuyển phiên làm việc, bao gồm gửi và nhận dữ liệu qua socket.
@@ -49,7 +49,7 @@ public class SessionNetwork : IDisposable, ISessionNetwork
     /// <param name="e">Dữ liệu sự kiện socket nhận.</param>
     private void OnDataReceived(object sender, SocketReceivedEventArgs e)
     {
-        bool isValid = Crc32Checksum.VerifyCrc32(e.Data, out byte[]? originalData);
+        bool isValid = Crc32x86.VerifyCrc32(e.Data, out byte[]? originalData);
 
         if (isValid && originalData != null)
         {
@@ -71,7 +71,7 @@ public class SessionNetwork : IDisposable, ISessionNetwork
     {
         try
         {
-            SocketWriter.Send(Crc32Checksum.AddCrc32(data));
+            SocketWriter.Send(Crc32x86.AddCrc32(data));
             return true;
         }
         catch (Exception ex)
@@ -89,7 +89,7 @@ public class SessionNetwork : IDisposable, ISessionNetwork
     {
         try
         {
-            SocketWriter.Send(Crc32Checksum.AddCrc32(data));
+            SocketWriter.Send(Crc32x86.AddCrc32(data));
             return true;
         }
         catch (Exception ex)

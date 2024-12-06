@@ -1,11 +1,11 @@
-﻿using NServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Pooling;
 using System;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Network.IO;
+namespace NPServer.Core.Network.IO;
 
 /// <summary>
 /// Lớp SocketReader dùng để đọc dữ liệu từ socket một cách không đồng bộ.
@@ -15,7 +15,7 @@ public partial class SocketReader : IDisposable
     private readonly Socket _socket;
     private readonly IMultiSizeBufferPool _multiSizeBuffer;
     private readonly SocketAsyncEventArgs _receiveEventArgs;
-    
+
     private byte[] _buffer;
     private bool _disposed = false;
     private CancellationTokenSource? _cts;
@@ -42,7 +42,7 @@ public partial class SocketReader : IDisposable
         _buffer = _multiSizeBuffer.RentBuffer(256);
         _receiveEventArgs = new SocketAsyncEventArgs();
         _receiveEventArgs.SetBuffer(_buffer, 0, _buffer.Length);
-        _receiveEventArgs.Completed += OnReceiveCompleted!;     
+        _receiveEventArgs.Completed += OnReceiveCompleted!;
     }
 
     /// <summary>

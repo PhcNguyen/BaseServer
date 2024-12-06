@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Concurrent;
+using System.Linq;
 
-namespace NServer.Core.Buffers;
+namespace NPServer.Core.Buffers;
 
 /// <summary>
 /// Quản lý các pool của các bộ đệm dùng chung.

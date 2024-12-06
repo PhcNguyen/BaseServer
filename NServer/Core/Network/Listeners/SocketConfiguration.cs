@@ -1,7 +1,7 @@
-﻿using NServer.Infrastructure.Configuration;
+﻿using NPServer.Infrastructure.Configuration;
 using System.Net.Sockets;
 
-namespace NServer.Core.Network.Listeners;
+namespace NPServer.Core.Network.Listeners;
 
 public static class SocketConfiguration
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NServer.Model
+namespace NPServer.Model
 {
     /// <summary>
     /// Đại diện cho tài khoản người dùng trong hệ thống.
@@ -8,7 +8,7 @@ namespace NServer.Model
     public class Account
     {
         /// <summary>
-        /// ID của tài khoản, tự động tăng.
+        /// ID của tài khoản.
         /// </summary>
         public int Id { get; set; }
 

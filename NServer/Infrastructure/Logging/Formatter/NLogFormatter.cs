@@ -1,7 +1,7 @@
-﻿using NServer.Infrastructure.Logging.Interfaces;
+﻿using NPServer.Infrastructure.Logging.Interfaces;
 using System;
 
-namespace NServer.Infrastructure.Logging.Formatter;
+namespace NPServer.Infrastructure.Logging.Formatter;
 
 public class NLogFormatter : INLogFormatter
 {

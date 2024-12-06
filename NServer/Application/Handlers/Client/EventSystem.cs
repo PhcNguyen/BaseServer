@@ -1,9 +1,11 @@
-﻿using NServer.Application.Handlers.Packets;
-using NServer.Core.Handlers;
-using NServer.Core.Interfaces.Packets;
+﻿using NPServer.Application.Handlers.Packets;
+using NPServer.Core.Handlers;
+using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets;
+using NPServer.Core.Packets.Utilities;
 using System.Threading.Tasks;
 
-namespace NServer.Application.Handlers.Client
+namespace NPServer.Application.Handlers.Client
 {
     /// <summary>
     /// Lớp xử lý các lệnh hệ thống từ phía khách hàng.
@@ -19,7 +21,7 @@ namespace NServer.Application.Handlers.Client
         /// <returns>Gói tin phản hồi với thông báo pong.</returns>
         [CommandAttribute<Command>(Command.PING)]
         public static Task<IPacket> Ping() =>
-            Task.FromResult(PacketUtils.Response(Command.PONG, "Ping received. Server is responsive."));
+            Task.FromResult(PacketExtensions.ToResponsePacket((short)Command.PONG, "Ping received. Server is responsive."));
 
         /// <summary>
         /// Phương thức xử lý lệnh pong.
@@ -27,7 +29,7 @@ namespace NServer.Application.Handlers.Client
         /// <returns>Gói tin phản hồi với thông báo ping.</returns>
         [CommandAttribute<Command>(Command.PONG)]
         public static Task<IPacket> Pong() =>
-            Task.FromResult(PacketUtils.Response(Command.PING, "Pong received. Server is responsive."));
+            Task.FromResult(PacketExtensions.ToResponsePacket((short)Command.PING, "Pong received. Server is responsive."));
 
         /// <summary>
         /// Phương thức xử lý lệnh heartbeat.
@@ -35,7 +37,7 @@ namespace NServer.Application.Handlers.Client
         /// <returns>Gói tin phản hồi với thông báo thành công và trạng thái sống của server.</returns>
         [CommandAttribute<Command>(Command.HEARTBEAT)]
         public static Task<IPacket> Heartbeat() =>
-            Task.FromResult(PacketUtils.Response(Command.SUCCESS, "Server is alive and operational."));
+            Task.FromResult(PacketExtensions.ToResponsePacket((short)Command.SUCCESS, "Server is alive and operational."));
 
         /// <summary>
         /// Phương thức xử lý lệnh close.
@@ -43,6 +45,6 @@ namespace NServer.Application.Handlers.Client
         /// <returns>Gói tin rỗng để đóng kết nối.</returns>
         [CommandAttribute<Command>(Command.CLOSE)]
         public static Task<IPacket> Close() =>
-            Task.FromResult(PacketUtils.EmptyPacket);
+            Task.FromResult(PacketExtensions.EmptyPacket);
     }
 }

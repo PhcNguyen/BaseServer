@@ -2,7 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-namespace NServer.Core.Helpers;
+namespace NPServer.Core.Helpers;
 
 /// <summary>
 /// Lớp helper cho các tác vụ liên quan đến socket.

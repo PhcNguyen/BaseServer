@@ -1,13 +1,14 @@
-﻿using NServer.Application.Handlers.Packets.Queue;
+﻿using NPServer.Application.Handlers.Packets.Queue;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Application.Handlers.Packets
+namespace NPServer.Application.Handlers.Packets
 {
     /// <summary>
     /// Lớp PacketQueue chịu trách nhiệm quản lý hàng đợi các gói tin đến và đi.
     /// </summary>
-    internal class PacketQueueManager
+    internal class PacketQueueManager : IDisposable
     {
         private readonly SemaphoreSlim _inserverSignal = new(0);
         private readonly SemaphoreSlim _incomingSignal = new(0);
@@ -39,9 +40,9 @@ namespace NServer.Application.Handlers.Packets
             IncomingPacketQueue = incomingQueue;
             OutgoingPacketQueue = outgoingQueue;
 
-            InserverPacketQueue.PacketAdded += () => _inserverSignal.Release();
-            IncomingPacketQueue.PacketAdded += () => _incomingSignal.Release();
-            OutgoingPacketQueue.PacketAdded += () => _outgoingSignal.Release();
+            InserverPacketQueue.PacketAdded += SafeRelease(_inserverSignal);
+            IncomingPacketQueue.PacketAdded += SafeRelease(_incomingSignal);
+            OutgoingPacketQueue.PacketAdded += SafeRelease(_outgoingSignal);
         }
 
         /// <summary>
@@ -68,7 +69,29 @@ namespace NServer.Application.Handlers.Packets
         /// <param name="cancellationToken">Token hủy bỏ cho tác vụ bất đồng bộ.</param>
         public async Task WaitForInserver(CancellationToken cancellationToken)
         {
-            await _outgoingSignal.WaitAsync(cancellationToken);
+            await _inserverSignal.WaitAsync(cancellationToken);
+        }
+
+        private static Action SafeRelease(SemaphoreSlim semaphore)
+        {
+            return () =>
+            {
+                try
+                {
+                    semaphore.Release();
+                }
+                catch (SemaphoreFullException)
+                {
+                    // Ignore if already released
+                }
+            };
+        }
+
+        public void Dispose()
+        {
+            _inserverSignal.Dispose();
+            _incomingSignal.Dispose();
+            _outgoingSignal.Dispose();
         }
     }
 }

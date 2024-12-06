@@ -1,6 +1,6 @@
-﻿using NServer.Infrastructure.Configuration.Internal;
+﻿using NPServer.Infrastructure.Configuration.Internal;
 
-namespace NServer.Infrastructure.Configuration;
+namespace NPServer.Infrastructure.Configuration;
 
 public static class Setting
 {
@@ -19,6 +19,7 @@ public static class Setting
 
     // Các cài đặt mạng bổ sung Socket
     public static readonly bool Blocking = NetworkConfig.Blocking;
+
     public static readonly bool KeepAlive = NetworkConfig.KeepAlive;
     public static readonly bool ReuseAddress = NetworkConfig.ReuseAddress;
 

@@ -1,13 +1,13 @@
-﻿using NServer.Application.Handlers.Packets;
-using NServer.Application.Helper;
-using NServer.Core.Database;
-using NServer.Core.Handlers;
-using NServer.Core.Interfaces.Packets;
-using NServer.Infrastructure.Security;
+﻿using NPServer.Application.Helper;
+using NPServer.Core.Database;
+using NPServer.Core.Handlers;
+using NPServer.Core.Interfaces.Packets;
+using NPServer.Database;
+using NPServer.Infrastructure.Security;
 using System;
 using System.Threading.Tasks;
 
-namespace NServer.Application.Handlers.Client
+namespace NPServer.Application.Handlers.Client
 {
     /// <summary>
     /// Lớp xử lý các yêu cầu xác thực của khách hàng.
@@ -30,25 +30,43 @@ namespace NServer.Application.Handlers.Client
             string[]? input = DataValidator.ParseInput(data, 2);
 
             if (input == null)
-                return PacketUtils.Response(Command.ERROR, "Invalid registration data format.");
+            {
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("Invalid registration data format.");
+
+                return packet;
+            }
 
             var (email, password) = (input[0].Trim(), input[1].Trim());
 
             if (!EmailValidator.IsEmailValid(email) || !PasswordValidator.IsPasswordValid(password))
-                return PacketUtils.Response(Command.ERROR, "Invalid email or weak password.");
+            {
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("Invalid email or weak password.");
+
+                return packet;
+            }
 
             try
             {
                 var hashedPassword = Pbkdf2Cyptography.GenerateHash(password);
                 bool success = await SqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, hashedPassword);
 
-                return success
-                    ? PacketUtils.Response(Command.SUCCESS, "Registration successful.")
-                    : PacketUtils.Response(Command.ERROR, "Registration failed.");
+                packet.Reset();
+                packet.SetCmd(success ? Command.SUCCESS : Command.ERROR);
+                packet.SetPayload(success ? "Registration successful." : "Registration failed.");
+
+                return packet;
             }
             catch (Exception ex) when (ex.Message.Contains("duplicate key"))
             {
-                return PacketUtils.Response(Command.ERROR, "This email is already registered.");
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("This email is already registered.");
+
+                return packet;
             }
             catch (Exception ex)
             {
@@ -69,32 +87,65 @@ namespace NServer.Application.Handlers.Client
             string[]? input = DataValidator.ParseInput(data, 2);
 
             if (input == null)
-                return PacketUtils.Response(Command.ERROR, "Invalid login data format.");
+            {
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("Invalid login data format.");
+
+                return packet;
+            }
 
             var (email, password) = (input[0].Trim(), input[1].Trim());
 
             if (!EmailValidator.IsEmailValid(email))
-                return PacketUtils.Response(Command.ERROR, "Invalid email or password.");
+            {
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("Invalid email or password.");
+
+                return packet;
+            }
 
             try
             {
                 string hashedPassword = await SqlExecutor.ExecuteScalarAsync<string>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
                 if (string.IsNullOrEmpty(hashedPassword))
-                    return PacketUtils.Response(Command.ERROR, "Invalid email or password.");
+                {
+                    packet.Reset();
+                    packet.SetCmd(Command.ERROR);
+                    packet.SetPayload("Invalid email or password.");
+
+                    return packet;
+                }
 
                 DateTime? lastLogin = await SqlExecutor.ExecuteScalarAsync<DateTime?>(SqlCommand.SELECT_LAST_LOGIN, email);
                 if (lastLogin.HasValue && (DateTime.UtcNow - lastLogin.Value).TotalSeconds < 20)
-                    return PacketUtils.Response(Command.ERROR, "Please wait 20 seconds before trying again.");
+                {
+                    packet.Reset();
+                    packet.SetCmd(Command.ERROR);
+                    packet.SetPayload("Please wait 20 seconds before trying again.");
+
+                    return packet;
+                }
 
                 if (!Pbkdf2Cyptography.ValidatePassword(hashedPassword, password))
                 {
                     await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_LAST_LOGIN, email); // Log failed attempt
-                    return PacketUtils.Response(Command.ERROR, "Invalid email or password.");
+
+                    packet.Reset();
+                    packet.SetCmd(Command.ERROR);
+                    packet.SetPayload("Invalid email or password.");
+
+                    return packet;
                 }
 
                 await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, true, email);
 
-                return PacketUtils.Response(Command.SUCCESS, "Login successful.");
+                packet.Reset();
+                packet.SetCmd(Command.SUCCESS);
+                packet.SetPayload("Login successful.");
+
+                return packet;
             }
             catch (Exception ex)
             {
@@ -114,16 +165,25 @@ namespace NServer.Application.Handlers.Client
 
             string[]? input = DataValidator.ParseInput(data, 1);
             if (input == null)
-                return PacketUtils.Response(Command.ERROR, "Invalid logout data format.");
+            {
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("Invalid logout data format.");
+
+                return packet;
+            }
 
             var email = input[0].Trim();
 
             try
             {
-                // Thực hiện các xử lý đăng xuất tại đây (ví dụ: cập nhật trạng thái người dùng)
                 await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, false, email);
 
-                return PacketUtils.EmptyPacket;
+                packet.Reset();
+                packet.SetCmd(Command.SUCCESS);
+                packet.SetPayload("Logout successful.");
+
+                return packet;
             }
             catch (Exception ex)
             {
@@ -143,26 +203,46 @@ namespace NServer.Application.Handlers.Client
 
             string[]? input = DataValidator.ParseInput(data, 3);
             if (input == null)
-                return PacketUtils.Response(Command.ERROR, "Invalid data format.");
+            {
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("Invalid data format.");
+
+                return packet;
+            }
 
             var (email, currentPassword, newPassword) = (input[0].Trim(), input[1].Trim(), input[2].Trim());
 
             if (!PasswordValidator.IsPasswordValid(newPassword))
-                return PacketUtils.Response(Command.ERROR, "New password is too weak.");
+            {
+                packet.Reset();
+                packet.SetCmd(Command.ERROR);
+                packet.SetPayload("New password is too weak.");
+
+                return packet;
+            }
 
             try
             {
                 var storedPasswordHash = await SqlExecutor.ExecuteScalarAsync<string>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
 
                 if (!Pbkdf2Cyptography.ValidatePassword(currentPassword, storedPasswordHash))
-                    return PacketUtils.Response(Command.ERROR, "Incorrect current password.");
+                {
+                    packet.Reset();
+                    packet.SetCmd(Command.ERROR);
+                    packet.SetPayload("Incorrect current password.");
+
+                    return packet;
+                }
 
                 var hashedNewPassword = Pbkdf2Cyptography.GenerateHash(newPassword);
                 bool updateSuccess = await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, hashedNewPassword);
 
-                return updateSuccess
-                    ? PacketUtils.Response(Command.SUCCESS, "Password updated successfully.")
-                    : PacketUtils.Response(Command.ERROR, "Failed to update password.");
+                packet.Reset();
+                packet.SetCmd(updateSuccess ? Command.SUCCESS : Command.ERROR);
+                packet.SetPayload(updateSuccess ? "Password updated successfully." : "Failed to update password.");
+
+                return packet;
             }
             catch (Exception ex)
             {

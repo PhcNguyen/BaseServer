@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NServer.Application.Helper
+namespace NPServer.Application.Helper
 {
     public static class EmailValidator
     {

@@ -1,4 +1,4 @@
-﻿namespace NServer.Application.Threading
+﻿namespace NPServer.Application.Threading
 {
     internal class Maintenance
     {

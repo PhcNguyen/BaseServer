@@ -1,9 +1,9 @@
-﻿using NServer.Core.Interfaces.Packets;
-using NServer.Core.Packets.Enums;
+﻿using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets.Enums;
 using System;
 using System.Collections.Generic;
 
-namespace NServer.Core.Packets.Helpers;
+namespace NPServer.Core.Packets.Helpers;
 
 /// <summary>
 /// Tiện ích xử lý cờ trạng thái và độ ưu tiên của gói tin.

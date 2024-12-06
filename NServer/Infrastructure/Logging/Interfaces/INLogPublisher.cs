@@ -1,7 +1,7 @@
-﻿using NServer.Infrastructure.Logging.Formatter;
+﻿using NPServer.Infrastructure.Logging.Formatter;
 using System;
 
-namespace NServer.Infrastructure.Logging.Interfaces;
+namespace NPServer.Infrastructure.Logging.Interfaces;
 
 public interface INLogPublisher
 {

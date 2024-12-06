@@ -1,4 +1,4 @@
-﻿namespace NServer.Infrastructure.Configuration.Internal;
+﻿namespace NPServer.Infrastructure.Configuration.Internal;
 
 /// <summary>
 /// Lớp cấu hình mạng, cung cấp các cấu hình liên quan đến kết nối mạng.

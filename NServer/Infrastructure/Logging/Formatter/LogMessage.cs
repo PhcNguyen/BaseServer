@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NServer.Infrastructure.Logging.Formatter;
+namespace NPServer.Infrastructure.Logging.Formatter;
 
 /// <summary>
 /// Lớp đại diện cho một thông điệp nhật ký.

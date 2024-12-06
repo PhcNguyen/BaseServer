@@ -1,10 +1,10 @@
-﻿using NServer.Infrastructure.Logging.Filter;
-using NServer.Infrastructure.Logging.Formatter;
-using NServer.Infrastructure.Logging.Interfaces;
+﻿using NPServer.Infrastructure.Logging.Filter;
+using NPServer.Infrastructure.Logging.Formatter;
+using NPServer.Infrastructure.Logging.Interfaces;
 using System;
 using System.Collections.Generic;
 
-namespace NServer.Infrastructure.Logging.Handlers;
+namespace NPServer.Infrastructure.Logging.Handlers;
 
 /// <summary>
 /// Quản lý các handler ghi nhật ký và lưu trữ thông điệp nhật ký nếu cần.

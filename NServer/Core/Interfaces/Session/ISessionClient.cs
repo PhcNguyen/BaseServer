@@ -1,6 +1,6 @@
-﻿using NServer.Core.Services;
+﻿using NPServer.Core.Services;
 
-namespace NServer.Core.Interfaces.Session;
+namespace NPServer.Core.Interfaces.Session;
 
 public interface ISessionClient
 {

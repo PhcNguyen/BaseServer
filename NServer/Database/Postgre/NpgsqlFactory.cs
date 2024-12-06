@@ -1,6 +1,6 @@
-﻿using NServer.Core.Interfaces.Database;
+﻿using NPServer.Database.Interfaces;
 
-namespace NServer.Core.Database.Postgre
+namespace NPServer.Database.Postgre
 {
     public class NpgsqlFactory : IDatabaseConnectionFactory
     {

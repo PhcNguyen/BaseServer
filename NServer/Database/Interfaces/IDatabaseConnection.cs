@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Interfaces.Database
+namespace NPServer.Database.Interfaces
 {
     public interface IDatabaseConnection
     {

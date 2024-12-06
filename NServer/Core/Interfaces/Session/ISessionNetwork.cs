@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NServer.Core.Interfaces.Session;
+namespace NPServer.Core.Interfaces.Session;
 
 public interface ISessionNetwork
 {

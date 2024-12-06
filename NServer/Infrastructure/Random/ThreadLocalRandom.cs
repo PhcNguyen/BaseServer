@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace NServer.Infrastructure.Random;
+namespace NPServer.Infrastructure.Random;
 
 /// <summary>
 /// Cung cấp các phương thức sinh số ngẫu nhiên trong môi trường đa luồng.

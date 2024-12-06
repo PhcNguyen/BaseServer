@@ -1,4 +1,4 @@
-﻿using NServer.Core.Interfaces.Packets;
+﻿using NPServer.Core.Interfaces.Packets;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace NServer.Core.Handlers
+namespace NPServer.Core.Handlers
 {
     internal abstract class CommandDispatcherBase<TCommand> where TCommand : notnull
     {

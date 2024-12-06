@@ -1,11 +1,11 @@
-﻿using NServer.Core.Packets;
+﻿using NPServer.Core.Packets;
 
-namespace NServer.Application.Handlers.Packets.Queue
+namespace NPServer.Application.Handlers.Packets.Queue
 {
     /// <summary>
     /// Hàng đợi gói tin server dùng để xử lý các gói tin gửi.
     /// </summary>
-    public class PacketInserver : PacketQueueDispatcher
+    public class PacketInserver : AbstractPacketQueue
     {
         public PacketInserver() : base()
         {
