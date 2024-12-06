@@ -8,6 +8,9 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		
 		<StartupObject>NServer.Application.Threading.Program</StartupObject>
+
+		<BaseOutputPath>..\OpenCoreNP\bin\</BaseOutputPath> 
+		<BaseIntermediateOutputPath>..\OpenCoreNP\obj\</BaseIntermediateOutputPath>
 	</PropertyGroup>
 
 	<!-- Cấu hình khi chạy ở chế độ Debug -->
