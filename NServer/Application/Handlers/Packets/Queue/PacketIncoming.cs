@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Packets;
+﻿using NPServer.Core.Packets.Abstract;
 
 namespace NPServer.Application.Handlers.Packets.Queue
 {

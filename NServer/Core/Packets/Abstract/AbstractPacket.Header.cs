@@ -1,10 +1,10 @@
-﻿using NPServer.Core.Packets.Enums;
+﻿using NPServer.Core.Packets.Enum;
 using NPServer.Core.Packets.Metadata;
 using System;
 
 namespace NPServer.Core.Packets.Base;
 
-public partial class BasePacket
+public partial class AbstractPacket
 {
     private const int _headerSize = PacketMetadata.HEADERSIZE;
 
@@ -53,5 +53,5 @@ public partial class BasePacket
     /// </summary>
     /// <param name="command">Đối tượng enum cần thiết lập.</param>
     public void SetCmd(object command) =>
-        Cmd = command is Enum enumCommand ? Convert.ToInt16(enumCommand) : (short)0;
+        Cmd = command is System.Enum enumCommand ? Convert.ToInt16(enumCommand) : (short)0;
 }

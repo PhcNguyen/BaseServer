@@ -2,7 +2,7 @@
 
 namespace NPServer.Infrastructure.Logging.Interfaces;
 
-public interface INLogFormatter
+public interface INPLogFormatter
 {
-    string ApplyFormat(LogMessage logMessage);
+    string ApplyFormat(NPLogMessage logMessage);
 }

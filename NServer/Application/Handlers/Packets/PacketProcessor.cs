@@ -49,7 +49,7 @@ namespace NPServer.Application.Handlers.Packets
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error<PacketProcessor>($"[HandleIncomingPacket] Error processing packet: {ex}");
+                NPLog.Instance.Error<PacketProcessor>($"[HandleIncomingPacket] Error processing packet: {ex}");
             }
         }
 
@@ -74,7 +74,7 @@ namespace NPServer.Application.Handlers.Packets
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error<PacketProcessor>($"[HandleOutgoingPacket] Error sending packet: {ex}");
+                NPLog.Instance.Error<PacketProcessor>($"[HandleOutgoingPacket] Error sending packet: {ex}");
             }
         }
 
@@ -102,7 +102,7 @@ namespace NPServer.Application.Handlers.Packets
                 }
                 catch (Exception ex) when (attempt < maxRetries - 1)
                 {
-                    NLog.Instance.Warning<PacketProcessor>($"[RetryAsync] Attempt {attempt + 1} failed: {ex.Message}");
+                    NPLog.Instance.Warning<PacketProcessor>($"[RetryAsync] Attempt {attempt + 1} failed: {ex.Message}");
                 }
 
                 await Task.Delay(delayMs).ConfigureAwait(false);

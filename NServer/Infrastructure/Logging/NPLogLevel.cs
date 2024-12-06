@@ -3,7 +3,7 @@
 /// <summary>
 /// Defines the log level for logging messages.
 /// </summary>
-public enum NLogLevel
+public enum NPLogLevel
 {
     NONE,
     INFO,

@@ -2,7 +2,7 @@
 
 namespace NPServer.Infrastructure.Logging.Interfaces;
 
-public interface INLogHandler
+public interface INPLogHandler
 {
-    void Publish(LogMessage logMessage);
+    void Publish(NPLogMessage logMessage);
 }

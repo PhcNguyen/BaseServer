@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Packets.Enums;
+﻿using NPServer.Core.Packets.Enum;
 using NPServer.Core.Packets.Metadata;
 using System;
 using System.Buffers;
@@ -6,7 +6,7 @@ using System.Text;
 
 namespace NPServer.Core.Packets.Base;
 
-public partial class BasePacket
+public partial class AbstractPacket
 {
     /// <summary>
     /// Chuyển đổi gói tin thành mảng byte để gửi qua mạng.

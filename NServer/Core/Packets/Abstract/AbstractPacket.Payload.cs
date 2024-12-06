@@ -8,7 +8,7 @@ namespace NPServer.Core.Packets.Base;
 /// <summary>
 /// Lớp cơ sở cho các gói tin với khả năng quản lý dữ liệu payload.
 /// </summary>
-public partial class BasePacket
+public partial class AbstractPacket
 {
     private Memory<byte> _payload;
 

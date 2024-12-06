@@ -7,21 +7,21 @@ using System.Threading;
 
 namespace NPServer.Infrastructure.Logging.Handlers;
 
-public class NLogFile(INLogFormatter loggerFormatter, string directory) : INLogHandler
+public class NPLogFile(INPLogFormatter loggerFormatter, string directory) : INPLogHandler
 {
     private readonly string _directory = directory ?? throw new ArgumentNullException(nameof(directory));
-    private readonly INLogFormatter _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
+    private readonly INPLogFormatter _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
     private static readonly Lock _lock = new(); // Đối tượng khóa dùng để đồng bộ hóa việc ghi log
 
-    public NLogFile() : this(new NLogFormatter(), LoggingCongfig.LogDirectory)
+    public NPLogFile() : this(new NPLogFormatter(), LoggingCongfig.LogDirectory)
     {
     }
 
-    public NLogFile(string directory) : this(new NLogFormatter(), directory)
+    public NPLogFile(string directory) : this(new NPLogFormatter(), directory)
     {
     }
 
-    public void Publish(LogMessage logMessage)
+    public void Publish(NPLogMessage logMessage)
     {
         // Kiểm tra và tạo thư mục nếu chưa có
         if (!string.IsNullOrEmpty(_directory))
@@ -41,6 +41,6 @@ public class NLogFile(INLogFormatter loggerFormatter, string directory) : INLogH
         }
     }
 
-    private static string CreateFileName(NLogLevel level) =>
+    private static string CreateFileName(NPLogLevel level) =>
        string.Format("{0}.log", level.ToString());
 }

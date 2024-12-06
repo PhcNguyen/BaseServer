@@ -3,6 +3,7 @@ using NPServer.Core.Database;
 using NPServer.Core.Handlers;
 using NPServer.Core.Interfaces.Packets;
 using NPServer.Database;
+using NPServer.Database.Data;
 using NPServer.Infrastructure.Security;
 using System;
 using System.Threading.Tasks;

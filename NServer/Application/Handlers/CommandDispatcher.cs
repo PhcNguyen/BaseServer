@@ -34,7 +34,7 @@ namespace NPServer.Application.Handlers
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error<CommandDispatcher>($"Error executing command: {command}. Exception: {ex.Message}");
+                NPLog.Instance.Error<CommandDispatcher>($"Error executing command: {command}. Exception: {ex.Message}");
                 return PacketExtensions.ToResponsePacket((short)Command.ERROR, $"Error executing command: {command}");
             }
         }

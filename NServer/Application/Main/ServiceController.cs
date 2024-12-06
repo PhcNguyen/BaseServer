@@ -46,7 +46,7 @@ namespace NPServer.Application.Main
         public static void Initialization()
         {
             Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>().AllocateBuffers();
-            NLog.Instance.DefaultInitialization();
+            NPLog.Instance.DefaultInitialization();
         }
     }
 }

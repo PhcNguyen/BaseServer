@@ -5,27 +5,27 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace NPServer.Infrastructure.Logging.Base;
+namespace NPServer.Infrastructure.Logging.Abstract;
 
 /// <summary>
 /// Lớp cơ sở cho hệ thống ghi nhật ký, cung cấp các phương thức cơ bản để ghi nhật ký.
 /// </summary>
-public abstract class NLogBase
+public abstract class NPLogBase
 {
-    private readonly NLogPublisher _logPublisher = new();
+    private readonly NPLogPublisher _logPublisher = new();
     protected bool _isTurned = true;
 
     /// <summary>
     /// Mức độ ghi nhật ký mặc định.
     /// </summary>
-    public NLogLevel DefaultLevel { get; set; } = NLogLevel.INFO;
+    public NPLogLevel DefaultLevel { get; set; } = NPLogLevel.INFO;
 
     /// <summary>
     /// Danh sách các thông điệp nhật ký.
     /// </summary>
-    public IEnumerable<LogMessage> Messages => _logPublisher.Messages;
+    public IEnumerable<NPLogMessage> Messages => _logPublisher.Messages;
 
-    public INLogPublisher LoggerHandlerManager => _logPublisher;
+    public INPLogPublisher LoggerHandlerManager => _logPublisher;
 
     /// <summary>
     /// Thiết lập hoặc lấy trạng thái lưu trữ thông điệp nhật ký.
@@ -49,10 +49,10 @@ public abstract class NLogBase
     /// <summary>
     /// Ghi một thông điệp với mức độ chỉ định.
     /// </summary>
-    protected void Log(NLogLevel level, string message, string callingClass, string callingMethod)
+    protected void Log(NPLogLevel level, string message, string callingClass, string callingMethod)
     {
         if (!_isTurned) return;
-        var logMessage = new LogMessage(level, message, DateTime.Now, callingClass, callingMethod);
+        var logMessage = new NPLogMessage(level, message, DateTime.Now, callingClass, callingMethod);
 
         _logPublisher.Publish(logMessage);
     }

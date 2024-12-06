@@ -1,6 +1,6 @@
 ﻿using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Packets.Base;
-using NPServer.Core.Packets.Enums;
+using NPServer.Core.Packets.Enum;
 using NPServer.Core.Packets.Metadata;
 using System;
 
@@ -9,7 +9,7 @@ namespace NPServer.Core.Packets;
 /// <summary>
 /// Gói tin cơ bản, kế thừa từ PacketBase.
 /// </summary>
-public partial class Packet : BasePacket, IPacket
+public partial class Packet : AbstractPacket, IPacket
 {
     /// <summary>
     /// Constructor để tạo Packet với Command và Payload.
@@ -20,9 +20,9 @@ public partial class Packet : BasePacket, IPacket
                 ? (PacketType)type
                 : PacketType.NONE;
 
-        Flags = flags is not null && Enum.IsDefined((Enums.PacketFlags)flags)
-                ? (Enums.PacketFlags)flags
-                : Enums.PacketFlags.NONE;
+        Flags = flags is not null && Enum.IsDefined((Enum.PacketFlags)flags)
+                ? (PacketFlags)flags
+                : PacketFlags.NONE;
 
         Cmd = command ?? 0;
 

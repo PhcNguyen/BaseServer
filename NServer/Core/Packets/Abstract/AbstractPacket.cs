@@ -6,7 +6,7 @@ namespace NPServer.Core.Packets.Base;
 /// <summary>
 /// Lớp cơ sở cho tất cả các gói tin mạng.
 /// </summary>
-public abstract partial class BasePacket
+public abstract partial class AbstractPacket
 {
     /// <summary>
     /// Id gói tin.
@@ -29,7 +29,7 @@ public abstract partial class BasePacket
     public void Reset()
     {
         Id = UniqueId.Empty;
-        Flags = Enums.PacketFlags.NONE;
+        Flags = Enum.PacketFlags.NONE;
         Cmd = 0;
         Payload = Memory<byte>.Empty;
     }

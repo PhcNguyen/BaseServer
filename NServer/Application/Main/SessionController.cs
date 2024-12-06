@@ -44,8 +44,8 @@ namespace NPServer.Application.Main
         /// </summary>
         private void Initialization()
         {
-            _sessionMonitor.OnInfo += (message) => NLog.Instance.Info<SessionMonitor>(message);
-            _sessionMonitor.OnError += (message, exception) => NLog.Instance.Error<SessionMonitor>(message, exception);
+            _sessionMonitor.OnInfo += (message) => NPLog.Instance.Info<SessionMonitor>(message);
+            _sessionMonitor.OnError += (message, exception) => NPLog.Instance.Error<SessionMonitor>(message, exception);
 
             Task monitorSessionsTask = _sessionMonitor.MonitorSessionsAsync();
             Task processIncomingPacketsTask = _packetContainer.ProcessIncomingPackets();
@@ -59,11 +59,11 @@ namespace NPServer.Application.Main
                 }
                 catch (OperationCanceledException)
                 {
-                    NLog.Instance.Info<SessionController>("Operation was canceled.");
+                    NPLog.Instance.Info<SessionController>("Operation was canceled.");
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error<SessionController>($"Error during initialization: {ex.Message}");
+                    NPLog.Instance.Error<SessionController>($"Error during initialization: {ex.Message}");
                 }
             }, _canceltoken);
         }
@@ -83,9 +83,9 @@ namespace NPServer.Application.Main
 
             if (_sessionManager.AddSession(session))
             {
-                session.OnInfo += (message) => NLog.Instance.Info<SessionClient>(message);
-                session.OnWarning += (message) => NLog.Instance.Warning<SessionClient>(message);
-                session.OnError += (message, exception) => NLog.Instance.Error<SessionClient>(message, exception);
+                session.OnInfo += (message) => NPLog.Instance.Info<SessionClient>(message);
+                session.OnWarning += (message) => NPLog.Instance.Warning<SessionClient>(message);
+                session.OnError += (message, exception) => NPLog.Instance.Error<SessionClient>(message, exception);
 
                 session.Connect();
 
@@ -126,11 +126,11 @@ namespace NPServer.Application.Main
                 }
                 catch (Exception ex)
                 {
-                    NLog.Instance.Error<SessionController>($"Error occurred while disconnecting clients: {ex.Message}");
+                    NPLog.Instance.Error<SessionController>($"Error occurred while disconnecting clients: {ex.Message}");
                 }
             }
 
-            NLog.Instance.Info<SessionController>("All connections closed successfully.");
+            NPLog.Instance.Info<SessionController>("All connections closed successfully.");
         }
     }
 }

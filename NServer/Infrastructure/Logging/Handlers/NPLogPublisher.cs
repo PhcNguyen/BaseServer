@@ -9,15 +9,15 @@ namespace NPServer.Infrastructure.Logging.Handlers;
 /// <summary>
 /// Quản lý các handler ghi nhật ký và lưu trữ thông điệp nhật ký nếu cần.
 /// </summary>
-internal class NLogPublisher : INLogPublisher
+internal class NPLogPublisher : INPLogPublisher
 {
-    private readonly IList<INLogHandler> _loggerHandlers;
-    private readonly IList<LogMessage> _messages;
+    private readonly IList<INPLogHandler> _loggerHandlers;
+    private readonly IList<NPLogMessage> _messages;
 
     /// <summary>
     /// Lấy danh sách các thông điệp nhật ký đã lưu trữ.
     /// </summary>
-    public IEnumerable<LogMessage> Messages => _messages;
+    public IEnumerable<NPLogMessage> Messages => _messages;
 
     /// <summary>
     /// Thiết lập hoặc lấy trạng thái lưu trữ thông điệp nhật ký.
@@ -25,9 +25,9 @@ internal class NLogPublisher : INLogPublisher
     public bool StoreLogMessages { get; set; }
 
     /// <summary>
-    /// Khởi tạo một <see cref="NLogPublisher"/> mới.
+    /// Khởi tạo một <see cref="NPLogPublisher"/> mới.
     /// </summary>
-    public NLogPublisher()
+    public NPLogPublisher()
     {
         _loggerHandlers = [];
         _messages = [];
@@ -35,10 +35,10 @@ internal class NLogPublisher : INLogPublisher
     }
 
     /// <summary>
-    /// Khởi tạo một <see cref="NLogPublisher"/> mới với lựa chọn lưu trữ thông điệp nhật ký.
+    /// Khởi tạo một <see cref="NPLogPublisher"/> mới với lựa chọn lưu trữ thông điệp nhật ký.
     /// </summary>
     /// <param name="storeLogMessages">True nếu cần lưu trữ thông điệp nhật ký, ngược lại False.</param>
-    public NLogPublisher(bool storeLogMessages)
+    public NPLogPublisher(bool storeLogMessages)
     {
         _loggerHandlers = [];
         _messages = [];
@@ -49,7 +49,7 @@ internal class NLogPublisher : INLogPublisher
     /// Công khai một thông điệp nhật ký.
     /// </summary>
     /// <param name="logMessage">Thông điệp nhật ký cần công khai.</param>
-    public void Publish(LogMessage logMessage)
+    public void Publish(NPLogMessage logMessage)
     {
         if (StoreLogMessages) _messages.Add(logMessage);
         foreach (var loggerHandler in _loggerHandlers) loggerHandler.Publish(logMessage);
@@ -59,8 +59,8 @@ internal class NLogPublisher : INLogPublisher
     /// Thêm một handler ghi nhật ký.
     /// </summary>
     /// <param name="loggerHandler">Handler ghi nhật ký cần thêm.</param>
-    /// <returns>Instance hiện tại của <see cref="NLogPublisher"/>.</returns>
-    public INLogPublisher AddHandler(INLogHandler loggerHandler)
+    /// <returns>Instance hiện tại của <see cref="NPLogPublisher"/>.</returns>
+    public INPLogPublisher AddHandler(INPLogHandler loggerHandler)
     {
         if (loggerHandler != null) _loggerHandlers.Add(loggerHandler);
         return this;
@@ -71,8 +71,8 @@ internal class NLogPublisher : INLogPublisher
     /// </summary>
     /// <param name="loggerHandler">Handler ghi nhật ký cần thêm.</param>
     /// <param name="filter">Bộ lọc để xác định xem thông điệp nhật ký có nên được xử lý hay không.</param>
-    /// <returns>Instance hiện tại của <see cref="NLogPublisher"/>.</returns>
-    public INLogPublisher AddHandler(INLogHandler loggerHandler, Predicate<LogMessage> filter)
+    /// <returns>Instance hiện tại của <see cref="NPLogPublisher"/>.</returns>
+    public INPLogPublisher AddHandler(INPLogHandler loggerHandler, Predicate<NPLogMessage> filter)
     {
         if (filter == null || loggerHandler == null) return this;
 
@@ -88,7 +88,7 @@ internal class NLogPublisher : INLogPublisher
     /// </summary>
     /// <param name="loggerHandler">Handler ghi nhật ký cần xóa.</param>
     /// <returns>True nếu xóa thành công, ngược lại False.</returns>
-    public bool RemoveHandler(INLogHandler loggerHandler)
+    public bool RemoveHandler(INPLogHandler loggerHandler)
     {
         return _loggerHandlers.Remove(loggerHandler);
     }

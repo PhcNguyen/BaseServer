@@ -24,7 +24,7 @@ namespace NPServer.Database.Postgre
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error("Failed to open connection to the PostgreSQL database.", ex);
+                NPLog.Instance.Error("Failed to open connection to the PostgreSQL database.", ex);
             }
         }
 
@@ -38,7 +38,7 @@ namespace NPServer.Database.Postgre
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error executing non-query: {query}", ex);
+                NPLog.Instance.Error($"Error executing non-query: {query}", ex);
                 throw;
             }
         }
@@ -64,7 +64,7 @@ namespace NPServer.Database.Postgre
             }
             catch (Exception ex)
             {
-                NLog.Instance.Error($"Error executing scalar query: {query}", ex);
+                NPLog.Instance.Error($"Error executing scalar query: {query}", ex);
                 throw;
             }
         }

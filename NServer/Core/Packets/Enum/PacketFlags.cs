@@ -1,4 +1,4 @@
-﻿namespace NPServer.Core.Packets.Enums;
+﻿namespace NPServer.Core.Packets.Enum;
 
 [System.Flags]
 public enum PacketFlags : byte

@@ -11,7 +11,7 @@ public class FilterByLevel
     /// <summary>
     /// Mức độ nhật ký được lọc.
     /// </summary>
-    public NLogLevel FilteredLevel { get; set; }
+    public NPLogLevel FilteredLevel { get; set; }
 
     /// <summary>
     /// Cờ để chỉ ra rằng mức độ nhật ký phải chính xác bằng mức độ được lọc.
@@ -27,7 +27,7 @@ public class FilterByLevel
     /// Khởi tạo một <see cref="FilterByLevel"/> mới với mức độ nhật ký chỉ định.
     /// </summary>
     /// <param name="level">Mức độ nhật ký cần lọc.</param>
-    public FilterByLevel(NLogLevel level)
+    public FilterByLevel(NPLogLevel level)
     {
         FilteredLevel = level;
         ExactlyLevel = true;
@@ -46,7 +46,7 @@ public class FilterByLevel
     /// <summary>
     /// Bộ lọc để xác định xem thông điệp nhật ký có nên được giữ lại hay không.
     /// </summary>
-    public Predicate<LogMessage> Filter => logMessage =>
+    public Predicate<NPLogMessage> Filter => logMessage =>
     {
         if (ExactlyLevel)
             return FilterPredicates.ByLevelExactly(logMessage.Level, FilteredLevel);
