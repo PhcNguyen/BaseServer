@@ -28,10 +28,10 @@ public partial class AbstractPacket
     public void SetType(PacketType type) => Type = type;
 
     /// <summary>
-    /// Phương thức để thêm cờ trạng thái
+    /// Phương thức để thêm cờ trạng thái.
     /// </summary>
-    public void AddFlag(PacketFlags flag) => Flags |= flag;
-
+    public void AddFlag(PacketFlags flag) { if (!HasFlag(flag)) Flags |= flag; }
+    
     /// <summary>
     /// Phương thức để loại bỏ cờ trạng thái
     /// </summary>
@@ -40,7 +40,7 @@ public partial class AbstractPacket
     /// <summary>
     /// Kiểm tra xem flag có tồn tại hay không.
     /// </summary>
-    public bool HasFlag(PacketFlags flag) => Flags.HasFlag(flag);
+    public bool HasFlag(PacketFlags flag) => (Flags & flag) == flag;
 
     /// <summary>
     /// Set Command mới cho gói tin.
@@ -51,6 +51,17 @@ public partial class AbstractPacket
     /// Thiết lập giá trị lệnh từ một đối tượng enum bất kỳ.
     /// </summary>
     /// <param name="command">Đối tượng enum cần thiết lập.</param>
-    public void SetCmd(object command) =>
-        Cmd = command is System.Enum enumCommand ? Convert.ToInt16(enumCommand) : (short)0;
+    public void SetCmd(object command)
+    {
+        if (command is Enum enumCommand)
+        {
+            // Chuyển từ enum sang giá trị số (short)
+            Cmd = Convert.ToInt16(enumCommand);
+        }
+        else
+        {
+            // Xử lý nếu không phải là enum hợp lệ
+            throw new ArgumentException("Command must be an enum type.", nameof(command));
+        }
+    }
 }

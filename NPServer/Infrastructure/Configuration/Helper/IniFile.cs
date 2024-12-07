@@ -3,7 +3,7 @@ using System.IO;
 using System.Globalization;
 using System.Collections.Generic;
 
-namespace NPServer.Infrastructure.Configuration.Base;
+namespace NPServer.Infrastructure.Configuration.Utilties;
 
 /// <summary>
 /// Một lớp bao bọc để đọc và ghi các tệp ini.

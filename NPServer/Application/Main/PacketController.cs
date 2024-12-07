@@ -66,7 +66,8 @@ namespace NPServer.Application.Main
             while (!_token.IsCancellationRequested)
             {
                 await _packetQueueManager.WaitForIncoming(_token);
-                List<IPacket> packetsBatch = _packetQueueManager.IncomingPacketQueue.DequeueBatch(50);
+                List<IPacket> packetsBatch = 
+                    (List<IPacket>)_packetQueueManager.IncomingPacketQueue.DequeueBatch(50);
 
                 await HandleIncomingPacketBatch(packetsBatch);
             }
@@ -80,7 +81,8 @@ namespace NPServer.Application.Main
             while (!_token.IsCancellationRequested)
             {
                 await _packetQueueManager.WaitForOutgoing(_token);
-                List<IPacket> packetsBatch = _packetQueueManager.OutgoingPacketQueue.DequeueBatch(50);
+                List<IPacket> packetsBatch = 
+                    (List<IPacket>)_packetQueueManager.OutgoingPacketQueue.DequeueBatch(50);
 
                 await HandleOutgoingPacketBatch(packetsBatch);
             }

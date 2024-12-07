@@ -1,23 +1,23 @@
 ﻿using NPServer.Application.Main;
-using System;
+using NPServer.Core.Helpers;
 
 namespace NPServer.Application.Threading;
 
 internal static class Program
 {
-    private static void Main(string[] args)
+    private static void Main()
     {
+        System.Console.Title = $"NPServer ({ServerApp.VersionInfo})";
+
         ServiceController.RegisterSingleton();
         ServiceController.Initialization();
 
-        // Tạo instance của ServerEngine
-        Server serverEngine = new();
+        ServerApp serverApp = new();
 
-        // Bắt đầu server
-        serverEngine.StartServer();
+        serverApp.Run();
 
-        Console.ReadKey();
+        System.Console.ReadKey();
 
-        serverEngine.StopServer();
+        serverApp.Shutdown();
     }
 }

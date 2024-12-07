@@ -40,6 +40,6 @@ public class NPLogFile(INPLogFormatter loggerFormatter, string directory) : INPL
         }
     }
 
-    private static string CreateFileName(NPLogLevel level) =>
+    private static string CreateFileName(NPLog.Level level) =>
        string.Format("{0}.log", level.ToString());
 }

@@ -13,7 +13,7 @@ namespace NPServer.Infrastructure.Logging.Formatter;
 /// <remarks>
 /// Khởi tạo một <see cref="NPLogMessage"/> mới.
 /// </remarks>
-public class NPLogMessage(NPLogLevel level, string text, DateTime? dateTime = null, string? callingClass = null, string? callingMethod = null)
+public class NPLogMessage(NPLog.Level level, string text, DateTime? dateTime = null, string? callingClass = null, string? callingMethod = null)
 {
     /// <summary>
     /// Thời gian của thông điệp nhật ký.
@@ -23,7 +23,7 @@ public class NPLogMessage(NPLogLevel level, string text, DateTime? dateTime = nu
     /// <summary>
     /// Mức độ của thông điệp nhật ký.
     /// </summary>
-    public NPLogLevel Level { get; } = level;
+    public NPLog.Level Level { get; } = level;
 
     /// <summary>
     /// Nội dung của thông điệp nhật ký.

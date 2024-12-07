@@ -1,4 +1,5 @@
-﻿using NPServer.Application.Handlers.Packets.Queue;
+﻿using NPServer.Application.Handlers;
+using NPServer.Application.Handlers.Packets.Queue;
 using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
@@ -38,7 +39,7 @@ namespace NPServer.Application.Handlers.Packets
 
                 if (!session.Authenticator && IsLoginRequired((Command)packet.Cmd))
                 {
-                    outgoingQueue.Enqueue(PacketExtensions.ToResponsePacket((short)Command.ERROR, "You must log in first."));
+                    outgoingQueue.Enqueue(((short)Command.ERROR).ToResponsePacket("You must log in first."));
                     return;
                 }
 

@@ -1,7 +1,6 @@
 ﻿using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Packets.Base;
 using NPServer.Core.Packets.Metadata;
-using System;
 
 namespace NPServer.Core.Packets;
 
@@ -15,11 +14,11 @@ public partial class Packet : AbstractPacket, IPacket
     /// </summary>
     public Packet(byte? type = null, byte? flags = null, short? command = null, byte[]? payload = null)
     {
-        Type = type is not null && Enum.IsDefined((PacketType)type)
+        Type = type is not null && System.Enum.IsDefined((PacketType)type)
                 ? (PacketType)type
                 : PacketType.NONE;
 
-        Flags = flags is not null && Enum.IsDefined((PacketFlags)flags)
+        Flags = flags is not null && System.Enum.IsDefined((PacketFlags)flags)
                 ? (PacketFlags)flags
                 : PacketFlags.NONE;
 
@@ -27,9 +26,9 @@ public partial class Packet : AbstractPacket, IPacket
 
         if (payload != null && payload.Length + PacketMetadata.HEADERSIZE > int.MaxValue)
         {
-            throw new ArgumentOutOfRangeException(nameof(payload), "The payload is too large.");
+            throw new System.ArgumentOutOfRangeException(nameof(payload), "The payload is too large.");
         }
 
-        Payload = payload?.Length > 0 ? new Memory<byte>(payload) : Memory<byte>.Empty;
+        Payload = payload?.Length > 0 ? new System.Memory<byte>(payload) : System.Memory<byte>.Empty;
     }
 }

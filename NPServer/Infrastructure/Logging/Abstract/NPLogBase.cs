@@ -18,7 +18,7 @@ public abstract class NPLogBase
     /// <summary>
     /// Mức độ ghi nhật ký mặc định.
     /// </summary>
-    public NPLogLevel DefaultLevel { get; set; } = NPLogLevel.INFO;
+    public NPLog.Level DefaultLevel { get; set; } = NPLog.Level.INFO;
 
     /// <summary>
     /// Danh sách các thông điệp nhật ký.
@@ -49,7 +49,7 @@ public abstract class NPLogBase
     /// <summary>
     /// Ghi một thông điệp với mức độ chỉ định.
     /// </summary>
-    protected void Log(NPLogLevel level, string message, string callingClass, string callingMethod)
+    protected void LogInternal(NPLog.Level level, string message, string? callingClass, string? callingMethod)
     {
         if (!_isTurned) return;
         var logMessage = new NPLogMessage(level, message, DateTime.Now, callingClass, callingMethod);

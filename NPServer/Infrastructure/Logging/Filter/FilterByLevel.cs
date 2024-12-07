@@ -11,7 +11,7 @@ public class FilterByLevel
     /// <summary>
     /// Mức độ nhật ký được lọc.
     /// </summary>
-    public NPLogLevel FilteredLevel { get; set; }
+    public NPLog.Level FilteredLevel { get; set; }
 
     /// <summary>
     /// Cờ để chỉ ra rằng mức độ nhật ký phải chính xác bằng mức độ được lọc.
@@ -27,7 +27,7 @@ public class FilterByLevel
     /// Khởi tạo một <see cref="FilterByLevel"/> mới với mức độ nhật ký chỉ định.
     /// </summary>
     /// <param name="level">Mức độ nhật ký cần lọc.</param>
-    public FilterByLevel(NPLogLevel level)
+    public FilterByLevel(NPLog.Level level)
     {
         FilteredLevel = level;
         ExactlyLevel = true;

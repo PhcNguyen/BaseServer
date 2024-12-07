@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using NPServer.Infrastructure.Configuration.Base;
-using NPServer.Infrastructure.Configuration.Default;
 using NPServer.Infrastructure.Configuration.Abstract;
+using NPServer.Infrastructure.Configuration.Utilties;
 
 namespace NPServer.Infrastructure.Configuration;
 
@@ -12,7 +11,7 @@ namespace NPServer.Infrastructure.Configuration;
 /// </summary>
 public class ConfigManager
 {
-    private readonly Dictionary<Type, ConfigContainer> _configContainerDict = [];
+    private readonly Dictionary<Type, AbstractConfigContainer> _configContainerDict = [];
     private readonly IniFile _iniFile;
 
     /// <summary>
@@ -34,9 +33,9 @@ public class ConfigManager
     /// </summary>
     /// <typeparam name="T">Kiểu của container cấu hình.</typeparam>
     /// <returns>Instance của kiểu <typeparamref name="T"/>.</returns>
-    public T GetConfig<T>() where T : ConfigContainer, new()
+    public T GetConfig<T>() where T : AbstractConfigContainer, new()
     {
-        if (_configContainerDict.TryGetValue(typeof(T), out ConfigContainer? container) == false)
+        if (_configContainerDict.TryGetValue(typeof(T), out AbstractConfigContainer? container) == false)
         {
             container = new T();
             container.Initialize(_iniFile);

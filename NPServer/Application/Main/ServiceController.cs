@@ -1,15 +1,15 @@
-﻿using NPServer.Application.Handlers;
-using NPServer.Application.Handlers.Packets.Queue;
-using NPServer.Core.Interfaces.Network;
+﻿using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.Firewall;
 using NPServer.Core.Pooling;
 using NPServer.Core.Session;
+using NPServer.Core.Config;
 using NPServer.Infrastructure.Configuration;
 using NPServer.Infrastructure.Logging;
-using NPServer.Infrastructure.Configuration.Default;
 using NPServer.Infrastructure.Services;
+using NPServer.Application.Handlers;
+using NPServer.Application.Handlers.Packets.Queue;
 
 namespace NPServer.Application.Main
 {
@@ -18,6 +18,9 @@ namespace NPServer.Application.Main
     /// </summary>
     internal static class ServiceController
     {
+        private static readonly NetworkConfig _networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
+        private static readonly BufferConfig _bufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
+
         public static void Initialization()
         {
             Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>().AllocateBuffers();
@@ -29,11 +32,6 @@ namespace NPServer.Application.Main
         /// </summary>
         public static void RegisterSingleton()
         {
-            // Config
-            NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
-            BufferConfig bufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
-            SqlConfig sqlConfig = ConfigManager.Instance.GetConfig<SqlConfig>();
-
             // Application
             Singleton.Register<PacketOutgoing>();
             Singleton.Register<PacketIncoming>();
@@ -41,7 +39,7 @@ namespace NPServer.Application.Main
             Singleton.Register<CommandDispatcher>();
 
             Singleton.Register<RequestLimiter>(() =>
-            new RequestLimiter(networkConfig.RateLimit, networkConfig.ConnectionLockoutDuration));
+            new RequestLimiter(_networkConfig.RateLimit, _networkConfig.ConnectionLockoutDuration));
 
             // Core
             Singleton.Register<ISessionManager, SessionManager>();
@@ -49,13 +47,13 @@ namespace NPServer.Application.Main
             Singleton.Register<IPacketPool, PacketPool>(() => new PacketPool(10));
 
             Singleton.Register<IConnLimiter, ConnLimiter>(() =>
-            new ConnLimiter(networkConfig.MaxConnections));
+            new ConnLimiter(_networkConfig.MaxConnections));
 
             Singleton.Register<IMultiSizeBufferPool, MultiSizeBufferPool>(() =>
-            new MultiSizeBufferPool(bufferConfig.BufferAllocations, bufferConfig.TotalBuffers));
+            new MultiSizeBufferPool(_bufferConfig.BufferAllocations, _bufferConfig.TotalBuffers));
 
             Singleton.Register<IRequestLimiter, RequestLimiter>(() =>
-            new RequestLimiter(networkConfig.RateLimit, networkConfig.ConnectionLockoutDuration));
+            new RequestLimiter(_networkConfig.RateLimit, _networkConfig.ConnectionLockoutDuration));
         }
     }
 }

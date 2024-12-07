@@ -1,6 +1,6 @@
-﻿using NPServer.Infrastructure.Configuration;
+﻿using NPServer.Core.Config;
+using NPServer.Infrastructure.Configuration;
 using System.Net.Sockets;
-using NPServer.Infrastructure.Configuration.Default;
 
 namespace NPServer.Core.Network.Listeners;
 

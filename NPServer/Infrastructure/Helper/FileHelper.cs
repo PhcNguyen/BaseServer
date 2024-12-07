@@ -1,4 +1,4 @@
-﻿using NPServer.Infrastructure.Configuration.Default;
+﻿using NPServer.Infrastructure.Configuration;
 using System.IO;
 using System.Text.Json;
 

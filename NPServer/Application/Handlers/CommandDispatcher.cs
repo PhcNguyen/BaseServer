@@ -23,7 +23,7 @@ namespace NPServer.Application.Handlers
             Command command = (Command)packet.Cmd;
 
             if (!CommandDelegateCache.TryGetValue(command, out var func))
-                return PacketExtensions.ToResponsePacket((short)Command.ERROR, $"Unknown command: {command}");
+                return ((short)Command.ERROR).ToResponsePacket($"Unknown command: {command}");
 
             try
             {
@@ -34,7 +34,7 @@ namespace NPServer.Application.Handlers
             catch (Exception ex)
             {
                 NPLog.Instance.Error<CommandDispatcher>($"Error executing command: {command}. Exception: {ex.Message}");
-                return PacketExtensions.ToResponsePacket((short)Command.ERROR, $"Error executing command: {command}");
+                return ((short)Command.ERROR).ToResponsePacket($"Error executing command: {command}");
             }
         }
     }
