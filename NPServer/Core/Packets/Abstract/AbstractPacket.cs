@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Services;
+﻿using NPServer.Infrastructure.Services;
 using System;
 
 namespace NPServer.Core.Packets.Base;
@@ -29,7 +29,7 @@ public abstract partial class AbstractPacket
     public void Reset()
     {
         Id = UniqueId.Empty;
-        Flags = Enum.PacketFlags.NONE;
+        Flags = PacketFlags.NONE;
         Cmd = 0;
         Payload = Memory<byte>.Empty;
     }

@@ -1,6 +1,5 @@
 ﻿using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Packets.Base;
-using NPServer.Core.Packets.Enum;
 using NPServer.Core.Packets.Metadata;
 using System;
 
@@ -20,7 +19,7 @@ public partial class Packet : AbstractPacket, IPacket
                 ? (PacketType)type
                 : PacketType.NONE;
 
-        Flags = flags is not null && Enum.IsDefined((Enum.PacketFlags)flags)
+        Flags = flags is not null && Enum.IsDefined((PacketFlags)flags)
                 ? (PacketFlags)flags
                 : PacketFlags.NONE;
 

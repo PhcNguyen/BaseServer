@@ -1,6 +1,6 @@
 ﻿using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Services;
+using NPServer.Infrastructure.Services;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;

@@ -1,7 +1,7 @@
 ﻿using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Services;
 using NPServer.Core.Session.Network;
+using NPServer.Infrastructure.Services;
 using System;
 using System.IO;
 using System.Net.Sockets;

@@ -1,5 +1,4 @@
-﻿using NPServer.Core.Packets.Enum;
-using NPServer.Core.Packets.Metadata;
+﻿using NPServer.Core.Packets.Metadata;
 using System;
 
 namespace NPServer.Core.Packets.Base;

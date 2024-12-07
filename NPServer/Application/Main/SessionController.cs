@@ -1,9 +1,8 @@
 ﻿using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Services;
 using NPServer.Core.Session;
-using NPServer.Infrastructure.Configuration;
 using NPServer.Infrastructure.Logging;
+using NPServer.Infrastructure.Services;
 using System;
 using System.Linq;
 using System.Net.Sockets;
@@ -17,6 +16,7 @@ namespace NPServer.Application.Main
     /// </summary>
     internal class SessionController
     {
+        private readonly TimeSpan _timeout;
         private readonly CancellationToken _canceltoken;
         private readonly SessionMonitor _sessionMonitor;
         private readonly ISessionManager _sessionManager;
@@ -27,8 +27,9 @@ namespace NPServer.Application.Main
         /// Khởi tạo một <see cref="SessionController"/> mới.
         /// </summary>
         /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
-        public SessionController(CancellationToken token)
+        public SessionController(TimeSpan timeout, CancellationToken token)
         {
+            _timeout = timeout;
             _canceltoken = token;
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
             _multiSizeBuffer = Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>();
@@ -79,7 +80,7 @@ namespace NPServer.Application.Main
         /// <param name="clientSocket">Cổng kết nối của client.</param>
         public void AcceptClient(Socket clientSocket)
         {
-            SessionClient session = new(clientSocket, Setting.Timeout, _multiSizeBuffer, _canceltoken);
+            SessionClient session = new(clientSocket, _timeout, _multiSizeBuffer, _canceltoken);
 
             if (_sessionManager.AddSession(session))
             {

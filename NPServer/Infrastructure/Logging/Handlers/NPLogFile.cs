@@ -1,5 +1,4 @@
-﻿using NPServer.Infrastructure.Configuration;
-using NPServer.Infrastructure.Logging.Formatter;
+﻿using NPServer.Infrastructure.Logging.Formatter;
 using NPServer.Infrastructure.Logging.Interfaces;
 using System;
 using System.IO;

@@ -2,9 +2,10 @@
 using NPServer.Core.Helpers;
 using NPServer.Core.Network.Firewall;
 using NPServer.Core.Network.Listeners;
-using NPServer.Core.Services;
 using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Configuration.Default;
 using NPServer.Infrastructure.Logging;
+using NPServer.Infrastructure.Services;
 using System;
 using System.Net.Sockets;
 using System.Threading;
@@ -21,7 +22,8 @@ namespace NPServer.Application.Threading
         private readonly SocketListener _networkListener;
 
         private CancellationTokenSource _ctokens;
-        private readonly RequestLimiter _requestLimiter = Singleton.GetInstance<RequestLimiter>();
+        private readonly RequestLimiter _requestLimiter = Singleton.GetInstanceOfInterface<RequestLimiter>();
+        private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
 
         public Server()
         {
@@ -29,14 +31,14 @@ namespace NPServer.Application.Threading
             _isInMaintenanceMode = false;
 
             _ctokens = new CancellationTokenSource();
-            _networkListener = new SocketListener(Setting.MaxConnections);
-            _controller = new SessionController(_ctokens.Token);
+            _networkListener = new SocketListener(networkConfig.MaxConnections);
+            _controller = new SessionController(networkConfig.Timeout, _ctokens.Token);
         }
 
         private void InitializeComponents()
         {
             _ctokens = new CancellationTokenSource();
-            _controller = new SessionController(_ctokens.Token);
+            _controller = new SessionController(networkConfig.Timeout, _ctokens.Token);
         }
 
         public void StartServer()
@@ -56,9 +58,10 @@ namespace NPServer.Application.Threading
             // Khởi tạo lại các thành phần
             InitializeComponents();
 
-            var token = _ctokens.Token;
+            CancellationToken token = _ctokens.Token;
 
-            _networkListener.StartListening(ipAddress: null, port: Setting.Port);
+            _networkListener.StartListening(ipAddress: networkConfig.IP, port: networkConfig.Port);
+            NPLog.Instance.Info($"Starting network service at {networkConfig.IP}:{networkConfig.Port}");
 
             _ = Task.Run(async () =>
             {

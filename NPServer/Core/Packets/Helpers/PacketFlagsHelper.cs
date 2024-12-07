@@ -1,5 +1,4 @@
 ﻿using NPServer.Core.Interfaces.Packets;
-using NPServer.Core.Packets.Enum;
 using System;
 using System.Collections.Generic;
 
@@ -29,13 +28,13 @@ public static class PacketFlagsHelper
     {
         var flags = packet.Flags;
 
-        if ((flags & Enum.PacketFlags.URGENT) == Enum.PacketFlags.URGENT)
+        if ((flags & PacketFlags.URGENT) == PacketFlags.URGENT)
             return PriorityLevel.Urgent;
-        if ((flags & Enum.PacketFlags.HIGH) == Enum.PacketFlags.HIGH)
+        if ((flags & PacketFlags.HIGH) == PacketFlags.HIGH)
             return PriorityLevel.High;
-        if ((flags & Enum.PacketFlags.MEDIUM) == Enum.PacketFlags.MEDIUM)
+        if ((flags & PacketFlags.MEDIUM) == PacketFlags.MEDIUM)
             return PriorityLevel.Medium;
-        if ((flags & Enum.PacketFlags.LOW) == Enum.PacketFlags.LOW)
+        if ((flags & PacketFlags.LOW) == PacketFlags.LOW)
             return PriorityLevel.Low;
 
         return PriorityLevel.None;
@@ -47,9 +46,9 @@ public static class PacketFlagsHelper
     /// <param name="packet">Gói tin cần phân tích.</param>
     /// <param name="filter">Hàm lọc (tùy chọn).</param>
     /// <returns>Các cờ trạng thái được kích hoạt.</returns>
-    public static IEnumerable<Enum.PacketFlags> GetActiveFlags(this IPacket packet, Func<Enum.PacketFlags, bool>? filter = null)
+    public static IEnumerable<PacketFlags> GetActiveFlags(this IPacket packet, Func<PacketFlags, bool>? filter = null)
     {
-        foreach (Enum.PacketFlags flag in Enum.GetValues<Enum.PacketFlags>())
+        foreach (PacketFlags flag in Enum.GetValues<PacketFlags>())
         {
             if ((packet.Flags & flag) == flag && (filter == null || filter(flag)))
                 yield return flag;

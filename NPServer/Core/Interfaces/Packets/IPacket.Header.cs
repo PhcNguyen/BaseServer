@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Packets.Enum;
+﻿using NPServer.Core.Packets;
 
 namespace NPServer.Core.Interfaces.Packets
 {

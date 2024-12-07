@@ -77,14 +77,20 @@ public partial class SocketReader : IDisposable
             {
                 OnReceiveCompleted(this, _receiveEventArgs);
             }
-        }
+        }     
         catch (ObjectDisposedException ex)
         {
+            Dispose();
             throw new InvalidOperationException($"Socket disposed: {ex.Message}", ex);
+        }
+        catch (InvalidOperationException)
+        {
+            Dispose();
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Unexpected error in StartReceiving: {ex.Message}", ex);
+            Dispose();
+            throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
         }
     }
 
@@ -133,7 +139,6 @@ public partial class SocketReader : IDisposable
         catch (OperationCanceledException)
         {
             Dispose();
-            throw new InvalidOperationException("Operation canceled.");
         }
         catch (Exception ex)
         {

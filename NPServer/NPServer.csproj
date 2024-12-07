@@ -7,10 +7,7 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		
-		<StartupObject>NServer.Application.Threading.Program</StartupObject>
-
-		<BaseOutputPath>..\OpenCoreNP\bin\</BaseOutputPath> 
-		<BaseIntermediateOutputPath>..\OpenCoreNP\obj\</BaseIntermediateOutputPath>
+		<StartupObject>NPServer.Application.Threading.Program</StartupObject>
 	</PropertyGroup>
 
 	<!-- Cấu hình khi chạy ở chế độ Debug -->
@@ -38,9 +35,11 @@
 
 	<!-- Thêm các package tham chiếu -->
 	<ItemGroup>
-		<PackageReference Include="Npgsql" Version="8.0.5" />
+		<None Include="Data\**" CopyToOutputDirectory="PreserveNewest" />
+		<Folder Include="Application\Handlers\Player\" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Application\Handlers\Player\" />
+	  <PackageReference Include="Dapper" Version="2.1.35" />
+	  <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
 	</ItemGroup>
 </Project>

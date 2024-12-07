@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Services;
+﻿using NPServer.Infrastructure.Services;
 using System;
 
 namespace NPServer.Core.Interfaces.Packets

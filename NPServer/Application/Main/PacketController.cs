@@ -4,7 +4,7 @@ using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Packets.Utilities;
-using NPServer.Core.Services;
+using NPServer.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading;
