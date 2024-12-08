@@ -1,12 +1,13 @@
 ﻿using System;
 
-namespace NPServer.Core.Interfaces.Session;
-
-public interface ISessionNetwork
+namespace NPServer.Core.Interfaces.Session
 {
-    event Action<byte[]>? DataReceived;
+    public interface ISessionNetwork
+    {
+        event Action<byte[]>? DataReceived;
 
-    bool Send(byte[] data);
+        bool Send(byte[] data);
 
-    bool Send(string data);
+        bool Send(string data);
+    }
 }

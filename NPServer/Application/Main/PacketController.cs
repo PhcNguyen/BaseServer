@@ -1,14 +1,13 @@
-﻿using NPServer.Application.Handlers.Packets;
-using NPServer.Application.Handlers.Packets.Queue;
-using NPServer.Core.Interfaces.Packets;
-using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Communication;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Packets.Utilities;
+using NPServer.Core.Communication.Utilities;
 using NPServer.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NPServer.Application.Handlers.Packets;
+using NPServer.Core.Interfaces.Pooling;
 
 namespace NPServer.Application.Main
 {
@@ -19,7 +18,6 @@ namespace NPServer.Application.Main
     {
         private readonly IPacketPool _packetPool;
         private readonly CancellationToken _token;
-        private readonly PacketIncoming _incomingPacket;
         private readonly ParallelOptions _parallelOptions;
         private readonly PacketProcessor _packetProcessor;
         private readonly PacketQueueManager _packetQueueManager;
@@ -31,13 +29,10 @@ namespace NPServer.Application.Main
         public PacketController(CancellationToken token)
         {
             _token = token;
-            _incomingPacket = Singleton.GetInstance<PacketIncoming>();
 
+            _packetQueueManager = new PacketQueueManager();
             _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
             _packetProcessor = new PacketProcessor(Singleton.GetInstanceOfInterface<ISessionManager>());
-            _packetQueueManager = new PacketQueueManager(
-                Singleton.GetInstance<PacketInserver>(), _incomingPacket, Singleton.GetInstance<PacketOutgoing>()
-            );
 
             _parallelOptions = new()
             {
@@ -55,7 +50,7 @@ namespace NPServer.Application.Main
             packet.SetId(id);
             packet.ParseFromBytes(data);
 
-            _incomingPacket.Enqueue(packet);
+            _packetQueueManager.IncomingPacketQueue.Enqueue(packet);
         }
 
         /// <summary>

@@ -4,20 +4,21 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace NPServer.DatabaseAccess.Json;
-
-public class DBEntityCollectionJsonConverter : JsonConverter<DBEntityCollection>
+namespace NPServer.DatabaseAccess.Json
 {
-    public override DBEntityCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public class DBEntityCollectionJsonConverter : JsonConverter<DBEntityCollection>
     {
-        DBEntity[]? entities = JsonSerializer.Deserialize<DBEntity[]>(ref reader, options);
-        entities ??= [];
+        public override DBEntityCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            DBEntity[]? entities = JsonSerializer.Deserialize<DBEntity[]>(ref reader, options);
+            entities ??= [];
 
-        return new DBEntityCollection(entities);
-    }
+            return new DBEntityCollection(entities);
+        }
 
-    public override void Write(Utf8JsonWriter writer, DBEntityCollection value, JsonSerializerOptions options)
-    {
-        JsonSerializer.Serialize(writer, value.Entries.ToArray(), options);
+        public override void Write(Utf8JsonWriter writer, DBEntityCollection value, JsonSerializerOptions options)
+        {
+            JsonSerializer.Serialize(writer, value.Entries.ToArray(), options);
+        }
     }
 }

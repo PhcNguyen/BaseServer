@@ -5,6 +5,12 @@ using System.Reflection;
 namespace NPServer.Infrastructure.Configuration.Abstract
 {
     /// <summary>
+    /// Thuộc tính để bỏ qua các thuộc tính khi khởi tạo các container cấu hình.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Property)]
+    public class ConfigIgnoreAttribute : Attribute { }
+
+    /// <summary>
     /// Cung cấp quyền truy cập vào các giá trị cấu hình.
     /// </summary>
     /// <remarks>

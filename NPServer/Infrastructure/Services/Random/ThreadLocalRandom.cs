@@ -1,55 +1,106 @@
 ﻿using System;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
-namespace NPServer.Infrastructure.Services.Random;
-
-/// <summary>
-/// Cung cấp các phương thức sinh số ngẫu nhiên trong môi trường đa luồng.
-/// </summary>
-public static class ThreadLocalRandom
+namespace NPServer.Infrastructure.Services.Random
 {
-    // Trạng thái cục bộ cho mỗi luồng
-    private static readonly ThreadLocal<ulong> _state = new(() => (ulong)DateTime.UtcNow.Ticks);
-
     /// <summary>
-    /// Sinh ra số ngẫu nhiên 64-bit bằng thuật toán xorshift.
+    /// Cung cấp các phương thức sinh số ngẫu nhiên hiệu suất cao và an toàn trong môi trường đa luồng.
     /// </summary>
-    private static ulong NextUInt64()
+    public static class ThreadLocalRandom
     {
-        ulong x = _state.Value;
-        x ^= x << 13;
-        x ^= x >> 7;
-        x ^= x << 17;
-        _state.Value = x;
-        return x;
-    }
+        private static readonly ThreadLocal<XorShift128Plus> _threadLocalRng =
+            new(() => new XorShift128Plus());
 
-    /// <summary>
-    /// Điền các byte ngẫu nhiên vào buffer.
-    /// </summary>
-    /// <param name="buffer">Mảng byte để điền dữ liệu ngẫu nhiên.</param>
-    public static void Fill(byte[] buffer)
-    {
-        ArgumentNullException.ThrowIfNull(buffer);
-
-        int length = buffer.Length;
-        int i = 0;
-
-        while (length >= 8)
+        /// <summary>
+        /// Lớp triển khai thuật toán XorShift 128+ nhanh và có chất lượng ngẫu nhiên tốt
+        /// </summary>
+        private class XorShift128Plus
         {
-            ulong randomValue = NextUInt64();
-            Buffer.BlockCopy(BitConverter.GetBytes(randomValue), 0, buffer, i, 8);
-            i += 8;
-            length -= 8;
+            private ulong _state0;
+            private ulong _state1;
+
+            public XorShift128Plus()
+            {
+                // Khởi tạo trạng thái ban đầu từ nhiều nguồn entropy
+                _state0 = (ulong)DateTime.UtcNow.Ticks;
+                _state1 = (ulong)Environment.TickCount64;
+
+                // Thêm entropy từ các nguồn khác nhau
+                _state0 ^= (ulong)Environment.CurrentManagedThreadId;
+                _state1 ^= (ulong)Guid.NewGuid().GetHashCode();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public ulong Next()
+            {
+                ulong x = _state0;
+                ulong y = _state1;
+
+                _state0 = y;
+                x ^= x << 23;
+                x ^= x >> 17;
+                x ^= y;
+                x ^= y >> 26;
+                _state1 = x;
+
+                return x + y;
+            }
         }
 
-        if (length > 0)
+        /// <summary>
+        /// Sinh số ngẫu nhiên 64-bit với chất lượng cao
+        /// </summary>
+        public static ulong NextUInt64() =>
+            _threadLocalRng.Value!.Next();  
+
+        /// <summary>
+        /// Điền các byte ngẫu nhiên vào buffer với hiệu suất cao
+        /// </summary>
+        public static void Fill(Span<byte> buffer)
         {
-            ulong randomValue = NextUInt64();
-            for (int j = 0; j < length; j++)
+            ref byte start = ref System.Runtime.InteropServices.MemoryMarshal.GetReference(buffer);
+            int length = buffer.Length;
+            int i = 0;
+
+            while (length >= sizeof(ulong))
             {
-                buffer[i + j] = (byte)(randomValue >> j * 8 & 0xFF);
+                ulong randomValue = NextUInt64();
+                Unsafe.WriteUnaligned(ref Unsafe.Add(ref start, i), randomValue);
+                i += sizeof(ulong);
+                length -= sizeof(ulong);
             }
+
+            if (length > 0)
+            {
+                ulong randomValue = NextUInt64();
+                for (int j = 0; j < length; j++)
+                {
+                    Unsafe.Add(ref start, i + j) = (byte)(randomValue >> (j * 8) & 0xFF);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sinh số nguyên ngẫu nhiên trong phạm vi chỉ định
+        /// </summary>
+        public static int Next(int minValue, int maxValue)
+        {
+            if (minValue > maxValue)
+                throw new ArgumentOutOfRangeException(nameof(minValue), "The minimum value must be less than or equal to the maximum value.");
+
+            ulong range = (ulong)(maxValue - minValue);
+            ulong randomValue = NextUInt64();
+
+            return minValue + (int)((randomValue * range) >> 64);
+        }
+
+        /// <summary>
+        /// Sinh số nguyên ngẫu nhiên không âm
+        /// </summary>
+        public static int Next()
+        {
+            return Next(0, int.MaxValue);
         }
     }
 }

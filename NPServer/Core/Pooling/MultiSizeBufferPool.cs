@@ -8,7 +8,7 @@ namespace NPServer.Core.Pooling
     /// <summary>
     /// Quản lý các bộ đệm có nhiều kích thước khác nhau.
     /// </summary>
-    public class MultiSizeBufferPool : IMultiSizeBufferPool
+    public partial class MultiSizeBufferPool : IMultiSizeBufferPool
     {
         private readonly (int BufferSize, double Allocation)[] _bufferAllocations;
         private readonly int _totalBuffers;

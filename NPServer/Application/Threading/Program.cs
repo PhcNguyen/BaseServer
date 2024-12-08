@@ -1,23 +1,24 @@
 ﻿using NPServer.Application.Main;
 using NPServer.Core.Helpers;
 
-namespace NPServer.Application.Threading;
-
-internal static class Program
+namespace NPServer.Application.Threading
 {
-    private static void Main()
+    internal static class Program
     {
-        System.Console.Title = $"NPServer ({ServerApp.VersionInfo})";
+        private static void Main()
+        {
+            System.Console.Title = $"NPServer ({ServerApp.VersionInfo})";
 
-        ServiceController.RegisterSingleton();
-        ServiceController.Initialization();
+            ServiceController.RegisterSingleton();
+            ServiceController.Initialization();
 
-        ServerApp serverApp = new();
+            ServerApp serverApp = new();
 
-        serverApp.Run();
+            serverApp.Run();
 
-        System.Console.ReadKey();
+            System.Console.ReadKey();
 
-        serverApp.Shutdown();
+            serverApp.Shutdown();
+        }
     }
 }

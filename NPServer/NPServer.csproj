@@ -36,7 +36,6 @@
 	<!-- Thêm các package tham chiếu -->
 	<ItemGroup>
 		<None Include="Data\**" CopyToOutputDirectory="PreserveNewest" />
-		<Folder Include="Application\Handlers\Player\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <PackageReference Include="Dapper" Version="2.1.35" />

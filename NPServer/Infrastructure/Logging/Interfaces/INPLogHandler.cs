@@ -1,8 +1,9 @@
 ﻿using NPServer.Infrastructure.Logging.Formatter;
 
-namespace NPServer.Infrastructure.Logging.Interfaces;
-
-public interface INPLogHandler
+namespace NPServer.Infrastructure.Logging.Interfaces
 {
-    void Publish(NPLogMessage logMessage);
+    public interface INPLogHandler
+    {
+        void Publish(NPLogMessage logMessage);
+    }
 }

@@ -1,11 +1,8 @@
-﻿using NPServer.Application.Handlers;
-using NPServer.Application.Handlers.Packets.Queue;
-using NPServer.Core.Interfaces.Packets;
-using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Communication;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Packets.Utilities;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
+using NPServer.Core.Interfaces.Pooling;
 using System;
 using System.Threading.Tasks;
 
@@ -19,34 +16,17 @@ namespace NPServer.Application.Handlers.Packets
         private readonly IPacketPool _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
         private readonly ISessionManager _sessionManager = sessionManager;
 
-        private readonly Command[] _commandsWithoutLoginRequired =
-        [
-            Command.PONG, Command.PING, Command.NONE, Command.HEARTBEAT,
-            Command.CLOSE, Command.GET_KEY, Command.REGISTER, Command.LOGIN
-        ];
-
-        private readonly CommandDispatcher _commandDispatcher = Singleton.GetInstanceOfInterface<CommandDispatcher>();
-
         /// <summary>
         /// Xử lý gói tin đến.
         /// </summary>
-        public async Task HandleIncomingPacket(IPacket packet, PacketOutgoing outgoingQueue)
+        public async Task HandleIncomingPacket(IPacket packet, PacketQueue outgoingQueue)
         {
             try
             {
-                if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
-                    return;
-
-                if (!session.Authenticator && IsLoginRequired((Command)packet.Cmd))
-                {
-                    outgoingQueue.Enqueue(((short)Command.ERROR).ToResponsePacket("You must log in first."));
-                    return;
-                }
-
-                IPacket responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
+                //IPacket responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
 
                 _packetPool.ReturnPacket(packet);
-                outgoingQueue.Enqueue(responsePacket);
+                //outgoingQueue.Enqueue(responsePacket);
             }
             catch (Exception ex)
             {
@@ -66,7 +46,7 @@ namespace NPServer.Application.Handlers.Packets
             {
                 session.UpdateLastActivityTime();
 
-                if (packet.Payload.Length == 0)
+                if (packet.PayloadData.Length == 0)
                     return;
 
                 await RetryAsync(() => session.Network.Send(packet.ToByteArray()), maxRetries: 3, delayMs: 100);
@@ -77,16 +57,6 @@ namespace NPServer.Application.Handlers.Packets
             {
                 NPLog.Instance.Error<PacketProcessor>($"[HandleOutgoingPacket] Error sending packet: {ex}");
             }
-        }
-
-        private bool IsLoginRequired(Command cmd)
-        {
-            Span<Command> commandsSpan = _commandsWithoutLoginRequired;
-            foreach (var command in commandsSpan)
-            {
-                if (command == cmd) return false;
-            }
-            return true;
         }
 
         /// <summary>

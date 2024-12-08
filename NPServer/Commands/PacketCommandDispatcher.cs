@@ -1,7 +1,7 @@
 ﻿using NPServer.Models.Database;
 using NPServer.Commands.Abstract;
-using NPServer.Core.Packets.Utilities;
-using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Communication.Utilities;
+using NPServer.Core.Interfaces.Communication;
 using NPServer.Infrastructure.Logging;
 using System;
 

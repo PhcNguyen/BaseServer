@@ -2,15 +2,16 @@
 using NPServer.Infrastructure.Logging.Interfaces;
 using System;
 
-namespace NPServer.Infrastructure.Logging.Handlers;
-
-public class NPLogConsole(INPLogFormatter loggerFormatter) : INPLogHandler
+namespace NPServer.Infrastructure.Logging.Handlers
 {
-    private readonly INPLogFormatter _loggerFormatter = loggerFormatter;
+    public class NPLogConsole(INPLogFormatter loggerFormatter) : INPLogHandler
+    {
+        private readonly INPLogFormatter _loggerFormatter = loggerFormatter;
 
-    public NPLogConsole() : this(new NPLogFormatter())
-    { }
+        public NPLogConsole() : this(new NPLogFormatter())
+        { }
 
-    public void Publish(NPLogMessage logMessage) =>
-        Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
+        public void Publish(NPLogMessage logMessage) =>
+            Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
+    }
 }

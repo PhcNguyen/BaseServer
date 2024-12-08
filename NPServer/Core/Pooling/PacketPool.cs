@@ -1,14 +1,14 @@
-﻿using NPServer.Core.Interfaces.Packets;
-using NPServer.Core.Interfaces.Pooling;
-using NPServer.Core.Packets;
+﻿using NPServer.Core.Interfaces.Communication;
+using NPServer.Core.Communication;
 using System.Collections.Concurrent;
+using NPServer.Core.Interfaces.Pooling;
 
 namespace NPServer.Core.Pooling
 {
     /// <summary>
     /// Quản lý pool của các gói tin để tái sử dụng và tối ưu hóa bộ nhớ.
     /// </summary>
-    public class PacketPool : IPacketPool
+    public partial class PacketPool : IPacketPool
     {
         private readonly ConcurrentStack<IPacket> _pool = new();
 

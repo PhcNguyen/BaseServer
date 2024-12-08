@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Interfaces.Packets;
+﻿using NPServer.Core.Interfaces.Communication;
 
 namespace NPServer.Core.Interfaces.Pooling
 {

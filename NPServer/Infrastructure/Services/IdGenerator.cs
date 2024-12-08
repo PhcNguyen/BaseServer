@@ -27,11 +27,10 @@ namespace NPServer.Infrastructure.Services
         // 32 bit - unix timestamp tính bằng giây
         // 16 bit - số thứ tự của máy (để tránh trùng lặp nếu nhiều id được tạo trong cùng một giây)
 
-        private readonly Lock _lock = new();
-
+        private readonly ReaderWriterLockSlim _lock = new();
         private readonly IdType _type;
         private readonly ushort _machineId;
-        private ushort _machineSequenceNumber = 0;
+        private int _machineSequenceNumber = 0;
 
         /// <summary>
         /// Xây dựng một phiên bản mới của <see cref="IdGenerator"/>. Id máy phải < 4096.
@@ -50,14 +49,19 @@ namespace NPServer.Infrastructure.Services
         /// </summary>
         public ulong Generate()
         {
-            lock (_lock)
+            _lock.EnterWriteLock();
+            try
             {
                 ulong id = 0;
                 id |= (ulong)_type << 60;
                 id |= (ulong)_machineId << 48;
                 id |= ((ulong)Clock.UnixTime.TotalSeconds & 0xFFFFFFFF) << 16;
-                id |= _machineSequenceNumber++;
+                id |= (ushort)Interlocked.Increment(ref _machineSequenceNumber);
                 return id;
+            }
+            finally
+            {
+                _lock.ExitWriteLock();
             }
         }
 

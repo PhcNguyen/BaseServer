@@ -1,5 +1,6 @@
 ﻿using NPServer.Infrastructure.Services.Random;
 using NPServer.Infrastructure.Services.Time;
+using System;
 
 namespace NPServer.Infrastructure.Services
 {
@@ -47,9 +48,9 @@ namespace NPServer.Infrastructure.Services
         public static UniqueId NewId()
         {
             // Sinh giá trị ngẫu nhiên mạnh (4 byte)
-            var buffer = new byte[4];
+            byte[] buffer = new byte[4];
             ThreadLocalRandom.Fill(buffer);
-            uint randomValue = System.BitConverter.ToUInt32(buffer, 0);
+            uint randomValue = BitConverter.ToUInt32(buffer, 0);
 
             // Lấy timestamp hiện tại (Unix Time)
             uint timestamp = (uint)(Clock.UnixTime.Milliseconds & 0xFFFFFFFF);
@@ -66,22 +67,17 @@ namespace NPServer.Infrastructure.Services
         /// <returns>Chuỗi đại diện ID.</returns>
         public override string ToString()
         {
-            System.Span<char> buffer = stackalloc char[13];
+            Span<char> buffer = stackalloc char[13];
             int index = buffer.Length;
-            uint mvalue = _value;
+            uint value = _value;
 
-            while (mvalue > 0)
+            do
             {
-                buffer[--index] = Alphabet[(int)(mvalue % Base)];
-                mvalue /= Base;
-            }
+                buffer[--index] = Alphabet[(int)(value % Base)];
+                value /= Base;
+            } while (value > 0);
 
-            while (index > buffer.Length - 7) // Đảm bảo độ dài tối thiểu 7 ký tự
-            {
-                buffer[--index] = '0';
-            }
-
-            return new string(buffer[index..]);
+            return new string(buffer.Slice(Math.Max(0, index), buffer.Length - index)).PadLeft(7, '0');
         }
 
         /// <summary>
@@ -92,23 +88,48 @@ namespace NPServer.Infrastructure.Services
         /// <exception cref="ArgumentNullException">Ném ra nếu chuỗi nhập vào rỗng hoặc chỉ chứa khoảng trắng.</exception>
         /// <exception cref="ArgumentException">Ném ra nếu chuỗi nhập vào dài quá.</exception>
         /// <exception cref="FormatException">Ném ra nếu chuỗi nhập vào chứa ký tự không hợp lệ.</exception>
-        public static UniqueId Parse(string input)
+        public static UniqueId Parse(ReadOnlySpan<char> input)
         {
-            if (string.IsNullOrWhiteSpace(input))
-                throw new System.ArgumentNullException(nameof(input));
+            if (input.IsEmpty)
+                throw new ArgumentNullException(nameof(input));
 
             if (input.Length > 13)
-                throw new System.ArgumentException("Input is too long to be a valid UniqueId.", nameof(input));
+                throw new ArgumentException("Input is too long to be a valid UniqueId.", nameof(input));
 
             uint value = 0;
-            foreach (char c in input.ToUpperInvariant())
+            foreach (char c in input)
             {
-                if (c > 127 || CharToValue[c] == byte.MaxValue)
-                    throw new System.FormatException($"Invalid character '{c}' in input string.");
-                value = value * Base + CharToValue[c];
+                byte charValue = c > 127 ? byte.MaxValue : CharToValue[char.ToUpperInvariant(c)];
+
+                if (charValue == byte.MaxValue)
+                    throw new FormatException($"Invalid character '{c}' in input string.");
+
+                value = value * Base + charValue;
             }
 
             return new UniqueId(value);
+        }
+
+        public static bool TryParse(ReadOnlySpan<char> input, out UniqueId result)
+        {
+            result = Empty;
+
+            if (input.IsEmpty || input.Length > 13)
+                return false;
+
+            uint value = 0;
+            foreach (char c in input)
+            {
+                byte charValue = c > 127 ? byte.MaxValue : CharToValue[char.ToUpperInvariant(c)];
+
+                if (charValue == byte.MaxValue)
+                    return false;
+
+                value = value * Base + charValue;
+            }
+
+            result = new UniqueId(value);
+            return true;
         }
 
         /// <summary>

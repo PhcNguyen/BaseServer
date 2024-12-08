@@ -1,15 +1,13 @@
 ﻿using NPServer.Core.Interfaces.Network;
-using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.Firewall;
-using NPServer.Core.Pooling;
 using NPServer.Core.Session;
-using NPServer.Core.Config;
 using NPServer.Infrastructure.Configuration;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
-using NPServer.Application.Handlers;
-using NPServer.Application.Handlers.Packets.Queue;
+using NPServer.Infrastructure.Configuration.Default;
+using NPServer.Core.Pooling;
+using NPServer.Core.Interfaces.Pooling;
 
 namespace NPServer.Application.Main
 {
@@ -33,10 +31,6 @@ namespace NPServer.Application.Main
         public static void RegisterSingleton()
         {
             // Application
-            Singleton.Register<PacketOutgoing>();
-            Singleton.Register<PacketIncoming>();
-            Singleton.Register<PacketInserver>();
-            Singleton.Register<CommandDispatcher>();
 
             Singleton.Register<RequestLimiter>(() =>
             new RequestLimiter(_networkConfig.RateLimit, _networkConfig.ConnectionLockoutDuration));

@@ -37,25 +37,23 @@ namespace NPServer.DatabaseAccess.Json
 
         public static void Serialize(Stream stream, DBAccount dbAccount)
         {
-            using (BinaryWriter writer = new(stream))
-            {
-                WriteFileHeader(writer);
+            using BinaryWriter writer = new(stream);
+            WriteFileHeader(writer);
 
-                writer.Write(dbAccount.Id);
-                WriteString(writer, dbAccount.Email);
-                WriteString(writer, dbAccount.PlayerName);
-                WriteByteArray(writer, dbAccount.PasswordHash);
-                WriteByteArray(writer, dbAccount.Salt);
-                writer.Write((byte)dbAccount.UserLevel);
-                writer.Write((int)dbAccount.Flags);
+            writer.Write(dbAccount.Id);
+            WriteString(writer, dbAccount.Email);
+            WriteString(writer, dbAccount.PlayerName);
+            WriteByteArray(writer, dbAccount.PasswordHash);
+            WriteByteArray(writer, dbAccount.Salt);
+            writer.Write((byte)dbAccount.UserLevel);
+            writer.Write((int)dbAccount.Flags);
 
-                WriteDBPlayer(writer, dbAccount.Player);
+            WriteDBPlayer(writer, dbAccount.Player);
 
-                WriteDBEntityCollection(writer, dbAccount.Avatars);
-                WriteDBEntityCollection(writer, dbAccount.TeamUps);
-                WriteDBEntityCollection(writer, dbAccount.Items);
-                WriteDBEntityCollection(writer, dbAccount.ControlledEntities);
-            }
+            WriteDBEntityCollection(writer, dbAccount.Avatars);
+            WriteDBEntityCollection(writer, dbAccount.TeamUps);
+            WriteDBEntityCollection(writer, dbAccount.Items);
+            WriteDBEntityCollection(writer, dbAccount.ControlledEntities);
         }
 
         public static DBAccount? Deserialize(Stream stream)

@@ -1,12 +1,13 @@
-﻿namespace NPServer.Core.Interfaces.Pooling;
-
-public interface IMultiSizeBufferPool
+﻿namespace NPServer.Core.Interfaces.Pooling
 {
-    void AllocateBuffers();
+    public interface IMultiSizeBufferPool
+    {
+        void AllocateBuffers();
 
-    byte[] RentBuffer(int size = 256);
+        byte[] RentBuffer(int size = 256);
 
-    void ReturnBuffer(byte[] buffer);
+        void ReturnBuffer(byte[] buffer);
 
-    double GetAllocationForSize(int size);
+        double GetAllocationForSize(int size);
+    }
 }

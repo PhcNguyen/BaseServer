@@ -1,9 +1,9 @@
 ﻿using NPServer.Application.Main;
-using NPServer.Core.Config;
 using NPServer.Core.Helpers;
 using NPServer.Core.Network.Firewall;
 using NPServer.Core.Network.Listeners;
 using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Configuration.Default;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
 using System;

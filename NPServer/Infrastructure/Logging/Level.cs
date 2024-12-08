@@ -1,2 +1,4 @@
-﻿namespace NPServer.Infrastructure.Logging;
+﻿namespace NPServer.Infrastructure.Logging
+{
+}
 
