@@ -92,7 +92,8 @@ namespace NPServer.Infrastructure.Services.Random
             ulong range = (ulong)(maxValue - minValue);
             ulong randomValue = NextUInt64();
 
-            return minValue + (int)((randomValue * range) >> 64);
+            // Scale the random value within the range
+            return minValue + (int)(randomValue % (range + 1));  // Ensures value is within the correct range
         }
 
         /// <summary>

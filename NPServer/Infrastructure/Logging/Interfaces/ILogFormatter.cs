@@ -2,8 +2,8 @@
 
 namespace NPServer.Infrastructure.Logging.Interfaces
 {
-    public interface INPLogFormatter
+    public interface ILogFormatter
     {
-        string ApplyFormat(NPLogMessage logMessage);
+        string ApplyFormat(LogMessage logMessage);
     }
 }

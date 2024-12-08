@@ -1,13 +1,12 @@
 ﻿using NPServer.Infrastructure.Logging.Interfaces;
-using System;
 
 namespace NPServer.Infrastructure.Logging.Formatter
 {
-    public class NPLogFormatter : INPLogFormatter
+    public class LogFormatter : ILogFormatter
     {
         private readonly string _message = "{0:HH:mm:ss.fff} - {1} - {2}{3}";
 
-        public string ApplyFormat(NPLogMessage logMessage)
+        public string ApplyFormat(LogMessage logMessage)
         {
             // Kiểm tra và xây dựng chuỗi log chỉ khi CallingClass và CallingMethod có giá trị hợp lệ
             string callingInfo = string.Empty;
@@ -22,7 +21,7 @@ namespace NPServer.Infrastructure.Logging.Formatter
                 logMessage.DateTime, logMessage.Level, callingInfo, logMessage.Text);
         }
 
-        public static string FormatExceptionMessage(Exception exception) =>
+        public static string FormatExceptionMessage(System.Exception exception) =>
             $"Log exception -> Message: {exception.Message}\nStackTrace: {exception.StackTrace}";
     }
 }

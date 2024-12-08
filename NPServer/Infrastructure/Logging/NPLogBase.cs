@@ -22,7 +22,7 @@ namespace NPServer.Infrastructure.Logging
         /// <summary>
         /// Danh sách các thông điệp nhật ký.
         /// </summary>
-        public IEnumerable<NPLogMessage> Messages => _logPublisher.Messages;
+        public IEnumerable<LogMessage> Messages => _logPublisher.Messages;
 
         public INPLogPublisher LoggerHandlerManager => _logPublisher;
 
@@ -51,7 +51,7 @@ namespace NPServer.Infrastructure.Logging
         protected void LogInternal(NPLog.Level level, string message, string? callingClass, string? callingMethod)
         {
             if (!_isTurned) return;
-            var logMessage = new NPLogMessage(level, message, DateTime.Now, callingClass, callingMethod);
+            var logMessage = new LogMessage(level, message, DateTime.Now, callingClass, callingMethod);
 
             _logPublisher.Publish(logMessage);
         }

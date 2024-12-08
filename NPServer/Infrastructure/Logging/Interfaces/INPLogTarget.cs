@@ -4,6 +4,6 @@ namespace NPServer.Infrastructure.Logging.Interfaces
 {
     public interface INPLogTarget
     {
-        void Publish(NPLogMessage logMessage);
+        void Publish(LogMessage logMessage);
     }
 }

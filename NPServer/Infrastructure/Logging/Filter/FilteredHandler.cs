@@ -12,7 +12,7 @@ namespace NPServer.Infrastructure.Logging.Filter
         /// <summary>
         /// Bộ lọc để xác định xem thông điệp nhật ký có nên được xử lý hay không.
         /// </summary>
-        public Predicate<NPLogMessage>? Filter { get; set; }
+        public Predicate<LogMessage>? Filter { get; set; }
 
         /// <summary>
         /// Handler để xử lý thông điệp nhật ký sau khi đã được lọc.
@@ -23,7 +23,7 @@ namespace NPServer.Infrastructure.Logging.Filter
         /// Công khai một thông điệp nhật ký nếu thông điệp thỏa mãn bộ lọc.
         /// </summary>
         /// <param name="logMessage">Thông điệp nhật ký cần công khai.</param>
-        public void Publish(NPLogMessage logMessage)
+        public void Publish(LogMessage logMessage)
         {
             if (Filter!(logMessage))
                 Handler!.Publish(logMessage);

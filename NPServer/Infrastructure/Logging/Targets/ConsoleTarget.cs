@@ -1,33 +1,33 @@
 ﻿using NPServer.Infrastructure.Logging.Formatter;
 using NPServer.Infrastructure.Logging.Interfaces;
-using System;
 
 namespace NPServer.Infrastructure.Logging.Targets
 {
-    public class ConsoleTarget(INPLogFormatter loggerFormatter) : INPLogTarget
+    public class ConsoleTarget(ILogFormatter loggerFormatter) : INPLogTarget
     {
-        private readonly INPLogFormatter _loggerFormatter = loggerFormatter;
+        private readonly ILogFormatter _loggerFormatter = loggerFormatter;
 
-        public ConsoleTarget() : this(new NPLogFormatter())
+        public ConsoleTarget() : this(new LogFormatter())
         { }
 
-        public void Publish(NPLogMessage logMessage)
+        public void Publish(LogMessage logMessage)
         {
             SetForegroundColor(logMessage.Level);
-            Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
-            Console.ResetColor();
+            System.Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
+            System.Console.ResetColor();
         }
 
         private static void SetForegroundColor(NPLog.Level level)
         {
-            switch (level)
+            System.Console.ForegroundColor = level switch
             {
-                case NPLog.Level.NONE: Console.ForegroundColor = ConsoleColor.Cyan; break;
-                case NPLog.Level.INFO: Console.ForegroundColor = ConsoleColor.White; break;
-                case NPLog.Level.WARNING: Console.ForegroundColor = ConsoleColor.Yellow; break;
-                case NPLog.Level.ERROR: Console.ForegroundColor = ConsoleColor.Magenta; break;
-                case NPLog.Level.CRITICAL: Console.ForegroundColor = ConsoleColor.Red; break;
-            }
+                NPLog.Level.NONE => System.ConsoleColor.Cyan,
+                NPLog.Level.INFO => System.ConsoleColor.White,
+                NPLog.Level.WARNING => System.ConsoleColor.Yellow,
+                NPLog.Level.ERROR => System.ConsoleColor.Magenta,
+                NPLog.Level.CRITICAL => System.ConsoleColor.Red,
+                _ => System.ConsoleColor.White,
+            };
         }
     }
 }

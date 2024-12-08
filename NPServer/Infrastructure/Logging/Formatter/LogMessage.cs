@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NPServer.Infrastructure.Logging.Formatter
+﻿namespace NPServer.Infrastructure.Logging.Formatter
 {
     /// <summary>
     /// Lớp đại diện cho một thông điệp nhật ký.
@@ -11,14 +9,14 @@ namespace NPServer.Infrastructure.Logging.Formatter
     /// <param name="callingClass">Tên lớp gọi.</param>
     /// <param name="callingMethod">Tên phương thức gọi.</param>
     /// <remarks>
-    /// Khởi tạo một <see cref="NPLogMessage"/> mới.
+    /// Khởi tạo một <see cref="LogMessage"/> mới.
     /// </remarks>
-    public class NPLogMessage(NPLog.Level level, string text, DateTime? dateTime = null, string? callingClass = null, string? callingMethod = null)
+    public class LogMessage(NPLog.Level level, string text, System.DateTime? dateTime = null, string? callingClass = null, string? callingMethod = null)
     {
         /// <summary>
         /// Thời gian của thông điệp nhật ký.
         /// </summary>
-        public DateTime DateTime { get; } = dateTime ?? DateTime.Now;
+        public System.DateTime DateTime { get; } = dateTime ?? System.DateTime.Now;
 
         /// <summary>
         /// Mức độ của thông điệp nhật ký.
@@ -28,7 +26,7 @@ namespace NPServer.Infrastructure.Logging.Formatter
         /// <summary>
         /// Nội dung của thông điệp nhật ký.
         /// </summary>
-        public string Text { get; } = text ?? throw new ArgumentNullException(nameof(text));
+        public string Text { get; } = text ?? throw new System.ArgumentNullException(nameof(text));
 
         /// <summary>
         /// Tên lớp gọi.
@@ -47,7 +45,7 @@ namespace NPServer.Infrastructure.Logging.Formatter
         public override string ToString()
         {
             // Reuse NLogFormatter instance if possible
-            return new NPLogFormatter().ApplyFormat(this);
+            return new LogFormatter().ApplyFormat(this);
         }
     }
 }

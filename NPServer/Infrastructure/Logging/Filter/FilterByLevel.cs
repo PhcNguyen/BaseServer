@@ -46,7 +46,7 @@ namespace NPServer.Infrastructure.Logging.Filter
         /// <summary>
         /// Bộ lọc để xác định xem thông điệp nhật ký có nên được giữ lại hay không.
         /// </summary>
-        public Predicate<NPLogMessage> Filter => logMessage =>
+        public Predicate<LogMessage> Filter => logMessage =>
         {
             if (ExactlyLevel)
                 return FilterPredicates.ByLevelExactly(logMessage.Level, FilteredLevel);

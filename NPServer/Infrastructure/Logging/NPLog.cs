@@ -102,21 +102,21 @@ namespace NPServer.Infrastructure.Logging
         /// Ghi một thông điệp lỗi với một ngoại lệ.
         /// </summary>
         public void Error(Exception exception) =>
-            Log(Level.ERROR, NPLogFormatter.FormatExceptionMessage(exception));
+            Log(Level.ERROR, LogFormatter.FormatExceptionMessage(exception));
 
         /// <summary>
         /// Ghi một thông điệp lỗi với một thông điệp và ngoại lệ.
         /// </summary>
         public void Error(string message, Exception exception) =>
-            Log(Level.ERROR, $"{message}: {NPLogFormatter.FormatExceptionMessage(exception)}");
+            Log(Level.ERROR, $"{message}: {LogFormatter.FormatExceptionMessage(exception)}");
 
         public void Error<TClass>(string message) where TClass : class =>
             Log<TClass>(Level.ERROR, message);
 
         public void Error<TClass>(Exception exception) where TClass : class =>
-            Log<TClass>(Level.ERROR, NPLogFormatter.FormatExceptionMessage(exception));
+            Log<TClass>(Level.ERROR, LogFormatter.FormatExceptionMessage(exception));
 
         public void Error<TClass>(string message, Exception exception) where TClass : class =>
-            Log<TClass>(Level.ERROR, $"{message}: {NPLogFormatter.FormatExceptionMessage(exception)}");
+            Log<TClass>(Level.ERROR, $"{message}: {LogFormatter.FormatExceptionMessage(exception)}");
     }
 }

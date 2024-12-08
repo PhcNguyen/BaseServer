@@ -11,13 +11,13 @@ namespace NPServer.Infrastructure.Logging
     /// </summary>
     internal class NPLogPublisher : INPLogPublisher
     {
-        private readonly IList<INPLogTarget> _loggerHandlers;
-        private readonly IList<NPLogMessage> _messages;
+        private readonly IList<INPLogTarget> _loggerTarget;
+        private readonly IList<LogMessage> _messages;
 
         /// <summary>
         /// Lấy danh sách các thông điệp nhật ký đã lưu trữ.
         /// </summary>
-        public IEnumerable<NPLogMessage> Messages => _messages;
+        public IEnumerable<LogMessage> Messages => _messages;
 
         /// <summary>
         /// Thiết lập hoặc lấy trạng thái lưu trữ thông điệp nhật ký.
@@ -29,7 +29,7 @@ namespace NPServer.Infrastructure.Logging
         /// </summary>
         public NPLogPublisher()
         {
-            _loggerHandlers = [];
+            _loggerTarget = [];
             _messages = [];
             StoreLogMessages = false;
         }
@@ -40,7 +40,7 @@ namespace NPServer.Infrastructure.Logging
         /// <param name="storeLogMessages">True nếu cần lưu trữ thông điệp nhật ký, ngược lại False.</param>
         public NPLogPublisher(bool storeLogMessages)
         {
-            _loggerHandlers = [];
+            _loggerTarget = [];
             _messages = [];
             StoreLogMessages = storeLogMessages;
         }
@@ -49,10 +49,10 @@ namespace NPServer.Infrastructure.Logging
         /// Công khai một thông điệp nhật ký.
         /// </summary>
         /// <param name="logMessage">Thông điệp nhật ký cần công khai.</param>
-        public void Publish(NPLogMessage logMessage)
+        public void Publish(LogMessage logMessage)
         {
             if (StoreLogMessages) _messages.Add(logMessage);
-            foreach (var loggerHandler in _loggerHandlers) loggerHandler.Publish(logMessage);
+            foreach (var loggerHandler in _loggerTarget) loggerHandler.Publish(logMessage);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace NPServer.Infrastructure.Logging
         /// <returns>Instance hiện tại của <see cref="NPLogPublisher"/>.</returns>
         public INPLogPublisher AddHandler(INPLogTarget loggerHandler)
         {
-            if (loggerHandler != null) _loggerHandlers.Add(loggerHandler);
+            if (loggerHandler != null) _loggerTarget.Add(loggerHandler);
             return this;
         }
 
@@ -72,7 +72,7 @@ namespace NPServer.Infrastructure.Logging
         /// <param name="loggerHandler">Handler ghi nhật ký cần thêm.</param>
         /// <param name="filter">Bộ lọc để xác định xem thông điệp nhật ký có nên được xử lý hay không.</param>
         /// <returns>Instance hiện tại của <see cref="NPLogPublisher"/>.</returns>
-        public INPLogPublisher AddHandler(INPLogTarget loggerHandler, Predicate<NPLogMessage> filter)
+        public INPLogPublisher AddHandler(INPLogTarget loggerHandler, Predicate<LogMessage> filter)
         {
             if (filter == null || loggerHandler == null) return this;
 
@@ -90,7 +90,7 @@ namespace NPServer.Infrastructure.Logging
         /// <returns>True nếu xóa thành công, ngược lại False.</returns>
         public bool RemoveHandler(INPLogTarget loggerHandler)
         {
-            return _loggerHandlers.Remove(loggerHandler);
+            return _loggerTarget.Remove(loggerHandler);
         }
     }
 }

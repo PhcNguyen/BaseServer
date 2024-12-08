@@ -7,7 +7,7 @@ namespace NPServer.Infrastructure.Logging.Interfaces
     {
         INPLogPublisher AddHandler(INPLogTarget loggerHandler);
 
-        INPLogPublisher AddHandler(INPLogTarget loggerHandler, Predicate<NPLogMessage> filter);
+        INPLogPublisher AddHandler(INPLogTarget loggerHandler, Predicate<LogMessage> filter);
 
         bool RemoveHandler(INPLogTarget loggerHandler);
     }
