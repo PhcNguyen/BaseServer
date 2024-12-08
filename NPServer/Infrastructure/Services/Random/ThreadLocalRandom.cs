@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace NPServer.Infrastructure.Services.Random
 {
@@ -52,7 +52,7 @@ namespace NPServer.Infrastructure.Services.Random
         /// Sinh số ngẫu nhiên 64-bit với chất lượng cao
         /// </summary>
         public static ulong NextUInt64() =>
-            _threadLocalRng.Value!.Next();  
+            _threadLocalRng.Value!.Next();
 
         /// <summary>
         /// Điền các byte ngẫu nhiên vào buffer với hiệu suất cao

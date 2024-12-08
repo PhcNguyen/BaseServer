@@ -1,5 +1,4 @@
-﻿using NPServer.Infrastructure.Configuration;
-using NPServer.Infrastructure.Configuration.Default;
+﻿using NPServer.Infrastructure.Settings;
 using System.Net.Sockets;
 
 namespace NPServer.Core.Network.Listeners
@@ -11,11 +10,11 @@ namespace NPServer.Core.Network.Listeners
         /// </summary>
         public static void ConfigureSocket(Socket socket)
         {
-            NetworkConfig network = ConfigManager.Instance.GetConfig<NetworkConfig>();
+            NetworkConfig settings = new();
 
-            socket.Blocking = network.Blocking;
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, network.KeepAlive);
-            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, network.ReuseAddress);
+            socket.Blocking = settings.Blocking;
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, settings.KeepAlive);
+            socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, settings.ReuseAddress);
         }
     }
 }

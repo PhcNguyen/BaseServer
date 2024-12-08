@@ -19,6 +19,7 @@ namespace NPServer.Infrastructure.Services.Time
 
         // Cơ sở thời gian, sử dụng Stopwatch để tính chính xác cao
         private static readonly DateTime _utcBase;
+
         private static readonly Stopwatch _utcStopwatch;
 
         static Clock()

@@ -34,11 +34,4 @@
 	</PropertyGroup>
 
 	<!-- Thêm các package tham chiếu -->
-	<ItemGroup>
-		<None Include="Data\**" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
-	<ItemGroup>
-	  <PackageReference Include="Dapper" Version="2.1.35" />
-	  <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
-	</ItemGroup>
 </Project>

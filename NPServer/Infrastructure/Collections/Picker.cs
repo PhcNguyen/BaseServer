@@ -25,7 +25,7 @@ namespace NPServer.Infrastructure.Collections
         /// <summary>
         /// Định nghĩa các chế độ trọng số cho việc chọn phần tử.
         /// </summary>
-        enum WeightMode
+        private enum WeightMode
         {
             Invalid,
             Weighted,

@@ -8,7 +8,9 @@ namespace NPServer.Application.Handlers.Packets
 {
     internal class PacketQueue : CustomQueues<IPacket>
     {
-        public PacketQueue() : base() { }
+        public PacketQueue() : base()
+        {
+        }
     }
 
     /// <summary>

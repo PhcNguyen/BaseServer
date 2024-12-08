@@ -25,7 +25,10 @@ namespace NPServer.Core.Network.Listeners
         public SocketListener(int maxConnections)
         {
             _maxConnections = maxConnections;
-            _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            {
+                ExclusiveAddressUse = false
+            };
             SocketConfiguration.ConfigureSocket(_listenerSocket);
         }
 
@@ -37,8 +40,8 @@ namespace NPServer.Core.Network.Listeners
         /// <exception cref="InvalidOperationException">Khi socket đã được bind trước đó.</exception>
         public void StartListening(string? ipAddress, int port)
         {
-            if (_listenerSocket.IsBound)
-                throw new InvalidOperationException("Socket is already bound. StartListening cannot be called multiple times.");
+            //if (_listenerSocket.IsBound)
+            //    throw new InvalidOperationException("Socket is already bound. StartListening cannot be called multiple times.");
 
             SocketHelper.BindAndListen(_listenerSocket, ipAddress, port, _maxConnections);
         }

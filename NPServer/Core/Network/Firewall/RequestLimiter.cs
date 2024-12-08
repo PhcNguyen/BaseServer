@@ -11,7 +11,7 @@ namespace NPServer.Core.Network.Firewall
     /// <summary>
     /// Lớp xử lý giới hạn số lượng yêu cầu từ mỗi địa chỉ IP trong một cửa sổ thời gian.
     /// </summary>
-    public partial class RequestLimiter((int MaxRequests, TimeSpan TimeWindow) requestLimit, int lockoutDuration = 300) 
+    public partial class RequestLimiter((int MaxRequests, TimeSpan TimeWindow) requestLimit, int lockoutDuration = 300)
         : IRequestLimiter
     {
         private readonly (int MaxRequests, TimeSpan TimeWindow) _requestLimit = requestLimit;

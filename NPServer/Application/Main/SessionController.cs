@@ -90,6 +90,8 @@ namespace NPServer.Application.Main
 
                 session.Connect();
 
+                session.Network.OnError += (message, exception) => NPLog.Instance.Error<SessionClient>(message, exception);
+
                 session.Network.DataReceived += data =>
                 {
                     _packetContainer.EnqueueIncomingPacket(session.Id, data);

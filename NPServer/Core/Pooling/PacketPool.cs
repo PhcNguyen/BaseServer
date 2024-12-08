@@ -1,7 +1,7 @@
-﻿using NPServer.Core.Interfaces.Communication;
-using NPServer.Core.Communication;
-using System.Collections.Concurrent;
+﻿using NPServer.Core.Communication;
+using NPServer.Core.Interfaces.Communication;
 using NPServer.Core.Interfaces.Pooling;
+using System.Collections.Concurrent;
 
 namespace NPServer.Core.Pooling
 {

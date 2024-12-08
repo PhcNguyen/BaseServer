@@ -22,8 +22,8 @@ namespace NPServer.Core.Session
     /// <param name="timeout">Thời gian chờ của phiên làm việc.</param>
     /// <param name="multiSizeBuffer">Bộ đệm nhiều kích thước.</param>
     /// <param name="token">Mã thông báo hủy để kiểm soát việc dừng giám sát.</param>
-    public partial class SessionClient(Socket socket, TimeSpan timeout, 
-        IMultiSizeBufferPool multiSizeBuffer, CancellationToken token) 
+    public partial class SessionClient(Socket socket, TimeSpan timeout,
+        IMultiSizeBufferPool multiSizeBuffer, CancellationToken token)
         : ISessionClient
     {
         private bool _isDisposed = false;

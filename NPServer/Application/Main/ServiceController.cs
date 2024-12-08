@@ -1,13 +1,13 @@
 ﻿using NPServer.Core.Interfaces.Network;
+using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.Firewall;
+using NPServer.Core.Pooling;
 using NPServer.Core.Session;
-using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Config;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
-using NPServer.Infrastructure.Configuration.Default;
-using NPServer.Core.Pooling;
-using NPServer.Core.Interfaces.Pooling;
+using NPServer.Infrastructure.Settings;
 
 namespace NPServer.Application.Main
 {

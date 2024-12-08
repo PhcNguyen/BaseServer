@@ -1,9 +1,9 @@
-﻿using System;
+﻿using NPServer.Core.Interfaces.Communication;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Buffers;
-using NPServer.Core.Interfaces.Communication;
 
 namespace NPServer.Core.Communication.Base
 {

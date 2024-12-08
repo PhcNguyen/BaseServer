@@ -1,8 +1,8 @@
 ﻿using NPServer.Core.Interfaces.Communication;
+using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
-using NPServer.Core.Interfaces.Pooling;
 using System;
 using System.Threading.Tasks;
 

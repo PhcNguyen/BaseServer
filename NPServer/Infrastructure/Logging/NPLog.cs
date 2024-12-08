@@ -1,6 +1,5 @@
-﻿using NPServer.Infrastructure.Logging.Abstract;
-using NPServer.Infrastructure.Logging.Formatter;
-using NPServer.Infrastructure.Logging.Handlers;
+﻿using NPServer.Infrastructure.Logging.Formatter;
+using NPServer.Infrastructure.Logging.Targets;
 using System;
 
 namespace NPServer.Infrastructure.Logging
@@ -41,8 +40,8 @@ namespace NPServer.Infrastructure.Logging
         public void DefaultInitialization()
         {
             LoggerHandlerManager
-                .AddHandler(new NPLogConsole())
-                .AddHandler(new NPLogFile());
+                .AddHandler(new ConsoleTarget())
+                .AddHandler(new FileTarget());
             Log(Level.INFO, "Default initialization");
         }
 

@@ -1,6 +1,6 @@
-﻿using NPServer.Core.Interfaces.Communication;
-using NPServer.Core.Communication.Base;
+﻿using NPServer.Core.Communication.Base;
 using NPServer.Core.Communication.Metadata;
+using NPServer.Core.Interfaces.Communication;
 using System;
 
 namespace NPServer.Core.Communication
@@ -11,7 +11,8 @@ namespace NPServer.Core.Communication
     public partial class Packet : AbstractPacket, IPacket
     {
         // Constructor mặc định
-        public Packet() { }
+        public Packet()
+        { }
 
         /// <summary>
         /// Constructor để tạo Packet với các tham số tuỳ chọn.

@@ -13,7 +13,7 @@ namespace NPServer.Core.Interfaces.Communication
         void EnableFlag(PacketFlags flag);
 
         void DisableFlag(PacketFlags flag);
-        
+
         bool HasFlag(PacketFlags flag);
 
         void SetCmd(short command);

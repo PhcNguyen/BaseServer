@@ -2,10 +2,10 @@
 using NPServer.Core.Helpers;
 using NPServer.Core.Network.Firewall;
 using NPServer.Core.Network.Listeners;
-using NPServer.Infrastructure.Configuration;
-using NPServer.Infrastructure.Configuration.Default;
+using NPServer.Infrastructure.Config;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
+using NPServer.Infrastructure.Settings;
 using System;
 using System.Net.Sockets;
 using System.Threading;
@@ -19,12 +19,11 @@ namespace NPServer.Application.Threading
         private bool _isInMaintenanceMode;
 
         private SessionController _controller;
-        private readonly SocketListener _networkListener;
+        private SocketListener _networkListener;
 
         private CancellationTokenSource _ctokens;
         private readonly RequestLimiter _requestLimiter = Singleton.GetInstanceOfInterface<RequestLimiter>();
         private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
-
 
         public static readonly string VersionInfo = $"Version {AssemblyHelper.GetAssemblyInformationalVersion()} | {(System.Diagnostics.Debugger.IsAttached ? "Debug" : "Release")}";
 
@@ -41,6 +40,7 @@ namespace NPServer.Application.Threading
         private void InitializeComponents()
         {
             _ctokens = new CancellationTokenSource();
+            _networkListener = new SocketListener(networkConfig.MaxConnections);
             _controller = new SessionController(networkConfig.Timeout, _ctokens.Token);
         }
 
@@ -49,12 +49,6 @@ namespace NPServer.Application.Threading
             if (Interlocked.CompareExchange(ref _isRunning, 1, 0) == 1)
             {
                 NPLog.Instance.Warning("Server is already running.");
-                return;
-            }
-
-            if (_networkListener.IsListening)
-            {
-                NPLog.Instance.Warning("Socket is already bound. Cannot start the server.");
                 return;
             }
 
@@ -156,8 +150,8 @@ namespace NPServer.Application.Threading
                 try
                 {
                     _networkListener.StopListening();
-                    _networkListener.Dispose(); // Đảm bảo giải phóng tài nguyên
-                    NPLog.Instance.Info("Socket resources disposed.");
+                    //_networkListener.Dispose();
+                    //NPLog.Instance.Info("Socket resources disposed.");
                 }
                 catch (Exception ex)
                 {
@@ -173,23 +167,17 @@ namespace NPServer.Application.Threading
             if (_isRunning == 1)
             {
                 NPLog.Instance.Warning("Server is still stopping, waiting for the stop process to complete.");
-                Task.Run(async () =>
-                {
-                    await Task.Delay(5000); // Đợi một khoảng thời gian trước khi thử lại
-                    Reset();
-                });
-                return;
+
+                this.Shutdown();
+                Thread.Sleep(5000);
+
+                this.Reset();
             }
-
-            this.Shutdown();
-
-            // Đảm bảo rằng tài nguyên socket được giải phóng hoàn toàn trước khi bắt đầu lại
-            Task.Run(async () =>
+            else
             {
-                await Task.Delay(2000); // Đợi thêm thời gian để giải phóng hoàn toàn
                 this.Run();
                 NPLog.Instance.Info("Server reset successfully.");
-            });
+            }
         }
 
         public void SetMaintenanceMode(bool isMaintenance)

@@ -1,5 +1,5 @@
-﻿using NPServer.Core.Interfaces.Communication;
-using NPServer.Core.Communication.Metadata;
+﻿using NPServer.Core.Communication.Metadata;
+using NPServer.Core.Interfaces.Communication;
 using System;
 
 namespace NPServer.Core.Communication.Utilities

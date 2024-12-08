@@ -20,8 +20,15 @@ namespace NPServer.Core.Network.IO
         private bool _disposed = false;
         private CancellationTokenSource? _cts;
 
-        // Sự kiện khi dữ liệu được nhận đầy đủ
+        /// <summary>
+        // Sự kiện khi dữ liệu được nhận
+        /// <summary>
         public event EventHandler<SocketReceivedEventArgs>? DataReceived;
+
+        /// <summary>
+        /// Sự kiện lỗi.
+        /// </summary>
+        public event Action<string, Exception>? OnError;
 
         /// <summary>
         /// Kiểm tra xem đối tượng đã được giải phóng hay chưa.
@@ -81,7 +88,7 @@ namespace NPServer.Core.Network.IO
             catch (ObjectDisposedException ex)
             {
                 Dispose();
-                throw new InvalidOperationException($"Socket disposed: {ex.Message}", ex);
+                OnError?.Invoke($"Socket disposed: {ex.Message}", ex);
             }
             catch (InvalidOperationException)
             {
@@ -90,7 +97,7 @@ namespace NPServer.Core.Network.IO
             catch (Exception ex)
             {
                 Dispose();
-                throw new InvalidOperationException($"Unexpected error: {ex.Message}", ex);
+                OnError?.Invoke($"Unexpected error: {ex.Message}", ex);
             }
         }
 
@@ -140,7 +147,7 @@ namespace NPServer.Core.Network.IO
             catch (Exception ex)
             {
                 Dispose();
-                throw new InvalidOperationException($"Error in OnReceiveCompleted: {ex.Message}", ex);
+                OnError?.Invoke($"Error in OnReceiveCompleted: {ex.Message}", ex);
             }
         }
 

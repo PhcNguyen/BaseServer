@@ -1,5 +1,4 @@
 ﻿using NPServer.Application.Main;
-using NPServer.Core.Helpers;
 
 namespace NPServer.Application.Threading
 {
@@ -15,6 +14,10 @@ namespace NPServer.Application.Threading
             ServerApp serverApp = new();
 
             serverApp.Run();
+
+            System.Console.ReadKey();
+
+            serverApp.Reset();
 
             System.Console.ReadKey();
 

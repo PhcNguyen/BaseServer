@@ -29,6 +29,11 @@ namespace NPServer.Core.Session.Network
         /// </summary>
         public event Action<byte[]>? DataReceived;
 
+        /// <summary>
+        /// Sự kiện lỗi.
+        /// </summary>
+        public event Action<string, Exception>? OnError;
+
         public bool IsDispose => _disposed;
 
         /// <summary>
@@ -40,6 +45,7 @@ namespace NPServer.Core.Session.Network
             SocketWriter = new(socket, multiSizeBuffer);
             SocketReader = new(socket, multiSizeBuffer);
             SocketReader.DataReceived += OnDataReceived!;
+            SocketReader.OnError += OnError;
         }
 
         /// <summary>
@@ -76,7 +82,8 @@ namespace NPServer.Core.Session.Network
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error sending byte array: {ex.Message}", ex);
+                OnError?.Invoke($"Error sending byte array: {ex.Message}", ex);
+                return false;
             }
         }
 
@@ -94,7 +101,8 @@ namespace NPServer.Core.Session.Network
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error sending string: {ex.Message}", ex);
+                OnError?.Invoke($"Error sending string: {ex.Message}", ex);
+                return false;
             }
         }
 

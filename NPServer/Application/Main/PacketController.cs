@@ -1,13 +1,13 @@
-﻿using NPServer.Core.Interfaces.Communication;
-using NPServer.Core.Interfaces.Session;
+﻿using NPServer.Application.Handlers.Packets;
 using NPServer.Core.Communication.Utilities;
+using NPServer.Core.Interfaces.Communication;
+using NPServer.Core.Interfaces.Pooling;
+using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NPServer.Application.Handlers.Packets;
-using NPServer.Core.Interfaces.Pooling;
 
 namespace NPServer.Application.Main
 {
@@ -61,7 +61,7 @@ namespace NPServer.Application.Main
             while (!_token.IsCancellationRequested)
             {
                 await _packetQueueManager.WaitForIncoming(_token);
-                List<IPacket> packetsBatch = 
+                List<IPacket> packetsBatch =
                     (List<IPacket>)_packetQueueManager.IncomingPacketQueue.DequeueBatch(50);
 
                 await HandleIncomingPacketBatch(packetsBatch);
@@ -76,7 +76,7 @@ namespace NPServer.Application.Main
             while (!_token.IsCancellationRequested)
             {
                 await _packetQueueManager.WaitForOutgoing(_token);
-                List<IPacket> packetsBatch = 
+                List<IPacket> packetsBatch =
                     (List<IPacket>)_packetQueueManager.OutgoingPacketQueue.DequeueBatch(50);
 
                 await HandleOutgoingPacketBatch(packetsBatch);

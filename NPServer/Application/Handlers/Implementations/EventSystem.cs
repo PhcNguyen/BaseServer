@@ -1,8 +1,8 @@
-﻿using NPServer.Commands.Attributes;
+﻿using NPServer.Core.Communication.Utilities;
 using NPServer.Core.Interfaces.Communication;
-using NPServer.Core.Communication.Utilities;
-using NPServer.Models.Database;
 using NPServer.Commands;
+using NPServer.Models.Cmd;
+using NPServer.Models.Common;
 
 namespace NPServer.Application.Handlers.Implementations
 {
@@ -18,7 +18,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// Phương thức xử lý lệnh ping.
         /// </summary>
         /// <returns>Gói tin phản hồi với thông báo pong.</returns>
-        [Command(Command.Ping, UserRole.Guests)]
+        [Command(Command.Ping, AccessLevel.Guests)]
         public static IPacket Ping() =>
             ((short)Command.Pong).ToResponsePacket("Ping received. Server is responsive.");
 
@@ -26,7 +26,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// Phương thức xử lý lệnh pong.
         /// </summary>
         /// <returns>Gói tin phản hồi với thông báo ping.</returns>
-        [Command(Command.Pong, UserRole.Guests)]
+        [Command(Command.Pong, AccessLevel.Guests)]
         public static IPacket Pong() =>
             ((short)Command.Ping).ToResponsePacket("Pong received. Server is responsive.");
 
@@ -34,7 +34,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// Phương thức xử lý lệnh heartbeat.
         /// </summary>
         /// <returns>Gói tin phản hồi với thông báo thành công và trạng thái sống của server.</returns>
-        [Command(Command.Heartbeat, UserRole.Guests)]
+        [Command(Command.Heartbeat, AccessLevel.Guests)]
         public static IPacket Heartbeat() =>
             ((short)Command.Success).ToResponsePacket("Server is alive and operational.");
 
@@ -42,7 +42,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// Phương thức xử lý lệnh close.
         /// </summary>
         /// <returns>Gói tin rỗng để đóng kết nối.</returns>
-        [Command(Command.Close, UserRole.Guests)]
+        [Command(Command.Close, AccessLevel.Guests)]
         public static IPacket Close() =>
             PacketExtensions.EmptyPacket;
     }
