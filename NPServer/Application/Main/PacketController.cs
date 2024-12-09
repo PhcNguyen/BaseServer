@@ -1,4 +1,4 @@
-﻿using NPServer.Application.Handlers.Packets;
+﻿using NPServer.Application.Handlers;
 using NPServer.Core.Communication.Utilities;
 using NPServer.Core.Interfaces.Communication;
 using NPServer.Core.Interfaces.Pooling;
@@ -11,99 +11,93 @@ using System.Threading.Tasks;
 
 namespace NPServer.Application.Main
 {
-    /// <summary>
-    /// Lớp PacketContainer chịu trách nhiệm xử lý các gói tin đến và đi.
-    /// </summary>
     internal class PacketController
     {
         private readonly IPacketPool _packetPool;
         private readonly CancellationToken _token;
-        private readonly ParallelOptions _parallelOptions;
+        private readonly ISessionManager _sessionManager;
         private readonly PacketProcessor _packetProcessor;
         private readonly PacketQueueManager _packetQueueManager;
 
-        /// <summary>
-        /// Khởi tạo một đối tượng <see cref="PacketController"/> mới.
-        /// </summary>
-        /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
         public PacketController(CancellationToken token)
         {
             _token = token;
-
             _packetQueueManager = new PacketQueueManager();
             _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
-            _packetProcessor = new PacketProcessor(Singleton.GetInstanceOfInterface<ISessionManager>());
+            _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
+            _packetProcessor = new PacketProcessor(_sessionManager, _packetPool);
 
-            _parallelOptions = new()
-            {
-                MaxDegreeOfParallelism = Environment.ProcessorCount,
-                CancellationToken = _token
-            };
+            // Bắt đầu xử lý gói tin song song
+            Task.Run(() => StartProcessing(PacketQueueType.INCOMING, HandleIncomingPacketBatch), _token);
+            Task.Run(() => StartProcessing(PacketQueueType.OUTGOING, HandleOutgoingPacketBatch), _token);
         }
 
         public void EnqueueIncomingPacket(UniqueId id, byte[] data)
         {
             if (!PacketValidation.ValidatePacketStructure(data)) return;
 
-            IPacket packet = _packetPool.RentPacket();
-
+            var packet = _packetPool.RentPacket();
             packet.SetId(id);
             packet.ParseFromBytes(data);
 
-            _packetQueueManager.IncomingPacketQueue.Enqueue(packet);
+            _packetQueueManager.GetQueue(PacketQueueType.INCOMING).Enqueue(packet);
         }
 
-        /// <summary>
-        /// Xử lý các gói tin đến.
-        /// </summary>
-        public async Task ProcessIncomingPackets()
+        private void StartProcessing(PacketQueueType queueType, Action<List<IPacket>> processBatch)
         {
-            while (!_token.IsCancellationRequested)
+            try
             {
-                await _packetQueueManager.WaitForIncoming(_token);
-                List<IPacket> packetsBatch =
-                    (List<IPacket>)_packetQueueManager.IncomingPacketQueue.DequeueBatch(50);
+                while (!_token.IsCancellationRequested)
+                {
+                    // Chờ tín hiệu hàng đợi
+                    _packetQueueManager.WaitForQueue(queueType, _token);
 
-                await HandleIncomingPacketBatch(packetsBatch);
+                    // Lấy batch gói tin từ hàng đợi
+                    var packetsBatch = _packetQueueManager
+                        .GetQueue(queueType)
+                        .DequeueBatch(50);
+
+                    // Xử lý batch gói tin
+                    processBatch(packetsBatch);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Token đã bị hủy, kết thúc xử lý
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in queue processing ({queueType}): {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// Xử lý các gói tin đi.
-        /// </summary>
-        public async Task ProcessOutgoingPackets()
+        private void HandleIncomingPacketBatch(List<IPacket> packetsBatch)
         {
-            while (!_token.IsCancellationRequested)
+            Parallel.ForEach(packetsBatch, packet =>
             {
-                await _packetQueueManager.WaitForOutgoing(_token);
-                List<IPacket> packetsBatch =
-                    (List<IPacket>)_packetQueueManager.OutgoingPacketQueue.DequeueBatch(50);
-
-                await HandleOutgoingPacketBatch(packetsBatch);
-            }
-        }
-
-        /// <summary>
-        /// Xử lý một batch các gói tin đến.
-        /// </summary>
-        /// <param name="packetsBatch">Danh sách các gói tin cần xử lý.</param>
-        private async Task HandleIncomingPacketBatch(List<IPacket> packetsBatch)
-        {
-            await Parallel.ForEachAsync(packetsBatch, _parallelOptions, async (packet, token) =>
-            {
-                await _packetProcessor.HandleIncomingPacket(packet, _packetQueueManager.OutgoingPacketQueue);
+                try
+                {
+                    _packetProcessor.HandleIncomingPacket(packet, _packetQueueManager.GetQueue(PacketQueueType.OUTGOING));
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing incoming packet: {ex.Message}");
+                }
             });
         }
 
-        /// <summary>
-        /// Xử lý một batch các gói tin đi.
-        /// </summary>
-        /// <param name="packetsBatch">Danh sách các gói tin cần xử lý.</param>
-        private async Task HandleOutgoingPacketBatch(List<IPacket> packetsBatch)
+        private void HandleOutgoingPacketBatch(List<IPacket> packetsBatch)
         {
-            await Parallel.ForEachAsync(packetsBatch, _parallelOptions, async (packet, token) =>
+            Parallel.ForEach(packetsBatch, packet =>
             {
-                await _packetProcessor.HandleOutgoingPacket(packet);
+                try
+                {
+                    _packetProcessor.HandleOutgoingPacket(packet);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing outgoing packet: {ex.Message}");
+                }
             });
         }
     }

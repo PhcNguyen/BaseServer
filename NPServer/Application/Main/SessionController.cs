@@ -45,18 +45,15 @@ namespace NPServer.Application.Main
         /// </summary>
         private void Initialization()
         {
-            _sessionMonitor.OnInfo += (message) => NPLog.Instance.Info<SessionMonitor>(message);
             _sessionMonitor.OnError += (message, exception) => NPLog.Instance.Error<SessionMonitor>(message, exception);
 
             Task monitorSessionsTask = _sessionMonitor.MonitorSessionsAsync();
-            Task processIncomingPacketsTask = _packetContainer.ProcessIncomingPackets();
-            Task processOutgoingPacketsTask = _packetContainer.ProcessOutgoingPackets();
 
             Task.Run(async () =>
             {
                 try
                 {
-                    await Task.WhenAll(monitorSessionsTask, processIncomingPacketsTask, processOutgoingPacketsTask).ConfigureAwait(false);
+                    await Task.WhenAll(monitorSessionsTask).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -87,15 +84,15 @@ namespace NPServer.Application.Main
                 session.OnInfo += (message) => NPLog.Instance.Info<SessionClient>(message);
                 session.OnWarning += (message) => NPLog.Instance.Warning<SessionClient>(message);
                 session.OnError += (message, exception) => NPLog.Instance.Error<SessionClient>(message, exception);
-
+                
                 session.Connect();
-
-                session.Network.OnError += (message, exception) => NPLog.Instance.Error<SessionClient>(message, exception);
 
                 session.Network.DataReceived += data =>
                 {
                     _packetContainer.EnqueueIncomingPacket(session.Id, data);
                 };
+
+                session.Network.OnError += (message, exception) => NPLog.Instance.Error<SessionClient>(message, exception);
 
                 return;
             }

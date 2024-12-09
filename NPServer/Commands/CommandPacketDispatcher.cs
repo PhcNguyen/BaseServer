@@ -1,7 +1,6 @@
 ﻿using NPServer.Core.Communication.Utilities;
 using NPServer.Core.Interfaces.Communication;
 using NPServer.Infrastructure.Logging;
-using NPServer.Models.Cmd;
 using NPServer.Models.Common;
 
 namespace NPServer.Commands

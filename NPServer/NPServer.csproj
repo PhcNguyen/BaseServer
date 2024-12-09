@@ -32,6 +32,8 @@
 		<ErrorReport>prompt</ErrorReport>
 		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
+	<ItemGroup>
+	</ItemGroup>
 
 	<!-- Thêm các package tham chiếu -->
 </Project>

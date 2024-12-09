@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace NPServer.Infrastructure.Services.Random
 {

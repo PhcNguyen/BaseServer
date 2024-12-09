@@ -25,14 +25,12 @@ namespace NPServer.Application.Threading
         private readonly RequestLimiter _requestLimiter = Singleton.GetInstanceOfInterface<RequestLimiter>();
         private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
 
-        public static readonly string VersionInfo = $"Version {AssemblyHelper.GetAssemblyInformationalVersion()} | {(System.Diagnostics.Debugger.IsAttached ? "Debug" : "Release")}";
-
-        public ServerApp()
+        public ServerApp(CancellationTokenSource tokenSource)
         {
             _isRunning = 0;
             _isInMaintenanceMode = false;
 
-            _ctokens = new CancellationTokenSource();
+            _ctokens = tokenSource;
             _networkListener = new SocketListener(networkConfig.MaxConnections);
             _controller = new SessionController(networkConfig.Timeout, _ctokens.Token);
         }

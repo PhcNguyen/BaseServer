@@ -1,5 +1,4 @@
-﻿using NPServer.Models.Cmd;
-using NPServer.Models.Common;
+﻿using NPServer.Models.Common;
 using System;
 
 namespace NPServer.Commands
@@ -18,6 +17,7 @@ namespace NPServer.Commands
         /// Lệnh được liên kết với phương thức.
         /// </summary>
         public Command Command { get; } = command;
+
         public AccessLevel RequiredRole { get; } = requiredRole;
     }
 

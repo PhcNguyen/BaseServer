@@ -24,11 +24,6 @@ namespace NPServer.Core.Session
         private readonly CancellationToken _token = cancellationToken;
 
         /// <summary>
-        /// Sự kiện thông tin.
-        /// </summary>
-        public event Action<string>? OnInfo;
-
-        /// <summary>
         /// Sự kiện lỗi.
         /// </summary>
         public event Action<string, Exception>? OnError;

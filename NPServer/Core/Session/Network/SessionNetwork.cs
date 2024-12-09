@@ -1,7 +1,7 @@
 ﻿using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.IO;
-using NPServer.Infrastructure.Security.Checksum;
+using NPServer.Infrastructure.Security;
 using System;
 using System.Net.Sockets;
 
@@ -55,11 +55,13 @@ namespace NPServer.Core.Session.Network
         /// <param name="e">Dữ liệu sự kiện socket nhận.</param>
         private void OnDataReceived(object sender, SocketReceivedEventArgs e)
         {
-            bool isValid = Crc32x86.VerifyCrc32(e.Data, out byte[]? originalData);
-
-            if (isValid && originalData != null)
-            {
+            if (Crc32x86.VerifyCrc32(e.Data, out byte[]? originalData) && originalData != null)
+            { 
                 DataReceived?.Invoke(originalData);
+            } 
+            else
+            {
+                Console.WriteLine("test case network faild");
             }
         }
 

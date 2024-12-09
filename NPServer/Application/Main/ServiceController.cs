@@ -1,4 +1,5 @@
-﻿using NPServer.Core.Interfaces.Network;
+﻿using NPServer.Core.Helpers;
+using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.Firewall;
@@ -19,6 +20,10 @@ namespace NPServer.Application.Main
         private static readonly NetworkConfig _networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
         private static readonly BufferConfig _bufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
 
+        public static readonly string VersionInfo = 
+            $"Version {AssemblyHelper.GetAssemblyInformationalVersion()} " +
+            $"| {(System.Diagnostics.Debugger.IsAttached ? "Debug" : "Release")}";
+
         public static void Initialization()
         {
             Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>().AllocateBuffers();
@@ -38,7 +43,7 @@ namespace NPServer.Application.Main
             // Core
             Singleton.Register<ISessionManager, SessionManager>();
 
-            Singleton.Register<IPacketPool, PacketPool>(() => new PacketPool(10));
+            Singleton.Register<IPacketPool, PacketPool>(() => new PacketPool(10, int.MaxValue));
 
             Singleton.Register<IConnLimiter, ConnLimiter>(() =>
             new ConnLimiter(_networkConfig.MaxConnections));

@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace NPServer.Infrastructure.Collections
 {
@@ -39,13 +39,13 @@ namespace NPServer.Infrastructure.Collections
         /// </summary>
         public TClass? Dequeue()
         {
-            return _queue.TryDequeue(out var packet) ? packet : null;
+            return _queue.TryDequeue(out TClass? packet) ? packet : null;
         }
 
         /// <summary>
         /// Lấy một lô gói tin từ hàng đợi để xử lý theo nhóm.
         /// </summary>
-        public IReadOnlyCollection<TClass> DequeueBatch(int batchSize)
+        public List<TClass> DequeueBatch(int batchSize)
         {
             if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
             var batch = new List<TClass>(batchSize);
@@ -55,13 +55,13 @@ namespace NPServer.Infrastructure.Collections
                 batch.Add(packet);
             }
 
-            return batch.AsReadOnly();
+            return batch;
         }
 
         /// <summary>
         /// Lấy gói tin theo nhóm không đồng bộ, hỗ trợ chờ tín hiệu mới.
         /// </summary>
-        public async Task<IReadOnlyCollection<TClass>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken = default)
+        public async Task<List<TClass>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken = default)
         {
             if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
             var batch = new List<TClass>(batchSize);
@@ -78,7 +78,7 @@ namespace NPServer.Infrastructure.Collections
                 }
             }
 
-            return batch.AsReadOnly();
+            return batch;
         }
 
         /// <summary>
@@ -108,9 +108,9 @@ namespace NPServer.Infrastructure.Collections
         /// <summary>
         /// Chuyển đổi hàng đợi thành danh sách.
         /// </summary>
-        public IReadOnlyCollection<TClass> ToList()
+        public List<TClass> ToList()
         {
-            return _queue.ToList().AsReadOnly();
+            return [.. _queue];
         }
 
         /// <summary>

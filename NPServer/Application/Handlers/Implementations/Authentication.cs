@@ -1,12 +1,11 @@
-﻿//using NPServer.Application.Helper;
-//using NPServer.Core.Handlers;
-//using NPServer.Core.Interfaces.Packets;
-//using NPServer.Database;
-//using NPServer.Infrastructure.Security;
+﻿//using NPServer.Core.Interfaces.Communication;
+//using NPServer.Application.Helper;
+//using NPServer.Commands;
+//using NPServer.Models.Common;
 //using System;
 //using System.Threading.Tasks;
 
-//namespace NPServer.Application.Handlers.Client
+//namespace NPServer.Application.Handlers.Implementations
 //{
 //    /// <summary>
 //    /// Lớp xử lý các yêu cầu xác thực của khách hàng.
@@ -14,24 +13,24 @@
 //    /// Lớp này chịu trách nhiệm xử lý các yêu cầu đăng ký, đăng nhập và cập nhật mật khẩu từ phía khách hàng.
 //    /// </para>
 //    /// </summary>
-//    internal class Authentication : RequestHandlerBase
+//    internal class Authentication
 //    {
 //        /// <summary>
 //        /// Phương thức đăng ký người dùng mới.
 //        /// </summary>
 //        /// <param name="packet">Dữ liệu đăng ký bao gồm email và mật khẩu.</param>
 //        /// <returns>Gói tin phản hồi kết quả đăng ký.</returns>
-//        [CommandAttribute<Command>(Command.REGISTER)]
+//        [Command(Command.Register, AccessLevel.Guests)]
 //        public static async Task<IPacket> Register(IPacket packet)
 //        {
-//            byte[] data = packet.Payload.ToArray();
+//            byte[] data = packet.PayloadData.ToArray();
 
 //            string[]? input = DataValidator.ParseInput(data, 2);
 
 //            if (input == null)
 //            {
 //                packet.Reset();
-//                packet.SetCmd(Command.ERROR);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid registration data format.");
 
 //                return packet;
@@ -42,7 +41,7 @@
 //            if (!EmailValidator.IsEmailValid(email) || !PasswordValidator.IsPasswordValid(password))
 //            {
 //                packet.Reset();
-//                packet.SetCmd(Command.ERROR);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid email or weak password.");
 
 //                return packet;
@@ -78,17 +77,17 @@
 //        /// </summary>
 //        /// <param name="packet">Dữ liệu đăng nhập bao gồm email và mật khẩu.</param>
 //        /// <returns>Gói tin phản hồi kết quả đăng nhập.</returns>
-//        [CommandAttribute<Command>(Command.LOGIN)]
+//        [Command(Command.Login, AccessLevel.Guests)]
 //        public static async Task<IPacket> Login(IPacket packet)
 //        {
-//            byte[] data = packet.Payload.ToArray();
+//            byte[] data = packet.PayloadData.ToArray();
 
 //            string[]? input = DataValidator.ParseInput(data, 2);
 
 //            if (input == null)
 //            {
 //                packet.Reset();
-//                packet.SetCmd(Command.ERROR);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid login data format.");
 
 //                return packet;
@@ -99,7 +98,7 @@
 //            if (!EmailValidator.IsEmailValid(email))
 //            {
 //                packet.Reset();
-//                packet.SetCmd(Command.ERROR);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid email or password.");
 
 //                return packet;
@@ -111,7 +110,7 @@
 //                if (string.IsNullOrEmpty(hashedPassword))
 //                {
 //                    packet.Reset();
-//                    packet.SetCmd(Command.ERROR);
+//                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Invalid email or password.");
 
 //                    return packet;
@@ -121,7 +120,7 @@
 //                if (lastLogin.HasValue && (DateTime.UtcNow - lastLogin.Value).TotalSeconds < 20)
 //                {
 //                    packet.Reset();
-//                    packet.SetCmd(Command.ERROR);
+//                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Please wait 20 seconds before trying again.");
 
 //                    return packet;
@@ -132,7 +131,7 @@
 //                    await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_LAST_LOGIN, email); // Log failed attempt
 
 //                    packet.Reset();
-//                    packet.SetCmd(Command.ERROR);
+//                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Invalid email or password.");
 
 //                    return packet;
@@ -141,7 +140,7 @@
 //                await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, true, email);
 
 //                packet.Reset();
-//                packet.SetCmd(Command.SUCCESS);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Login successful.");
 
 //                return packet;
@@ -157,16 +156,16 @@
 //        /// </summary>
 //        /// <param name="packet">Dữ liệu đăng xuất bao gồm email (nếu có yêu cầu).</param>
 //        /// <returns>Gói tin phản hồi kết quả đăng xuất.</returns>
-//        [CommandAttribute<Command>(Command.LOGOUT)]
+//        [Command(Command.Logout, AccessLevel.User)]
 //        public static async Task<IPacket> Logout(IPacket packet)
 //        {
-//            byte[] data = packet.Payload.ToArray();
+//            byte[] data = packet.PayloadData.ToArray();
 
 //            string[]? input = DataValidator.ParseInput(data, 1);
 //            if (input == null)
 //            {
 //                packet.Reset();
-//                packet.SetCmd(Command.ERROR);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid logout data format.");
 
 //                return packet;
@@ -179,7 +178,7 @@
 //                await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, false, email);
 
 //                packet.Reset();
-//                packet.SetCmd(Command.SUCCESS);
+//                packet.SetCmd(Command.Success);
 //                packet.SetPayload("Logout successful.");
 
 //                return packet;
@@ -195,16 +194,16 @@
 //        /// </summary>
 //        /// <param name="packet">Dữ liệu bao gồm email, mật khẩu hiện tại và mật khẩu mới.</param>
 //        /// <returns>Gói tin phản hồi kết quả cập nhật mật khẩu.</returns>
-//        [CommandAttribute<Command>(Command.UPDATE_PASSWORD)]
+//        [Command(Command.UpdatePassword, AccessLevel.User)]
 //        public static async Task<IPacket> UpdatePassword(IPacket packet)
 //        {
-//            byte[] data = packet.Payload.ToArray();
+//            byte[] data = packet.PayloadData.ToArray();
 
 //            string[]? input = DataValidator.ParseInput(data, 3);
 //            if (input == null)
 //            {
 //                packet.Reset();
-//                packet.SetCmd(Command.ERROR);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid data format.");
 
 //                return packet;
@@ -215,7 +214,7 @@
 //            if (!PasswordValidator.IsPasswordValid(newPassword))
 //            {
 //                packet.Reset();
-//                packet.SetCmd(Command.ERROR);
+//                packet.SetCmd(Command.Error);
 //                packet.SetPayload("New password is too weak.");
 
 //                return packet;
@@ -228,7 +227,7 @@
 //                if (!Pbkdf2Cyptography.ValidatePassword(currentPassword, storedPasswordHash))
 //                {
 //                    packet.Reset();
-//                    packet.SetCmd(Command.ERROR);
+//                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Incorrect current password.");
 
 //                    return packet;
@@ -238,7 +237,7 @@
 //                bool updateSuccess = await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, hashedNewPassword);
 
 //                packet.Reset();
-//                packet.SetCmd(updateSuccess ? Command.SUCCESS : Command.ERROR);
+//                packet.SetCmd(updateSuccess ? Command.Success : Command.Error);
 //                packet.SetPayload(updateSuccess ? "Password updated successfully." : "Failed to update password.");
 
 //                return packet;

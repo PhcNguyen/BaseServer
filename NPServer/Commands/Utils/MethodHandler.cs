@@ -40,5 +40,4 @@ namespace NPServer.Commands.Utils
             throw new ArgumentException("Method signature is invalid. It must either have no parameters or one object parameter.");
         }
     }
-
 }
