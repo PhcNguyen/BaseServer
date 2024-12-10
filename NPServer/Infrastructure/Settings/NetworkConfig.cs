@@ -1,4 +1,5 @@
 ﻿using NPServer.Infrastructure.Config;
+using System;
 
 namespace NPServer.Infrastructure.Settings
 {
@@ -28,11 +29,6 @@ namespace NPServer.Infrastructure.Settings
         public int RequestDelayMilliseconds { get; private set; } = 50;
 
         /// <summary>
-        /// Thời gian khóa kết nối khi vượt quá giới hạn yêu cầu (300 giây).
-        /// </summary>
-        public int ConnectionLockoutDuration { get; private set; } = 300;
-
-        /// <summary>
         /// Giới hạn số kết nối tối đa từ một địa chỉ IP (ví dụ: 20 kết nối từ cùng một IP).
         /// </summary>
         public int MaxConnectionsPerIpAddress { get; private set; } = 20;
@@ -60,13 +56,21 @@ namespace NPServer.Infrastructure.Settings
         /// <summary>
         /// Thời gian phiên làm việc của client trước khi hết hạn (20 giây).
         /// </summary>
-        [ConfigIgnore]
-        public System.TimeSpan Timeout { get; private set; } = System.TimeSpan.FromSeconds(20);
+        public int TimeoutInSeconds { get; private set; } = 20;
 
         /// <summary>
-        /// Giới hạn yêu cầu tối đa trong một cửa sổ thời gian (ví dụ: 10 yêu cầu trong 0.1 giây).
+        /// Giới hạn yêu cầu tối đa trong một cửa sổ thời gian.
         /// </summary>
-        [ConfigIgnore]
-        public (int MaxRequests, System.TimeSpan TimeWindow) RateLimit { get; private set; } = (10, System.TimeSpan.FromSeconds(0.1));
+        public int MaxAllowedRequests { get; private set; } = 10;
+
+        /// <summary>
+        /// Giới hạn yêu cầu tối đa trong một cửa sổ thời gian.
+        /// </summary>
+        public int TimeWindowInMilliseconds { get; private set; } = 100;
+
+        /// <summary>
+        /// Thời gian khóa kết nối khi vượt quá giới hạn yêu cầu (300 giây).
+        /// </summary>
+        public int LockoutDurationInSeconds { get; private set; } = 300;
     }
 }

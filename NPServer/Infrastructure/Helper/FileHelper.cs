@@ -9,15 +9,12 @@ namespace NPServer.Infrastructure.Helper
     /// </summary>
     public static class FileHelper
     {
-        public static readonly string ServerRoot = PathConfig.Base;
-        public static readonly string DataDirectory = PathConfig.DataDirectory;
-
         /// <summary>
         /// Returns a path relative to server root directory.
         /// </summary>
         public static string GetRelativePath(string filePath)
         {
-            return Path.GetRelativePath(ServerRoot ?? "", filePath);
+            return Path.GetRelativePath(PathConfig.Base ?? "", filePath);
         }
 
         /// <summary>
@@ -46,7 +43,7 @@ namespace NPServer.Infrastructure.Helper
         /// </summary>
         public static void SaveTextFileToRoot(string fileName, string text)
         {
-            File.WriteAllText(Path.Combine(ServerRoot, fileName), text);
+            File.WriteAllText(Path.Combine(PathConfig.Base, fileName), text);
         }
 
         public static bool CreateFileBackup(string filePath, int maxBackups)

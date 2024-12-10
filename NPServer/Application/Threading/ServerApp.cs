@@ -1,7 +1,7 @@
 ﻿using NPServer.Application.Main;
 using NPServer.Core.Helpers;
-using NPServer.Core.Network.Firewall;
 using NPServer.Core.Network.Listeners;
+using NPServer.Core.Interfaces.Network;
 using NPServer.Infrastructure.Config;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
@@ -10,6 +10,7 @@ using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using NPServer.Core.Network.Firewall;
 
 namespace NPServer.Application.Threading
 {
@@ -22,8 +23,8 @@ namespace NPServer.Application.Threading
         private SocketListener _networkListener;
 
         private CancellationTokenSource _ctokens;
-        private readonly RequestLimiter _requestLimiter = Singleton.GetInstanceOfInterface<RequestLimiter>();
         private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
+        private readonly FirewallRateLimit _requestLimiter = Singleton.GetInstance<FirewallRateLimit>();
 
         public ServerApp(CancellationTokenSource tokenSource)
         {
@@ -31,15 +32,19 @@ namespace NPServer.Application.Threading
             _isInMaintenanceMode = false;
 
             _ctokens = tokenSource;
-            _networkListener = new SocketListener(networkConfig.MaxConnections);
-            _controller = new SessionController(networkConfig.Timeout, _ctokens.Token);
+            _networkListener = new SocketListener(
+                AddressFamily.InterNetwork, SocketType.Stream,
+                ProtocolType.Tcp, networkConfig.MaxConnections);
+            _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
         }
 
         private void InitializeComponents()
         {
             _ctokens = new CancellationTokenSource();
-            _networkListener = new SocketListener(networkConfig.MaxConnections);
-            _controller = new SessionController(networkConfig.Timeout, _ctokens.Token);
+            _networkListener = new SocketListener(
+                AddressFamily.InterNetwork, SocketType.Stream,
+                ProtocolType.Tcp, networkConfig.MaxConnections);
+            _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
         }
 
         public void Run()

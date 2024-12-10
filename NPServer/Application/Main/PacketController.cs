@@ -26,10 +26,31 @@ namespace NPServer.Application.Main
             _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
             _packetProcessor = new PacketProcessor(_sessionManager, _packetPool);
+        }
 
-            // Bắt đầu xử lý gói tin song song
+        public void StartAllTasks()
+        {
             Task.Run(() => StartProcessing(PacketQueueType.INCOMING, HandleIncomingPacketBatch), _token);
             Task.Run(() => StartProcessing(PacketQueueType.OUTGOING, HandleOutgoingPacketBatch), _token);
+        }
+
+        private void StartTask(Func<Task> taskFunc)
+        {
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await taskFunc();
+                }
+                catch (OperationCanceledException)
+                {
+                    // Token bị hủy, kết thúc Task
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in Task: {ex.Message}");
+                }
+            }, _token);
         }
 
         public void EnqueueIncomingPacket(UniqueId id, byte[] data)

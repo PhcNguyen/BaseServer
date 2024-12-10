@@ -1,6 +1,4 @@
 ﻿using NPServer.Application.Main;
-using NPServer.Infrastructure.Settings;
-using NPServer.Tests;
 using System.Threading;
 
 namespace NPServer.Application.Threading
@@ -16,9 +14,10 @@ namespace NPServer.Application.Threading
             ServiceController.RegisterSingleton();
             ServiceController.Initialization();
 
+            Thread.Sleep(1000);
+
             ServerApp serverApp = new(_ctokens);
             
-
             serverApp.Run();
 
             System.Console.ReadKey();

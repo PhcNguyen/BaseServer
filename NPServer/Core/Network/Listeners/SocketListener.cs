@@ -22,10 +22,10 @@ namespace NPServer.Core.Network.Listeners
         /// <summary>
         /// Khởi tạo một đối tượng <see cref="SocketListener"/> mới.
         /// </summary>
-        public SocketListener(int maxConnections)
+        public SocketListener(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType, int maxConnections)
         {
             _maxConnections = maxConnections;
-            _listenerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            _listenerSocket = new Socket(addressFamily, socketType, protocolType)
             {
                 ExclusiveAddressUse = false
             };

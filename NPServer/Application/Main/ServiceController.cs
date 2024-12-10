@@ -1,10 +1,11 @@
 ﻿using NPServer.Core.Helpers;
+using NPServer.Core.Pooling;
+using NPServer.Core.Session;
+using NPServer.Core.Network.Firewall;
 using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Network.Firewall;
-using NPServer.Core.Pooling;
-using NPServer.Core.Session;
+using NPServer.Infrastructure.Helper;
 using NPServer.Infrastructure.Config;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
@@ -17,8 +18,8 @@ namespace NPServer.Application.Main
     /// </summary>
     internal static class ServiceController
     {
-        private static readonly NetworkConfig _networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
         private static readonly BufferConfig _bufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
+        private static readonly NetworkConfig _networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
 
         public static readonly string VersionInfo = 
             $"Version {AssemblyHelper.GetAssemblyInformationalVersion()} " +
@@ -31,14 +32,15 @@ namespace NPServer.Application.Main
         }
 
         /// <summary>
-        /// Đăng ký các instance của dịch vụ vào Singleton.
+        /// Đăng ký các instance của dịch vụ vào Singleton.axe ZASRBABEeev 
         /// </summary>
         public static void RegisterSingleton()
         {
             // Application
 
-            Singleton.Register<RequestLimiter>(() =>
-            new RequestLimiter(_networkConfig.RateLimit, _networkConfig.ConnectionLockoutDuration));
+            Singleton.Register<FirewallRateLimit>(() =>
+            new FirewallRateLimit(_networkConfig.MaxAllowedRequests,
+            _networkConfig.TimeWindowInMilliseconds, _networkConfig.LockoutDurationInSeconds));
 
             // Core
             Singleton.Register<ISessionManager, SessionManager>();
@@ -48,11 +50,12 @@ namespace NPServer.Application.Main
             Singleton.Register<IConnLimiter, ConnLimiter>(() =>
             new ConnLimiter(_networkConfig.MaxConnections));
 
-            Singleton.Register<IMultiSizeBufferPool, MultiSizeBufferPool>(() =>
-            new MultiSizeBufferPool(_bufferConfig.BufferAllocations, _bufferConfig.TotalBuffers));
+            Singleton.Register<IFirewallRateLimit, FirewallRateLimit>(() =>
+            new FirewallRateLimit(_networkConfig.MaxAllowedRequests,
+            _networkConfig.TimeWindowInMilliseconds, _networkConfig.LockoutDurationInSeconds));
 
-            Singleton.Register<IRequestLimiter, RequestLimiter>(() =>
-            new RequestLimiter(_networkConfig.RateLimit, _networkConfig.ConnectionLockoutDuration));
+            Singleton.Register<IMultiSizeBufferPool, MultiSizeBufferPool>(() =>
+            new MultiSizeBufferPool(_bufferConfig.BufferAllocationsString.ParseBufferAllocations(), _bufferConfig.TotalBuffers));
         }
     }
 }

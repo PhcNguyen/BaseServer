@@ -27,10 +27,10 @@ namespace NPServer.Application.Main
         /// Khởi tạo một <see cref="SessionController"/> mới.
         /// </summary>
         /// <param name="token">Token hủy bỏ cho các tác vụ bất đồng bộ.</param>
-        public SessionController(TimeSpan timeout, CancellationToken token)
+        public SessionController(int timeout, CancellationToken token)
         {
-            _timeout = timeout;
             _canceltoken = token;
+            _timeout = TimeSpan.FromSeconds(timeout);
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
             _multiSizeBuffer = Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>();
 

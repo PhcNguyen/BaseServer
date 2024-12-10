@@ -101,14 +101,14 @@ namespace NPServer.Infrastructure.Security
         /// <returns>True nếu checksum hợp lệ, ngược lại False.</returns>
         public static bool VerifyCrc32(ReadOnlySpan<byte> dataWithChecksum, out byte[]? originalData)
         {
-            if (dataWithChecksum.Length < sizeof(uint) + sizeof(int)) // Kiểm tra đủ độ dài cho dữ liệu và checksum
+            if (dataWithChecksum.Length < sizeof(uint) + sizeof(uint)) // Kiểm tra đủ độ dài cho dữ liệu và checksum
             {
                 originalData = null;
                 return false;
             }
 
             // Lấy chiều dài của dữ liệu
-            int length = BitConverter.ToInt32(dataWithChecksum.Slice(0, sizeof(int)));
+            uint length = BitConverter.ToUInt32(dataWithChecksum[..sizeof(uint)]);
             if (dataWithChecksum.Length < length)
             {
                 originalData = null;
@@ -116,8 +116,8 @@ namespace NPServer.Infrastructure.Security
             }
 
             // Lấy dữ liệu gốc và checksum từ mảng
-            ReadOnlySpan<byte> data = dataWithChecksum.Slice(sizeof(int), length - sizeof(uint)); // Dữ liệu gốc
-            ReadOnlySpan<byte> checksumBytes = dataWithChecksum[(length - sizeof(uint))..]; // Checksum
+            ReadOnlySpan<byte> data = dataWithChecksum[sizeof(uint)..(sizeof(uint) + (int)length)];
+            ReadOnlySpan<byte> checksumBytes = dataWithChecksum[(sizeof(uint) + (int)length)..];
 
             uint checksum = BitConverter.ToUInt32(checksumBytes);
 
