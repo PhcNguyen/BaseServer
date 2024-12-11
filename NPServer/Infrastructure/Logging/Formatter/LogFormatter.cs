@@ -1,27 +1,52 @@
 ﻿using NPServer.Infrastructure.Logging.Interfaces;
+using System;
+using System.Text;
 
 namespace NPServer.Infrastructure.Logging.Formatter
 {
     public class LogFormatter : ILogFormatter
     {
-        private readonly string _message = "{0:HH:mm:ss.fff} - {1} - {2}{3}";
+        public LogFormatter()
+        {
+        }
 
         public string ApplyFormat(LogMessage logMessage)
         {
-            // Kiểm tra và xây dựng chuỗi log chỉ khi CallingClass và CallingMethod có giá trị hợp lệ
-            string callingInfo = string.Empty;
+            ArgumentNullException.ThrowIfNull(logMessage);
+
+            StringBuilder logBuilder = new();
+
+            logBuilder.AppendFormat("{0:HH:mm:ss.fff}", logMessage.DateTime);
+            logBuilder.Append(" - ");
+            logBuilder.Append(logMessage.Level);
+            logBuilder.Append(" - ");
 
             if (!string.IsNullOrEmpty(logMessage.CallingClass) && !string.IsNullOrEmpty(logMessage.CallingMethod))
             {
-                callingInfo = $"[{logMessage.CallingClass} -> {logMessage.CallingMethod}()]: ";
+                logBuilder.AppendFormat("[{0} -> {1}()]: ", logMessage.CallingClass, logMessage.CallingMethod);
             }
 
-            // Format message với hoặc không có CallingClass/Method
-            return string.Format(_message,
-                logMessage.DateTime, logMessage.Level, callingInfo, logMessage.Text);
+            logBuilder.Append(logMessage.Text);
+
+            return logBuilder.ToString();
         }
 
-        public static string FormatExceptionMessage(System.Exception exception) =>
-            $"Log exception -> Message: {exception.Message}\nStackTrace: {exception.StackTrace}";
+        public static string FormatExceptionMessage(Exception exception)
+        {
+            ArgumentNullException.ThrowIfNull(exception);
+
+            StringBuilder exceptionBuilder = new();
+            exceptionBuilder.AppendLine("Log exception -> ");
+            exceptionBuilder.AppendLine($"Message: {exception.Message}");
+            exceptionBuilder.AppendLine($"StackTrace: {exception.StackTrace}");
+
+            if (exception.InnerException != null)
+            {
+                exceptionBuilder.AppendLine($"InnerException: {exception.InnerException.Message}");
+                exceptionBuilder.AppendLine($"InnerException StackTrace: {exception.InnerException.StackTrace}");
+            }
+
+            return exceptionBuilder.ToString();
+        }
     }
 }

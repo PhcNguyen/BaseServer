@@ -11,7 +11,7 @@ namespace NPServer.Infrastructure.Logging.Filter
         /// <summary>
         /// Mức độ nhật ký được lọc.
         /// </summary>
-        public NPLog.Level FilteredLevel { get; set; }
+        public NPLogBase.Level FilteredLevel { get; set; }
 
         /// <summary>
         /// Cờ để chỉ ra rằng mức độ nhật ký phải chính xác bằng mức độ được lọc.

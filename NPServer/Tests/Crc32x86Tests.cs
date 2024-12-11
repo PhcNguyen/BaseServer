@@ -16,7 +16,7 @@ namespace NPServer.Tests
         public static void Test_CalculateCrc32()
         {
             // Arrange
-            byte[] data = { 1, 2, 3, 4, 5 };
+            byte[] data = [1, 2, 3, 4, 5];
 
             // Act
             uint checksum = Crc32x86.CalculateCrc32(data);
@@ -31,7 +31,7 @@ namespace NPServer.Tests
         public static void Test_AddCrc32()
         {
             // Arrange
-            byte[] data = { 1, 2, 3, 4, 5 };
+            byte[] data = [1, 2, 3, 4, 5];
 
             // Act
             byte[] dataWithChecksum = Crc32x86.AddCrc32(data);
@@ -46,7 +46,7 @@ namespace NPServer.Tests
         public static void Test_VerifyCrc32_Valid()
         {
             // Arrange
-            byte[] data = { 1, 2, 3, 4, 5 };
+            byte[] data = [1, 2, 3, 4, 5];
             byte[] dataWithChecksum = Crc32x86.AddCrc32(data);
 
             // Act
@@ -62,8 +62,9 @@ namespace NPServer.Tests
         public static void Test_VerifyCrc32_Invalid()
         {
             // Arrange
-            byte[] data = { 1, 2, 3, 4, 5 };
+            byte[] data = [1, 2, 3, 4, 5];
             byte[] dataWithChecksum = Crc32x86.AddCrc32(data);
+
             // Thay đổi dữ liệu để kiểm tra tính hợp lệ của checksum
             dataWithChecksum[0] = 9;
 

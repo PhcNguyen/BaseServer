@@ -11,7 +11,7 @@
         /// <param name="logMessLevel">Mức độ của thông điệp nhật ký.</param>
         /// <param name="filterLevel">Mức độ cần lọc.</param>
         /// <returns>True nếu mức độ của thông điệp nhật ký cao hơn hoặc bằng mức độ cần lọc, ngược lại False.</returns>
-        public static bool ByLevelHigher(NPLog.Level logMessLevel, NPLog.Level filterLevel) =>
+        public static bool ByLevelHigher(NPLogBase.Level logMessLevel, NPLogBase.Level filterLevel) =>
             (int)logMessLevel >= (int)filterLevel;
 
         /// <summary>
@@ -20,7 +20,7 @@
         /// <param name="logMessLevel">Mức độ của thông điệp nhật ký.</param>
         /// <param name="filterLevel">Mức độ cần lọc.</param>
         /// <returns>True nếu mức độ của thông điệp nhật ký thấp hơn hoặc bằng mức độ cần lọc, ngược lại False.</returns>
-        public static bool ByLevelLower(NPLog.Level logMessLevel, NPLog.Level filterLevel) =>
+        public static bool ByLevelLower(NPLogBase.Level logMessLevel, NPLogBase.Level filterLevel) =>
             (int)logMessLevel <= (int)filterLevel;
 
         /// <summary>
@@ -29,7 +29,7 @@
         /// <param name="logMessLevel">Mức độ của thông điệp nhật ký.</param>
         /// <param name="filterLevel">Mức độ cần lọc.</param>
         /// <returns>True nếu mức độ của thông điệp nhật ký chính xác bằng mức độ cần lọc, ngược lại False.</returns>
-        public static bool ByLevelExactly(NPLog.Level logMessLevel, NPLog.Level filterLevel) =>
+        public static bool ByLevelExactly(NPLogBase.Level logMessLevel, NPLogBase.Level filterLevel) =>
             (int)logMessLevel == (int)filterLevel;
     }
 }

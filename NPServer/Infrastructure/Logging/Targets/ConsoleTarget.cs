@@ -1,33 +1,84 @@
 ﻿using NPServer.Infrastructure.Logging.Formatter;
 using NPServer.Infrastructure.Logging.Interfaces;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace NPServer.Infrastructure.Logging.Targets
 {
-    public class ConsoleTarget(ILogFormatter loggerFormatter) : INPLogTarget
+    public class ConsoleTarget : INPLogTarget, IDisposable
     {
-        private readonly ILogFormatter _loggerFormatter = loggerFormatter;
+        private readonly ILogFormatter _loggerFormatter;
+        private readonly ConcurrentQueue<LogMessage> _logQueue = new();
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly Task _workerTask;
 
-        public ConsoleTarget() : this(new LogFormatter())
-        { }
+        public ConsoleTarget(ILogFormatter loggerFormatter)
+        {
+            _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
+
+            _workerTask = Task.Run(() => ProcessLogQueueAsync(_cancellationTokenSource.Token));
+        }
+
+        public ConsoleTarget() : this(new LogFormatter()) { }
 
         public void Publish(LogMessage logMessage)
         {
-            SetForegroundColor(logMessage.Level);
-            System.Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
-            System.Console.ResetColor();
+            ArgumentNullException.ThrowIfNull(logMessage);
+            _logQueue.Enqueue(logMessage);
         }
 
-        private static void SetForegroundColor(NPLog.Level level)
+        private async Task ProcessLogQueueAsync(CancellationToken cancellationToken)
         {
-            System.Console.ForegroundColor = level switch
+            while (!cancellationToken.IsCancellationRequested)
             {
-                NPLog.Level.NONE => System.ConsoleColor.Cyan,
-                NPLog.Level.INFO => System.ConsoleColor.White,
-                NPLog.Level.WARNING => System.ConsoleColor.Yellow,
-                NPLog.Level.ERROR => System.ConsoleColor.Magenta,
-                NPLog.Level.CRITICAL => System.ConsoleColor.Red,
-                _ => System.ConsoleColor.White,
+                if (_logQueue.TryDequeue(out var logMessage))
+                {
+                    try
+                    {
+                        // Lấy màu tương ứng với mức log
+                        SetForegroundColor(logMessage.Level);
+                        Console.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
+                    }
+                    finally
+                    {
+                        Console.ResetColor(); // Đảm bảo reset màu sau khi in
+                    }
+                }
+                else
+                {
+                    await Task.Delay(10, cancellationToken); // Giữ cho luồng chạy nhẹ nhàng nếu không có log nào
+                }
+            }
+        }
+
+        private static void SetForegroundColor(NPLogBase.Level level)
+        {
+            var color = level switch
+            {
+                NPLogBase.Level.NONE => ConsoleColor.Cyan,
+                NPLogBase.Level.INFO => ConsoleColor.White,
+                NPLogBase.Level.DEBUG => ConsoleColor.Green,
+                NPLogBase.Level.WARNING => ConsoleColor.Yellow,
+                NPLogBase.Level.ERROR => ConsoleColor.Magenta,
+                NPLogBase.Level.CRITICAL => ConsoleColor.Red,
+                NPLogBase.Level.AUDIT => ConsoleColor.Blue,
+                NPLogBase.Level.SECURITY => ConsoleColor.DarkRed,
+                NPLogBase.Level.TRACE => ConsoleColor.Gray,
+                _ => ConsoleColor.White, // Mặc định
             };
+            Console.ForegroundColor = color;
+        }
+
+        public void Dispose()
+        {
+            _cancellationTokenSource.Cancel();
+            _workerTask.Wait();
+
+            _cancellationTokenSource.Dispose();
+
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -9,18 +9,6 @@ namespace NPServer.Infrastructure.Logging
     /// </summary>
     public class NPLog : NPLogBase
     {
-        /// <summary>
-        /// Defines the log level for logging messages.
-        /// </summary>
-        public enum Level
-        {
-            NONE,
-            INFO,
-            WARNING,
-            ERROR,
-            CRITICAL
-        }
-
         private static readonly Lazy<NPLog> _instance = new(() => new NPLog());
 
         /// <summary>
@@ -46,16 +34,25 @@ namespace NPServer.Infrastructure.Logging
         }
 
         /// <summary>
+        /// Thay đổi mức độ log động.
+        /// </summary>
+        public void SetLogLevel(Level level)
+        {
+            base.CurrentLogLevel = level;
+            Log(Level.INFO, $"Log level changed to: {level}");
+        }
+
+        /// <summary>
         /// Kiểm tra xem mức độ nhật ký có nên được ghi lại hay không.
         /// </summary>
         /// <param name="level">Mức độ nhật ký cần kiểm tra.</param>
         /// <returns>True nếu mức độ nhật ký lớn hơn hoặc bằng mức độ mặc định, ngược lại False.</returns>
-        public bool ShouldLog(Level level) => level >= DefaultLevel;
+        public bool ShouldLog(Level level) => level >= base.CurrentLogLevel;
 
         /// <summary>
         /// Ghi một thông điệp với mức độ mặc định.
         /// </summary>
-        public void Log(string message) => Log(DefaultLevel, message);
+        public void Log(string message) => Log(base.CurrentLogLevel, message);
 
         /// <summary>
         /// Ghi một thông điệp với mức độ chỉ định và thông tin chi tiết từ stack trace.
@@ -89,6 +86,17 @@ namespace NPServer.Infrastructure.Logging
 
         public void Info<TClass>(string message) where TClass : class =>
             Log<TClass>(Level.INFO, message);
+
+        public void Debug(string message) => Log(Level.DEBUG, message);
+
+        public void Debug<TClass>(string message) where TClass : class =>
+            Log<TClass>(Level.DEBUG, message);
+
+        public void Trace(string message) => Log(Level.TRACE, message);
+
+        public void Audit(string message) => Log(Level.AUDIT, message);
+
+        public void Security(string message) => Log(Level.SECURITY, message);
 
         /// <summary>
         /// Ghi một thông điệp cảnh báo.

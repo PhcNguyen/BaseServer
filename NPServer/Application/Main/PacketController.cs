@@ -30,8 +30,8 @@ namespace NPServer.Application.Main
 
         public void StartAllTasks()
         {
-            Task.Run(() => StartProcessing(PacketQueueType.INCOMING, HandleIncomingPacketBatch), _token);
-            Task.Run(() => StartProcessing(PacketQueueType.OUTGOING, HandleOutgoingPacketBatch), _token);
+            Task.Run(() => StartProcessing(PacketQueueType.In, HandleIncomingPacketBatch), _token);
+            Task.Run(() => StartProcessing(PacketQueueType.Out, HandleOutgoingPacketBatch), _token);
         }
 
         private void StartTask(Func<Task> taskFunc)
@@ -61,7 +61,7 @@ namespace NPServer.Application.Main
             packet.SetId(id);
             packet.ParseFromBytes(data);
 
-            _packetQueueManager.GetQueue(PacketQueueType.INCOMING).Enqueue(packet);
+            _packetQueueManager.GetQueue(PacketQueueType.In).Enqueue(packet);
         }
 
         private void StartProcessing(PacketQueueType queueType, Action<List<IPacket>> processBatch)
@@ -98,7 +98,7 @@ namespace NPServer.Application.Main
             {
                 try
                 {
-                    _packetProcessor.HandleIncomingPacket(packet, _packetQueueManager.GetQueue(PacketQueueType.OUTGOING));
+                    _packetProcessor.HandleIncomingPacket(packet, _packetQueueManager.GetQueue(PacketQueueType.Out));
                 }
                 catch (Exception ex)
                 {

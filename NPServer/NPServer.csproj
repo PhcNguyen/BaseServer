@@ -33,6 +33,7 @@
 		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Folder Include="Authentication\" />
 	</ItemGroup>
 
 	<!-- Thêm các package tham chiếu -->

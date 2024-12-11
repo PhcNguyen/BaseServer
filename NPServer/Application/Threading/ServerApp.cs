@@ -10,7 +10,6 @@ using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using NPServer.Core.Network.Firewall;
 
 namespace NPServer.Application.Threading
 {
@@ -24,7 +23,7 @@ namespace NPServer.Application.Threading
 
         private CancellationTokenSource _ctokens;
         private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
-        private readonly FirewallRateLimit _requestLimiter = Singleton.GetInstance<FirewallRateLimit>();
+        private readonly IFirewallRateLimit _requestLimiter = Singleton.GetInstance<IFirewallRateLimit>();
 
         public ServerApp(CancellationTokenSource tokenSource)
         {

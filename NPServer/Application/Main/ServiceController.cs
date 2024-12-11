@@ -10,6 +10,8 @@ using NPServer.Infrastructure.Config;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
 using NPServer.Infrastructure.Settings;
+using NPServer.Commands;
+using System;
 
 namespace NPServer.Application.Main
 {
@@ -27,8 +29,19 @@ namespace NPServer.Application.Main
 
         public static void Initialization()
         {
-            Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>().AllocateBuffers();
-            NPLog.Instance.DefaultInitialization();
+            NPLog.Instance.Info("ServiceController: Starting Initialization.");
+
+            try
+            {
+                Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>().AllocateBuffers();
+                NPLog.Instance.DefaultInitialization();
+                NPLog.Instance.Info("ServiceController: Initialization completed successfully.");
+            }
+            catch (Exception ex)
+            {
+                NPLog.Instance.Error("ServiceController: Initialization failed.", ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -37,10 +50,7 @@ namespace NPServer.Application.Main
         public static void RegisterSingleton()
         {
             // Application
-
-            Singleton.Register<FirewallRateLimit>(() =>
-            new FirewallRateLimit(_networkConfig.MaxAllowedRequests,
-            _networkConfig.TimeWindowInMilliseconds, _networkConfig.LockoutDurationInSeconds));
+            Singleton.Register<CommandPacketDispatcher>();
 
             // Core
             Singleton.Register<ISessionManager, SessionManager>();

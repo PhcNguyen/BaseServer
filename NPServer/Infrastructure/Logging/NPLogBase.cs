@@ -11,25 +11,41 @@ namespace NPServer.Infrastructure.Logging
     /// </summary>
     public abstract class NPLogBase
     {
+        /// <summary>
+        /// Defines the log level for logging messages.
+        /// </summary>
+        public enum Level
+        {
+            NONE,
+            TRACE,
+            DEBUG,
+            INFO,
+            WARNING,
+            ERROR,
+            CRITICAL,
+            AUDIT, // Dùng để ghi lại các sự kiện quan trọng, như thay đổi cấu hình.
+            SECURITY // Dùng để ghi lại các sự kiện bảo mật, như đăng nhập thất bại.
+        }
+
         private readonly NPLogPublisher _logPublisher = new();
         protected bool _isTurned = true;
 
         /// <summary>
         /// Mức độ ghi nhật ký mặc định.
         /// </summary>
-        public NPLog.Level DefaultLevel { get; set; } = NPLog.Level.INFO;
+        protected Level CurrentLogLevel { get; set; } =Level.INFO;
 
         /// <summary>
         /// Danh sách các thông điệp nhật ký.
         /// </summary>
-        public IEnumerable<LogMessage> Messages => _logPublisher.Messages;
+        protected IEnumerable<LogMessage> Messages => _logPublisher.Messages;
 
-        public INPLogPublisher LoggerHandlerManager => _logPublisher;
+        protected INPLogPublisher LoggerHandlerManager => _logPublisher;
 
         /// <summary>
         /// Thiết lập hoặc lấy trạng thái lưu trữ thông điệp nhật ký.
         /// </summary>
-        public bool StoreLogMessages
+        protected bool StoreLogMessages
         {
             get => _logPublisher.StoreLogMessages;
             set => _logPublisher.StoreLogMessages = value;
@@ -48,7 +64,7 @@ namespace NPServer.Infrastructure.Logging
         /// <summary>
         /// Ghi một thông điệp với mức độ chỉ định.
         /// </summary>
-        protected void LogInternal(NPLog.Level level, string message, string? callingClass, string? callingMethod)
+        protected void LogInternal(Level level, string message, string? callingClass, string? callingMethod)
         {
             if (!_isTurned) return;
             var logMessage = new LogMessage(level, message, DateTime.Now, callingClass, callingMethod);
