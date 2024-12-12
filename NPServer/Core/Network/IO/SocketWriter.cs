@@ -10,7 +10,7 @@ namespace NPServer.Core.Network.IO
     public partial class SocketWriter(Socket socket, IMultiSizeBufferPool multiSizeBuffer) : IDisposable
     {
         private bool _disposed = false;
-        private readonly SocketAsyncEventArgs _sendEventArgs = new SocketAsyncEventArgs();
+        private readonly SocketAsyncEventArgs _sendEventArgs = new();
         private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
         private readonly IMultiSizeBufferPool _multiSizeBuffer = multiSizeBuffer ?? throw new ArgumentNullException(nameof(multiSizeBuffer));
 

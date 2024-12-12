@@ -27,7 +27,9 @@ namespace NPServer.Core.Network.Listeners
             _maxConnections = maxConnections;
             _listenerSocket = new Socket(addressFamily, socketType, protocolType)
             {
-                ExclusiveAddressUse = false
+                NoDelay = true,
+                ExclusiveAddressUse = false,               
+                LingerState = new(false, 0)
             };
             SocketConfiguration.ConfigureSocket(_listenerSocket);
         }

@@ -33,7 +33,8 @@
 		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Folder Include="Authentication\" />
+	  <Folder Include="Models\Core\" />
+	  <Folder Include="Billing\" />
 	</ItemGroup>
 
 	<!-- Thêm các package tham chiếu -->
