@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Memory;
 using System;
 using System.Linq;
 using System.Net.Sockets;

@@ -28,7 +28,7 @@ namespace NPServer.Core.Network.Listeners
             _listenerSocket = new Socket(addressFamily, socketType, protocolType)
             {
                 NoDelay = true,
-                ExclusiveAddressUse = false,               
+                ExclusiveAddressUse = false,
                 LingerState = new(false, 0)
             };
             SocketConfiguration.ConfigureSocket(_listenerSocket);

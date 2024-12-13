@@ -46,9 +46,9 @@ namespace NPServer.Infrastructure.Logging.Formatter
         /// <returns>Chuỗi định dạng của thông điệp nhật ký.</returns>
         public override string ToString() => new LogFormatter().ApplyFormat(this);
 
-        /// <summary> 
-        /// Chuyển đổi thông điệp nhật ký thành JSON. 
-        /// </summary> 
+        /// <summary>
+        /// Chuyển đổi thông điệp nhật ký thành JSON.
+        /// </summary>
         /// <returns>Chuỗi JSON của thông điệp nhật ký.</returns>
         public string ToJson() => JsonSerializer.Serialize(this);
     }

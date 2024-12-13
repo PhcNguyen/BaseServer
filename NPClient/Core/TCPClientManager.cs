@@ -1,9 +1,8 @@
 ﻿using NPClient.Core.Network;
-using NPServer.Core.Communication;
 using NPServer.Core.Communication.Metadata;
-using NPServer.Core.Interfaces.Communication;
 using NPServer.Infrastructure.Security;
 using NPServer.Models.Common;
+using NPServer.Packets;
 using System;
 using System.Drawing;
 

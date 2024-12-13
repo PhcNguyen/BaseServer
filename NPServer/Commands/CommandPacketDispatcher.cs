@@ -1,7 +1,6 @@
-﻿using NPServer.Core.Communication.Utilities;
-using NPServer.Core.Interfaces.Communication;
-using NPServer.Infrastructure.Logging;
+﻿using NPServer.Infrastructure.Logging;
 using NPServer.Models.Common;
+using NPServer.Packets;
 
 namespace NPServer.Commands
 {
@@ -9,14 +8,14 @@ namespace NPServer.Commands
     {
         private static readonly string[] TargetNamespaces =
         [
-            "NServer.Application.Handlers.Implementations",
+            "NServer.Commands.Implementations",
         ];
 
         public CommandPacketDispatcher() : base(TargetNamespaces)
         {
         }
 
-        public (IPacket, IPacket?) HandleCommand(IPacket packet, AccessLevel userRole)
+        public (Packet, Packet?) HandleCommand(Packet packet, AccessLevel userRole)
         {
             Command command = (Command)packet.Cmd;
 
@@ -33,7 +32,7 @@ namespace NPServer.Commands
             try
             {
                 // Thực thi lệnh và ép kiểu kết quả về IPacket
-                if (func(packet) is not IPacket result)
+                if (func(packet) is not Packet result)
                     throw new System.InvalidOperationException("Invalid result type from command handler.");
 
                 return (result, null);
@@ -41,7 +40,7 @@ namespace NPServer.Commands
             catch (System.Exception ex)
             {
                 NPLog.Instance.Error<CommandPacketDispatcher>($"Error executing command: {command}. Exception: {ex.Message}");
-                return ((((short)Command.Error).ToResponsePacket($"Error executing command: {command}"), null));
+                return (((short)Command.Error).ToResponsePacket($"Error executing command: {command}"), null);
             }
         }
     }

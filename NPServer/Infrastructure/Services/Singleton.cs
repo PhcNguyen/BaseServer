@@ -158,7 +158,7 @@ namespace NPServer.Infrastructure.Services
         }
 
         /// <summary>
-        /// Reset instance của class singleton và gọi Dispose nếu cần.
+        /// ResetForPool instance của class singleton và gọi Dispose nếu cần.
         /// </summary>
         /// <typeparam name="TClass">Loại của class cần reset instance.</typeparam>
         public static void ResetInstance<TClass>() where TClass : class
@@ -170,7 +170,7 @@ namespace NPServer.Infrastructure.Services
         }
 
         /// <summary>
-        /// Reset tất cả instance của class singleton và gọi Dispose nếu cần.
+        /// ResetForPool tất cả instance của class singleton và gọi Dispose nếu cần.
         /// </summary>
         public static void ResetAll()
         {

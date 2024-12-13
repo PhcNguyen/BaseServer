@@ -33,7 +33,7 @@
 		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Folder Include="Models\Core\" />
+	  <Folder Include="Application\Handlers\" />
 	  <Folder Include="Billing\" />
 	</ItemGroup>
 

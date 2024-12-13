@@ -1,16 +1,16 @@
-﻿using NPServer.Core.Helpers;
-using NPServer.Core.Pooling;
-using NPServer.Core.Session;
-using NPServer.Core.Network.Firewall;
+﻿using NPServer.Commands;
+using NPServer.Core.Helpers;
+using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Network;
-using NPServer.Core.Interfaces.Pooling;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Infrastructure.Helper;
+using NPServer.Core.Memory;
+using NPServer.Core.Network.Firewall;
+using NPServer.Core.Session;
 using NPServer.Infrastructure.Config;
+using NPServer.Infrastructure.Helper;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
 using NPServer.Infrastructure.Settings;
-using NPServer.Commands;
 using System;
 
 namespace NPServer.Application.Main
@@ -23,7 +23,7 @@ namespace NPServer.Application.Main
         private static readonly BufferConfig _bufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
         private static readonly NetworkConfig _networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
 
-        public static readonly string VersionInfo = 
+        public static readonly string VersionInfo =
             $"Version {AssemblyHelper.GetAssemblyInformationalVersion()} " +
             $"| {(System.Diagnostics.Debugger.IsAttached ? "Debug" : "Release")}";
 
@@ -45,7 +45,7 @@ namespace NPServer.Application.Main
         }
 
         /// <summary>
-        /// Đăng ký các instance của dịch vụ vào Singleton.axe ZASRBABEeev 
+        /// Đăng ký các instance của dịch vụ vào Singleton.axe ZASRBABEeev
         /// </summary>
         public static void RegisterSingleton()
         {
@@ -54,8 +54,6 @@ namespace NPServer.Application.Main
 
             // Core
             Singleton.Register<ISessionManager, SessionManager>();
-
-            Singleton.Register<IPacketPool, PacketPool>(() => new PacketPool(10, int.MaxValue));
 
             Singleton.Register<IConnLimiter, ConnLimiter>(() =>
             new ConnLimiter(_networkConfig.MaxConnections));

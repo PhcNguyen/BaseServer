@@ -1,9 +1,9 @@
-﻿using NPServer.Application.Handlers;
-using NPServer.Core.Communication.Utilities;
-using NPServer.Core.Interfaces.Communication;
-using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Communication.Utilities;
 using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Memory;
 using NPServer.Infrastructure.Services;
+using NPServer.Packets;
+using NPServer.Packets.Queue;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,7 +13,7 @@ namespace NPServer.Application.Main
 {
     internal class PacketController
     {
-        private readonly IPacketPool _packetPool;
+        private readonly ObjectPool _packetPool;
         private readonly CancellationToken _token;
         private readonly ISessionManager _sessionManager;
         private readonly PacketProcessor _packetProcessor;
@@ -22,49 +22,31 @@ namespace NPServer.Application.Main
         public PacketController(CancellationToken token)
         {
             _token = token;
+            _packetPool = new ObjectPool();
             _packetQueueManager = new PacketQueueManager();
-            _packetPool = Singleton.GetInstanceOfInterface<IPacketPool>();
             _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
-            _packetProcessor = new PacketProcessor(_sessionManager, _packetPool);
+            _packetProcessor = new PacketProcessor(_sessionManager);
         }
 
-        public void StartAllTasks()
+        public void StartTasks()
         {
             Task.Run(() => StartProcessing(PacketQueueType.In, HandleIncomingPacketBatch), _token);
             Task.Run(() => StartProcessing(PacketQueueType.Out, HandleOutgoingPacketBatch), _token);
-        }
-
-        private void StartTask(Func<Task> taskFunc)
-        {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await taskFunc();
-                }
-                catch (OperationCanceledException)
-                {
-                    // Token bị hủy, kết thúc Task
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error in Task: {ex.Message}");
-                }
-            }, _token);
         }
 
         public void EnqueueIncomingPacket(UniqueId id, byte[] data)
         {
             if (!PacketValidation.ValidatePacketStructure(data)) return;
 
-            var packet = _packetPool.RentPacket();
+            Packet packet = _packetPool.Get<Packet>();
+
             packet.SetId(id);
             packet.ParseFromBytes(data);
 
             _packetQueueManager.GetQueue(PacketQueueType.In).Enqueue(packet);
         }
 
-        private void StartProcessing(PacketQueueType queueType, Action<List<IPacket>> processBatch)
+        private void StartProcessing(PacketQueueType queueType, Action<List<Packet>> processBatch)
         {
             try
             {
@@ -92,13 +74,16 @@ namespace NPServer.Application.Main
             }
         }
 
-        private void HandleIncomingPacketBatch(List<IPacket> packetsBatch)
+        private void HandleIncomingPacketBatch(List<Packet> packetsBatch)
         {
             Parallel.ForEach(packetsBatch, packet =>
             {
                 try
                 {
-                    _packetProcessor.HandleIncomingPacket(packet, _packetQueueManager.GetQueue(PacketQueueType.Out));
+                    _packetProcessor.HandleIncomingPacket(packet,
+                        _packetQueueManager.GetQueue(PacketQueueType.In),
+                        _packetQueueManager.GetQueue(PacketQueueType.Server));
+                    _packetPool.Return(packet);
                 }
                 catch (Exception ex)
                 {
@@ -107,13 +92,14 @@ namespace NPServer.Application.Main
             });
         }
 
-        private void HandleOutgoingPacketBatch(List<IPacket> packetsBatch)
+        private void HandleOutgoingPacketBatch(List<Packet> packetsBatch)
         {
             Parallel.ForEach(packetsBatch, packet =>
             {
                 try
                 {
                     _packetProcessor.HandleOutgoingPacket(packet);
+                    _packetPool.Return(packet);
                 }
                 catch (Exception ex)
                 {

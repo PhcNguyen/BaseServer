@@ -29,7 +29,7 @@
 
 //            if (input == null)
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid registration data format.");
 
@@ -40,7 +40,7 @@
 
 //            if (!EmailValidator.IsEmailValid(email) || !PasswordValidator.IsPasswordValid(password))
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid email or weak password.");
 
@@ -52,7 +52,7 @@
 //                var hashedPassword = Pbkdf2Cyptography.GenerateHash(password);
 //                bool success = await SqlExecutor.ExecuteAsync(SqlCommand.INSERT_ACCOUNT, email, hashedPassword);
 
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(success ? Command.SUCCESS : Command.ERROR);
 //                packet.SetPayload(success ? "Registration successful." : "Registration failed.");
 
@@ -60,7 +60,7 @@
 //            }
 //            catch (Exception ex) when (ex.Message.Contains("duplicate key"))
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.ERROR);
 //                packet.SetPayload("This email is already registered.");
 
@@ -86,7 +86,7 @@
 
 //            if (input == null)
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid login data format.");
 
@@ -97,7 +97,7 @@
 
 //            if (!EmailValidator.IsEmailValid(email))
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid email or password.");
 
@@ -109,7 +109,7 @@
 //                string hashedPassword = await SqlExecutor.ExecuteScalarAsync<string>(SqlCommand.SELECT_ACCOUNT_PASSWORD, email);
 //                if (string.IsNullOrEmpty(hashedPassword))
 //                {
-//                    packet.Reset();
+//                    packet.ResetForPool();
 //                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Invalid email or password.");
 
@@ -119,7 +119,7 @@
 //                DateTime? lastLogin = await SqlExecutor.ExecuteScalarAsync<DateTime?>(SqlCommand.SELECT_LAST_LOGIN, email);
 //                if (lastLogin.HasValue && (DateTime.UtcNow - lastLogin.Value).TotalSeconds < 20)
 //                {
-//                    packet.Reset();
+//                    packet.ResetForPool();
 //                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Please wait 20 seconds before trying again.");
 
@@ -130,7 +130,7 @@
 //                {
 //                    await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_LAST_LOGIN, email); // Log failed attempt
 
-//                    packet.Reset();
+//                    packet.ResetForPool();
 //                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Invalid email or password.");
 
@@ -139,7 +139,7 @@
 
 //                await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, true, email);
 
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Login successful.");
 
@@ -164,7 +164,7 @@
 //            string[]? input = DataValidator.ParseInput(data, 1);
 //            if (input == null)
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid logout data format.");
 
@@ -177,7 +177,7 @@
 //            {
 //                await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_ACTIVE, false, email);
 
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Success);
 //                packet.SetPayload("Logout successful.");
 
@@ -202,7 +202,7 @@
 //            string[]? input = DataValidator.ParseInput(data, 3);
 //            if (input == null)
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("Invalid data format.");
 
@@ -213,7 +213,7 @@
 
 //            if (!PasswordValidator.IsPasswordValid(newPassword))
 //            {
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(Command.Error);
 //                packet.SetPayload("New password is too weak.");
 
@@ -226,7 +226,7 @@
 
 //                if (!Pbkdf2Cyptography.ValidatePassword(currentPassword, storedPasswordHash))
 //                {
-//                    packet.Reset();
+//                    packet.ResetForPool();
 //                    packet.SetCmd(Command.Error);
 //                    packet.SetPayload("Incorrect current password.");
 
@@ -236,7 +236,7 @@
 //                var hashedNewPassword = Pbkdf2Cyptography.GenerateHash(newPassword);
 //                bool updateSuccess = await SqlExecutor.ExecuteAsync(SqlCommand.UPDATE_ACCOUNT_PASSWORD, email, hashedNewPassword);
 
-//                packet.Reset();
+//                packet.ResetForPool();
 //                packet.SetCmd(updateSuccess ? Command.Success : Command.Error);
 //                packet.SetPayload(updateSuccess ? "Password updated successfully." : "Failed to update password.");
 

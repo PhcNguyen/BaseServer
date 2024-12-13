@@ -2,11 +2,11 @@
 using NPServer.Infrastructure.Logging.Interfaces;
 using NPServer.Infrastructure.Settings;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 namespace NPServer.Infrastructure.Logging.Targets
 {

@@ -1,5 +1,4 @@
 ﻿using NPServer.Infrastructure.Config;
-using System;
 
 namespace NPServer.Infrastructure.Settings
 {

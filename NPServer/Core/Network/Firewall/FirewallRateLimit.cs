@@ -1,17 +1,17 @@
 ﻿using NPServer.Core.Interfaces.Network;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NPServer.Core.Network.Firewall
 {
     /// <summary>
     /// Lớp xử lý giới hạn số lượng yêu cầu từ mỗi địa chỉ IP trong một cửa sổ thời gian.
     /// </summary>
-    public partial class FirewallRateLimit(int maxAllowedRequests, int timeWindowInMilliseconds, int lockoutDurationInSeconds) 
+    public partial class FirewallRateLimit(int maxAllowedRequests, int timeWindowInMilliseconds, int lockoutDurationInSeconds)
         : IFirewallRateLimit
     {
         private readonly int _maxRequests = maxAllowedRequests;

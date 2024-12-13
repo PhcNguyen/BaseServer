@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.IO;
 using NPServer.Infrastructure.Security;
@@ -56,9 +56,9 @@ namespace NPServer.Core.Session.Network
         private void OnDataReceived(object sender, SocketReceivedEventArgs e)
         {
             if (Crc32x86.VerifyCrc32(e.Data, out byte[]? originalData) && originalData != null)
-            { 
+            {
                 DataReceived?.Invoke(originalData);
-            } 
+            }
             else
             {
                 Console.WriteLine("test case network faild");

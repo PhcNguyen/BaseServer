@@ -1,31 +1,37 @@
-﻿using NPServer.Core.Interfaces.Communication;
-using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Commands;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Logging;
+using NPServer.Packets.Queue;
 using System;
 using System.Threading;
 
-namespace NPServer.Application.Handlers
+namespace NPServer.Packets
 {
     /// <summary>
     /// Lớp chịu trách nhiệm xử lý gói tin đến và đi.
     /// </summary>
-    internal class PacketProcessor(ISessionManager sessionManager, IPacketPool packetPool)
+    internal class PacketProcessor(ISessionManager sessionManager)
     {
-        private readonly IPacketPool _packetPool = packetPool;
         private readonly ISessionManager _sessionManager = sessionManager;
+        private readonly CommandPacketDispatcher _commandPacketDispatcher = new();
 
         /// <summary>
         /// Xử lý gói tin đến.
         /// </summary>
-        public void HandleIncomingPacket(IPacket packet, PacketQueue outgoingQueue)
+        public void HandleIncomingPacket(Packet packet, PacketQueue outgoingQueue, PacketQueue inserverQueue)
         {
             try
             {
-                //IPacket responsePacket = await _commandDispatcher.HandleCommand(packet).ConfigureAwait(false);
-                Console.WriteLine("Nhan 1 goi tin nha.");
-                outgoingQueue.Enqueue(packet);
-                //_packetPool.ReturnPacket(packet);
+                if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
+                    return;
+
+                (Packet, Packet?) responsePacket = _commandPacketDispatcher.HandleCommand(packet, session.Role);
+                outgoingQueue.Enqueue(responsePacket.Item1);
+
+                if (responsePacket.Item2 != null)
+                {
+                    inserverQueue.Enqueue(responsePacket.Item2);
+                }
             }
             catch (Exception ex)
             {
@@ -36,23 +42,19 @@ namespace NPServer.Application.Handlers
         /// <summary>
         /// Xử lý gói tin đi.
         /// </summary>
-        public void HandleOutgoingPacket(IPacket packet)
+        public void HandleOutgoingPacket(Packet packet)
         {
             if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                 return;
 
             try
             {
-                Console.WriteLine("Xu ly 1 goi tin nha.");
-
                 session.UpdateLastActivityTime();
 
                 if (packet.PayloadData.Length == 0)
                     return;
 
                 RetryAsync(() => session.Network.Send(packet.ToByteArray()), maxRetries: 3, delayMs: 100);
-
-                _packetPool.ReturnPacket(packet);
             }
             catch (Exception ex)
             {

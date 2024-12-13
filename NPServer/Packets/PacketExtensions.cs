@@ -1,17 +1,16 @@
 ﻿using NPServer.Core.Communication.Metadata;
-using NPServer.Core.Interfaces.Communication;
 using System;
 
-namespace NPServer.Core.Communication.Utilities
+namespace NPServer.Packets
 {
     /// <summary>
     /// Cung cấp các tiện ích mở rộng cho việc xử lý gói tin.
     /// </summary>
     public static class PacketExtensions
     {
-        public static readonly IPacket EmptyPacket = new Packet(0, 0, 0, []);
+        public static readonly Packet EmptyPacket = new(0, 0, 0, []);
 
-        public static IPacket ToResponsePacket(this short command, string message)
+        public static Packet ToResponsePacket(this short command, string message)
         {
             var packet = new Packet();
 
@@ -26,7 +25,7 @@ namespace NPServer.Core.Communication.Utilities
         /// <param name="data">Mảng byte chứa dữ liệu gói tin.</param>
         /// <returns>Đối tượng <see cref="Packet"/> được tạo từ dữ liệu.</returns>
         /// <exception cref="ArgumentException">Nếu dữ liệu không hợp lệ.</exception>
-        public static IPacket ParseFromBytes(this byte[] data)
+        public static Packet ParseFromBytes(this byte[] data)
         {
             ValidatePacketData(data); // Kiểm tra dữ liệu
             return DeserializePacket(data.AsSpan()); // Phân tích và tạo packet

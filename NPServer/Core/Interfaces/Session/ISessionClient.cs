@@ -1,4 +1,5 @@
 ﻿using NPServer.Infrastructure.Services;
+using NPServer.Models.Common;
 
 namespace NPServer.Core.Interfaces.Session
 {
@@ -10,7 +11,7 @@ namespace NPServer.Core.Interfaces.Session
         byte[] Key { get; }
         bool IsConnected { get; }
         string IpAddress { get; }
-        bool Authenticator { get; set; }
+        AccessLevel Role { get; }
 
         void Connect();
 

@@ -1,7 +1,8 @@
-﻿using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Session.Network;
 using NPServer.Infrastructure.Services;
+using NPServer.Models.Common;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -47,7 +48,10 @@ namespace NPServer.Core.Session
         /// </summary>
         public byte[] Key { get; set; } = [];
 
-        public bool Authenticator { get; set; } = false;
+        /// <summary>
+        /// Vai trò của người dung trong hệ thống.
+        /// </summary>
+        public AccessLevel Role = AccessLevel.Guests;
 
         /// <summary>
         /// Sự kiện cảnh báo.
@@ -70,6 +74,8 @@ namespace NPServer.Core.Session
         public UniqueId Id => _id;
 
         public SessionNetwork Network => _network;
+
+        AccessLevel ISessionClient.Role => Role;
 
         ISessionNetwork ISessionClient.Network => _network;
 

@@ -1,9 +1,7 @@
-﻿using NPServer.Core.Communication.Utilities;
-using NPServer.Core.Interfaces.Communication;
-using NPServer.Models.Common;
-using NPServer.Commands;
+﻿using NPServer.Models.Common;
+using NPServer.Packets;
 
-namespace NPServer.Application.Handlers.Implementations
+namespace NPServer.Commands.Implementations
 {
     /// <summary>
     /// Lớp xử lý các lệnh hệ thống từ phía khách hàng.
@@ -15,7 +13,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// </summary>
         /// <returns>Gói tin phản hồi với thông báo pong.</returns>
         [Command(Command.Ping, AccessLevel.Guests)]
-        public static IPacket Ping() =>
+        public static Packet Ping() =>
             ((short)Command.Pong).ToResponsePacket("Ping received. Server is responsive.");
 
         /// <summary>
@@ -23,7 +21,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// </summary>
         /// <returns>Gói tin phản hồi với thông báo ping.</returns>
         [Command(Command.Pong, AccessLevel.Guests)]
-        public static IPacket Pong() =>
+        public static Packet Pong() =>
             ((short)Command.Ping).ToResponsePacket("Pong received. Server is responsive.");
 
         /// <summary>
@@ -31,7 +29,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// </summary>
         /// <returns>Gói tin phản hồi với thông báo thành công và trạng thái sống của server.</returns>
         [Command(Command.Heartbeat, AccessLevel.Guests)]
-        public static IPacket Heartbeat() =>
+        public static Packet Heartbeat() =>
             ((short)Command.Success).ToResponsePacket("Server is alive and operational.");
 
         /// <summary>
@@ -39,7 +37,7 @@ namespace NPServer.Application.Handlers.Implementations
         /// </summary>
         /// <returns>Gói tin rỗng để đóng kết nối.</returns>
         [Command(Command.Close, AccessLevel.Guests)]
-        public static IPacket Close() =>
+        public static Packet Close() =>
             PacketExtensions.EmptyPacket;
     }
 }

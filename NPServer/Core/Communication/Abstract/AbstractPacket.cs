@@ -28,7 +28,7 @@ namespace NPServer.Core.Communication.Base
         /// <summary>
         /// Phương thức để đặt lại gói tin về trạng thái ban đầu.
         /// </summary>
-        public void Reset()
+        public void ResetForPool()
         {
             Id = UniqueId.Empty;
             Flags = PacketFlags.NONE;

@@ -134,6 +134,5 @@ namespace NPServer.Infrastructure.Security
                 return false;
             }
         }
-
     }
 }

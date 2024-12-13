@@ -28,5 +28,8 @@ namespace NPServer.Infrastructure.Logging.Filter
             if (Filter!(logMessage))
                 Handler!.Publish(logMessage);
         }
+
+        public void Dispose()
+        { }
     }
 }

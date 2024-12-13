@@ -1,26 +1,10 @@
-﻿using NPServer.Core.Interfaces.Communication;
-using NPServer.Infrastructure.Collections;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
-namespace NPServer.Application.Handlers
+namespace NPServer.Packets.Queue
 {
-    public class PacketQueue : CustomQueues<IPacket>
-    {
-        public PacketQueue() : base()
-        {
-        }
-    }
-
-    public enum PacketQueueType
-    {
-        Server,
-        In,
-        Out
-    }
-
     /// <summary>
     /// Lớp PacketQueueManager chịu trách nhiệm quản lý hàng đợi các gói tin đến và đi.
     /// </summary>
@@ -40,10 +24,9 @@ namespace NPServer.Application.Handlers
                 var signal = new SemaphoreSlim(0);
 
                 queue.PacketAdded += () => ReleaseSignal(type);
-                queue.PacketAdded += async () => await ReleaseSignalAsync(type);
 
-                _queues.TryAdd(type, queue);
-                _signals.TryAdd(type, signal);
+                _queues[type] = queue;
+                _signals[type] = signal;
             }
         }
 
@@ -53,13 +36,11 @@ namespace NPServer.Application.Handlers
         /// <param name="queueType">Loại hàng đợi.</param>
         /// <returns>Đối tượng PacketQueue.</returns>
         public PacketQueue GetQueue(PacketQueueType queueType) =>
-            _queues.TryGetValue(queueType, out var queue)
-            ? queue
-            : throw new InvalidOperationException($"Queue type {queueType} not found.");
+            _queues.TryGetValue(queueType, out var queue) ? queue : throw new InvalidOperationException($"Queue type {queueType} not found.");
 
         public void WaitForQueue(PacketQueueType queueType, CancellationToken cancellationToken)
         {
-            if (_signals.TryGetValue(queueType, out SemaphoreSlim? signal))
+            if (_signals.TryGetValue(queueType, out var signal))
             {
                 signal.Wait(cancellationToken);
             }
@@ -71,7 +52,7 @@ namespace NPServer.Application.Handlers
 
         public async Task WaitForQueueAsync(PacketQueueType queueType, CancellationToken cancellationToken)
         {
-            if (_signals.TryGetValue(queueType, out SemaphoreSlim? signal))
+            if (_signals.TryGetValue(queueType, out var signal))
             {
                 await signal.WaitAsync(cancellationToken);
             }
@@ -83,27 +64,10 @@ namespace NPServer.Application.Handlers
 
         private void ReleaseSignal(PacketQueueType queueType)
         {
-            if (_signals.TryGetValue(queueType, out var signal) && signal.CurrentCount == 0)
+            if (_signals.TryGetValue(queueType, out var signal))
             {
                 signal.Release();
             }
-        }
-
-        private async Task ReleaseSignalAsync(PacketQueueType queueType)
-        {
-            if (_signals.TryGetValue(queueType, out var signal) && signal.CurrentCount == 0)
-            {
-                try
-                {
-                    signal.Release();
-                }
-                catch (SemaphoreFullException)
-                {
-                    // Ignore if already released
-                }
-            }
-
-            await Task.CompletedTask;
         }
 
         public void Dispose()

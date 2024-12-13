@@ -1,15 +1,18 @@
 ﻿using NPServer.Core.Communication.Base;
 using NPServer.Core.Communication.Metadata;
-using NPServer.Core.Interfaces.Communication;
+using NPServer.Core.Memory;
+using NPServer.Models.Common;
 using System;
 
-namespace NPServer.Core.Communication
+namespace NPServer.Packets
 {
     /// <summary>
     /// Gói tin cơ bản, kế thừa từ AbstractPacket.
     /// </summary>
-    public partial class Packet : AbstractPacket, IPacket
+    public partial class Packet : AbstractPacket, IPoolable
     {
+        public AccessLevel AccessLevel { get; set; } = AccessLevel.Guests;
+
         // Constructor mặc định
         public Packet()
         { }

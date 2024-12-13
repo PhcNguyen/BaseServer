@@ -33,7 +33,7 @@ namespace NPServer.Infrastructure.Logging
         /// <summary>
         /// Mức độ ghi nhật ký mặc định.
         /// </summary>
-        protected Level CurrentLogLevel { get; set; } =Level.INFO;
+        protected Level CurrentLogLevel { get; set; } = Level.INFO;
 
         /// <summary>
         /// Danh sách các thông điệp nhật ký.

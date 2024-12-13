@@ -1,9 +1,9 @@
 ﻿using NPServer.Infrastructure.Logging.Formatter;
 using NPServer.Infrastructure.Logging.Interfaces;
 using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
 namespace NPServer.Infrastructure.Logging.Targets
 {
@@ -21,7 +21,9 @@ namespace NPServer.Infrastructure.Logging.Targets
             _workerTask = Task.Run(() => ProcessLogQueueAsync(_cancellationTokenSource.Token));
         }
 
-        public ConsoleTarget() : this(new LogFormatter()) { }
+        public ConsoleTarget() : this(new LogFormatter())
+        {
+        }
 
         public void Publish(LogMessage logMessage)
         {

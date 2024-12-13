@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Interfaces.Pooling;
+﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Session;
 using NPServer.Infrastructure.Logging;
@@ -47,6 +47,7 @@ namespace NPServer.Application.Main
         {
             _sessionMonitor.OnError += (message, exception) => NPLog.Instance.Error<SessionMonitor>(message, exception);
 
+            _packetContainer.StartTasks();
             Task monitorSessionsTask = _sessionMonitor.MonitorSessionsAsync();
 
             Task.Run(async () =>
@@ -84,7 +85,7 @@ namespace NPServer.Application.Main
                 session.OnInfo += (message) => NPLog.Instance.Info<SessionClient>(message);
                 session.OnWarning += (message) => NPLog.Instance.Warning<SessionClient>(message);
                 session.OnError += (message, exception) => NPLog.Instance.Error<SessionClient>(message, exception);
-                
+
                 session.Connect();
 
                 session.Network.DataReceived += data =>

@@ -1,10 +1,10 @@
 ﻿using NPServer.Commands.Utils;
 using NPServer.Models.Common;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
 
 namespace NPServer.Commands
 {
@@ -56,7 +56,7 @@ namespace NPServer.Commands
                 .Where(m => m.GetCustomAttribute<CommandAttribute>() != null)
                 .Select(m =>
                 {
-                    var attribute = m.GetCustomAttribute<CommandAttribute>() 
+                    var attribute = m.GetCustomAttribute<CommandAttribute>()
                     ?? throw new InvalidOperationException($"Method {m.Name} does not have a valid CommandAttribute.");
                     return (attribute.Command, m, attribute.RequiredRole);
                 });

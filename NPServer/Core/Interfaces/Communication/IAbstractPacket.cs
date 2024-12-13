@@ -7,7 +7,7 @@ namespace NPServer.Core.Interfaces.Communication
     {
         UniqueId Id { get; }
 
-        void Reset();
+        void ResetForPool();
 
         string ToJson();
 

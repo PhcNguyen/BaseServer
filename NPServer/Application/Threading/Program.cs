@@ -17,7 +17,7 @@ namespace NPServer.Application.Threading
             Thread.Sleep(1000);
 
             ServerApp serverApp = new(_ctokens);
-            
+
             serverApp.Run();
 
             System.Console.ReadKey();
