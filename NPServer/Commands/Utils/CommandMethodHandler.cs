@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace NPServer.Commands.Utils
 {
-    public static class MethodHandler
+    public static class CommandMethodHandler
     {
         /// <summary>
         /// Tạo delegate từ phương thức đã cho để thực thi lệnh.

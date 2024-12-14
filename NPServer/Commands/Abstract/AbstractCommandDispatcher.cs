@@ -1,18 +1,18 @@
 ﻿using NPServer.Commands.Utils;
 using NPServer.Models.Common;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
 
-namespace NPServer.Commands
+namespace NPServer.Commands.Abstract
 {
     /// <summary>
     /// Lớp cơ sở xử lý các lệnh trong hệ thống.
     /// Cung cấp cơ chế đăng ký và thực thi các lệnh dựa trên phương thức.
     /// </summary>
-    internal abstract class CommandDispatcher
+    internal abstract class AbstractCommandDispatcher
     {
         /// <summary>
         /// Cờ binding cho các phương thức lệnh (bao gồm Public, Static, và Instance).
@@ -30,7 +30,7 @@ namespace NPServer.Commands
         /// Tải các phương thức lệnh từ các namespace mục tiêu và đăng ký chúng.
         /// </summary>
         /// <param name="targetNamespaces">Danh sách các namespace mà từ đó các phương thức lệnh sẽ được tải.</param>
-        protected CommandDispatcher(string[] targetNamespaces)
+        protected AbstractCommandDispatcher(string[] targetNamespaces)
         {
             var commandMethods = LoadCommandMethods(targetNamespaces);
             CommandDelegateCache = new ConcurrentDictionary<Command, (AccessLevel, Func<object?, object>)>();
@@ -70,7 +70,7 @@ namespace NPServer.Commands
         /// <param name="requiredRole">Vai trò yêu cầu để thực hiện lệnh.</param>
         private void RegisterCommand(Command command, MethodInfo method, AccessLevel requiredRole)
         {
-            var commandDelegate = MethodHandler.CreateDelegate(method);
+            var commandDelegate = CommandMethodHandler.CreateDelegate(method);
             CommandDelegateCache[command] = (requiredRole, commandDelegate);
         }
     }

@@ -1,5 +1,4 @@
-﻿using NPServer.Commands;
-using NPServer.Core.Helpers;
+﻿using NPServer.Core.Helpers;
 using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Session;
@@ -50,7 +49,7 @@ namespace NPServer.Application.Main
         public static void RegisterSingleton()
         {
             // Application
-            Singleton.Register<CommandPacketDispatcher>();
+            Singleton.Register<CommandController>();
 
             // Core
             Singleton.Register<ISessionManager, SessionManager>();

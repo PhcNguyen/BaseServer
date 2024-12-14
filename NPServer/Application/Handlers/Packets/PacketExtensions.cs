@@ -1,7 +1,7 @@
 ﻿using NPServer.Core.Communication.Metadata;
 using System;
 
-namespace NPServer.Packets
+namespace NPServer.Application.Handlers.Packets
 {
     /// <summary>
     /// Cung cấp các tiện ích mở rộng cho việc xử lý gói tin.

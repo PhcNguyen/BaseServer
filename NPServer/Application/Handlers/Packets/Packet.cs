@@ -4,7 +4,7 @@ using NPServer.Core.Memory;
 using NPServer.Models.Common;
 using System;
 
-namespace NPServer.Packets
+namespace NPServer.Application.Handlers.Packets
 {
     /// <summary>
     /// Gói tin cơ bản, kế thừa từ AbstractPacket.

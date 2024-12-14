@@ -1,4 +1,4 @@
-﻿namespace NPServer.Packets.Queue
+﻿namespace NPServer.Application.Handlers.Packets.Queue
 {
     public enum PacketQueueType
     {

@@ -1,9 +1,9 @@
-﻿using NPServer.Core.Communication.Utilities;
+﻿using NPServer.Application.Handlers.Packets;
+using NPServer.Application.Handlers.Packets.Queue;
+using NPServer.Core.Communication.Utilities;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Memory;
 using NPServer.Infrastructure.Services;
-using NPServer.Packets;
-using NPServer.Packets.Queue;
 using System;
 using System.Collections.Generic;
 using System.Threading;

@@ -1,11 +1,12 @@
-﻿using NPServer.Commands;
+﻿using NPServer.Application.Handlers.Packets.Queue;
+using NPServer.Application.Main;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Logging;
-using NPServer.Packets.Queue;
+using NPServer.Models.Common;
 using System;
 using System.Threading;
 
-namespace NPServer.Packets
+namespace NPServer.Application.Handlers.Packets
 {
     /// <summary>
     /// Lớp chịu trách nhiệm xử lý gói tin đến và đi.
@@ -13,7 +14,7 @@ namespace NPServer.Packets
     internal class PacketProcessor(ISessionManager sessionManager)
     {
         private readonly ISessionManager _sessionManager = sessionManager;
-        private readonly CommandPacketDispatcher _commandPacketDispatcher = new();
+        private readonly CommandController _commandPacketDispatcher = new();
 
         /// <summary>
         /// Xử lý gói tin đến.
@@ -25,13 +26,15 @@ namespace NPServer.Packets
                 if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                     return;
 
-                (Packet, Packet?) responsePacket = _commandPacketDispatcher.HandleCommand(packet, session.Role);
-                outgoingQueue.Enqueue(responsePacket.Item1);
+                var (outgoingPacket, inServerPacket) = _commandPacketDispatcher.HandleCommand(packet, (Command)packet.Cmd, session.Role);
 
-                if (responsePacket.Item2 != null)
-                {
-                    inserverQueue.Enqueue(responsePacket.Item2);
-                }
+                if (outgoingPacket is Packet validOutgoingPacket)
+                    outgoingQueue.Enqueue(validOutgoingPacket);
+
+
+                if (inServerPacket is Packet validInServerPacket)
+                    inserverQueue.Enqueue(validInServerPacket);
+
             }
             catch (Exception ex)
             {

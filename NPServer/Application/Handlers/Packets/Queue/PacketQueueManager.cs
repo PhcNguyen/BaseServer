@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NPServer.Packets.Queue
+namespace NPServer.Application.Handlers.Packets.Queue
 {
     /// <summary>
     /// Lớp PacketQueueManager chịu trách nhiệm quản lý hàng đợi các gói tin đến và đi.
