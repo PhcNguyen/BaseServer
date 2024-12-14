@@ -1,43 +1,42 @@
 ﻿using NPServer.Infrastructure.Logging;
 using System.Collections.Generic;
 
-namespace NPServer.Core.Memory
+namespace NPServer.Core.Memory;
+
+/// <summary>
+/// Lưu trữ các instance <see cref="IPoolable"/> để tái sử dụng sau.
+/// </summary>
+public class ObjectPool
 {
+    private readonly Stack<IPoolable> _objects = new();
+
+    public int TotalCount { get; private set; } // Tổng số đối tượng đã tạo
+    public int AvailableCount { get => _objects.Count; } // Số đối tượng sẵn có trong pool
+
     /// <summary>
-    /// Lưu trữ các instance <see cref="IPoolable"/> để tái sử dụng sau.
+    /// Tạo mới nếu cần và trả về một instance của <typeparamref name="T"/>.
     /// </summary>
-    public class ObjectPool
+    public T Get<T>() where T : IPoolable, new()
     {
-        private readonly Stack<IPoolable> _objects = new();
-
-        public int TotalCount { get; private set; } // Tổng số đối tượng đã tạo
-        public int AvailableCount { get => _objects.Count; } // Số đối tượng sẵn có trong pool
-
-        /// <summary>
-        /// Tạo mới nếu cần và trả về một instance của <typeparamref name="T"/>.
-        /// </summary>
-        public T Get<T>() where T : IPoolable, new()
+        if (AvailableCount == 0)
         {
-            if (AvailableCount == 0)
-            {
-                T @object = new();
+            T @object = new();
 
-                TotalCount++;
-                NPLog.Instance.Trace($"Get<T>(): Đã tạo một instance mới của {typeof(T).Name} (TotalCount={TotalCount})");
+            TotalCount++;
+            NPLog.Instance.Trace($"Get<T>(): Đã tạo một instance mới của {typeof(T).Name} (TotalCount={TotalCount})");
 
-                return @object;
-            }
-
-            return (T)_objects.Pop();
+            return @object;
         }
 
-        /// <summary>
-        /// Trả lại một instance của <typeparamref name="T"/> vào pool để tái sử dụng sau.
-        /// </summary>
-        public void Return<T>(T @object) where T : IPoolable, new()
-        {
-            @object.ResetForPool();
-            _objects.Push(@object);
-        }
+        return (T)_objects.Pop();
+    }
+
+    /// <summary>
+    /// Trả lại một instance của <typeparamref name="T"/> vào pool để tái sử dụng sau.
+    /// </summary>
+    public void Return<T>(T @object) where T : IPoolable, new()
+    {
+        @object.ResetForPool();
+        _objects.Push(@object);
     }
 }

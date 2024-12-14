@@ -1,28 +1,27 @@
 ﻿using NPServer.Infrastructure.Services;
 using NPServer.Models.Common;
 
-namespace NPServer.Core.Interfaces.Session
+namespace NPServer.Core.Interfaces.Session;
+
+public interface ISessionClient
 {
-    public interface ISessionClient
-    {
-        UniqueId Id { get; }
-        ISessionNetwork Network { get; }
+    UniqueId Id { get; }
+    ISessionNetwork Network { get; }
 
-        byte[] Key { get; }
-        bool IsConnected { get; }
-        string IpAddress { get; }
-        AccessLevel Role { get; }
+    byte[] Key { get; }
+    bool IsConnected { get; }
+    string IpAddress { get; }
+    AccessLevel Role { get; }
 
-        void Connect();
+    void Connect();
 
-        void Disconnect();
+    void Disconnect();
 
-        void Dispose();
+    void Dispose();
 
-        void UpdateLastActivityTime();
+    void UpdateLastActivityTime();
 
-        bool IsSessionTimedOut();
+    bool IsSessionTimedOut();
 
-        bool IsSocketInvalid();
-    }
+    bool IsSocketInvalid();
 }

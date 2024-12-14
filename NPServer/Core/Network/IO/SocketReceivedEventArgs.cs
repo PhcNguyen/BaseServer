@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace NPServer.Core.Network.IO
+namespace NPServer.Core.Network.IO;
+
+public sealed class SocketReceivedEventArgs(byte[] data) : EventArgs
 {
-    public partial class SocketReceivedEventArgs(byte[] data) : EventArgs
-    {
-        public byte[] Data { get; } = data;
-    }
+    public byte[] Data { get; } = data;
 }

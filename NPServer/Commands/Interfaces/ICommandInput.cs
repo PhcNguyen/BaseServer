@@ -1,11 +1,10 @@
 ﻿using NPServer.Models.Common;
 
-namespace NPServer.Commands.Interfaces
+namespace NPServer.Commands.Interfaces;
+
+public interface ICommandInput
 {
-    public interface ICommandInput
-    {
-        object Packet { get; }
-        Command Command { get; }
-        AccessLevel UserRole { get; }
-    }
+    object Packet { get; }
+    Command Command { get; }
+    AccessLevel UserRole { get; }
 }

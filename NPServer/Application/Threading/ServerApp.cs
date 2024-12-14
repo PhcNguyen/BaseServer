@@ -11,197 +11,196 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NPServer.Application.Threading
+namespace NPServer.Application.Threading;
+
+internal sealed class ServerApp
 {
-    internal class ServerApp
+    private int _isRunning;
+    private bool _isInMaintenanceMode;
+
+    private SessionController _controller;
+    private SocketListener _networkListener;
+
+    private CancellationTokenSource _ctokens;
+    private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
+    private readonly IFirewallRateLimit _requestLimiter = Singleton.GetInstance<IFirewallRateLimit>();
+
+    public ServerApp(CancellationTokenSource tokenSource)
     {
-        private int _isRunning;
-        private bool _isInMaintenanceMode;
+        _isRunning = 0;
+        _isInMaintenanceMode = false;
 
-        private SessionController _controller;
-        private SocketListener _networkListener;
+        _ctokens = tokenSource;
+        _networkListener = new SocketListener(
+            AddressFamily.InterNetwork, SocketType.Stream,
+            ProtocolType.Tcp, networkConfig.MaxConnections);
+        _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
+    }
 
-        private CancellationTokenSource _ctokens;
-        private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
-        private readonly IFirewallRateLimit _requestLimiter = Singleton.GetInstance<IFirewallRateLimit>();
+    private void InitializeComponents()
+    {
+        _ctokens = new CancellationTokenSource();
+        _networkListener = new SocketListener(
+            AddressFamily.InterNetwork, SocketType.Stream,
+            ProtocolType.Tcp, networkConfig.MaxConnections);
+        _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
+    }
 
-        public ServerApp(CancellationTokenSource tokenSource)
+    public void Run()
+    {
+        if (Interlocked.CompareExchange(ref _isRunning, 1, 0) == 1)
         {
-            _isRunning = 0;
-            _isInMaintenanceMode = false;
-
-            _ctokens = tokenSource;
-            _networkListener = new SocketListener(
-                AddressFamily.InterNetwork, SocketType.Stream,
-                ProtocolType.Tcp, networkConfig.MaxConnections);
-            _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
+            NPLog.Instance.Warning("Server is already running.");
+            return;
         }
 
-        private void InitializeComponents()
-        {
-            _ctokens = new CancellationTokenSource();
-            _networkListener = new SocketListener(
-                AddressFamily.InterNetwork, SocketType.Stream,
-                ProtocolType.Tcp, networkConfig.MaxConnections);
-            _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
-        }
+        // Khởi tạo lại các thành phần
+        InitializeComponents();
 
-        public void Run()
+        CancellationToken token = _ctokens.Token;
+
+        _networkListener.StartListening(ipAddress: networkConfig.IP, port: networkConfig.Port);
+        NPLog.Instance.Info<ServerApp>($"Starting network service at {networkConfig.IP}:{networkConfig.Port}");
+
+        _ = Task.Run(async () =>
         {
-            if (Interlocked.CompareExchange(ref _isRunning, 1, 0) == 1)
+            try
             {
-                NPLog.Instance.Warning("Server is already running.");
+                await AcceptClientConnectionsAsync(token);
+            }
+            catch (OperationCanceledException)
+            {
+                NPLog.Instance.Info("Accepting client connections was cancelled.");
+            }
+            catch (Exception ex)
+            {
+                NPLog.Instance.Error(ex);
+                Shutdown();
+            }
+        }, token);
+    }
+
+    private async Task AcceptClientConnectionsAsync(CancellationToken token)
+    {
+        while (_isRunning == 1)
+        {
+            if (token.IsCancellationRequested)
+            {
+                NPLog.Instance.Warning("Server stopping due to cancellation request.");
                 return;
             }
 
-            // Khởi tạo lại các thành phần
-            InitializeComponents();
-
-            CancellationToken token = _ctokens.Token;
-
-            _networkListener.StartListening(ipAddress: networkConfig.IP, port: networkConfig.Port);
-            NPLog.Instance.Info<ServerApp>($"Starting network service at {networkConfig.IP}:{networkConfig.Port}");
-
-            _ = Task.Run(async () =>
+            if (_isInMaintenanceMode)
             {
-                try
-                {
-                    await AcceptClientConnectionsAsync(token);
-                }
-                catch (OperationCanceledException)
-                {
-                    NPLog.Instance.Info("Accepting client connections was cancelled.");
-                }
-                catch (Exception ex)
-                {
-                    NPLog.Instance.Error(ex);
-                    Shutdown();
-                }
-            }, token);
-        }
+                NPLog.Instance.Warning("Server in maintenance mode.");
+                await Task.Delay(5000, token);
+                continue;
+            }
 
-        private async Task AcceptClientConnectionsAsync(CancellationToken token)
-        {
-            while (_isRunning == 1)
+            try
             {
-                if (token.IsCancellationRequested)
+                if (!_networkListener.IsListening)
                 {
-                    NPLog.Instance.Warning("Server stopping due to cancellation request.");
-                    return;
+                    NPLog.Instance.Warning("Socket is no longer listening. Aborting connection accept.");
+                    break;
                 }
 
-                if (_isInMaintenanceMode)
+                Socket? acceptSocket = await _networkListener.AcceptClientAsync(token);
+
+                if (acceptSocket == null) continue;
+
+                if (!_requestLimiter.IsAllowed(NetworkHelper.GetClientIP(acceptSocket)))
                 {
-                    NPLog.Instance.Warning("Server in maintenance mode.");
-                    await Task.Delay(5000, token);
+                    acceptSocket.Close();
                     continue;
                 }
 
-                try
-                {
-                    if (!_networkListener.IsListening)
-                    {
-                        NPLog.Instance.Warning("Socket is no longer listening. Aborting connection accept.");
-                        break;
-                    }
-
-                    Socket? acceptSocket = await _networkListener.AcceptClientAsync(token);
-
-                    if (acceptSocket == null) continue;
-
-                    if (!_requestLimiter.IsAllowed(NetworkHelper.GetClientIP(acceptSocket)))
-                    {
-                        acceptSocket.Close();
-                        continue;
-                    }
-
-                    _controller.AcceptClient(acceptSocket);
-                }
-                catch (SocketException ex)
-                {
-                    NPLog.Instance.Error<ServerApp>($"Socket error: {ex.SocketErrorCode}, Message: {ex.Message}");
-                }
-                catch (Exception ex)
-                {
-                    NPLog.Instance.Error<ServerApp>($"Unexpected error: {ex.Message}");
-                }
+                _controller.AcceptClient(acceptSocket);
+            }
+            catch (SocketException ex)
+            {
+                NPLog.Instance.Error<ServerApp>($"Socket error: {ex.SocketErrorCode}, Message: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                NPLog.Instance.Error<ServerApp>($"Unexpected error: {ex.Message}");
             }
         }
+    }
 
-        public void Shutdown()
+    public void Shutdown()
+    {
+        if (Interlocked.CompareExchange(ref _isRunning, 0, 1) == 0)
         {
-            if (Interlocked.CompareExchange(ref _isRunning, 0, 1) == 0)
+            NPLog.Instance.Warning("Server is not running.");
+            return;
+        }
+
+        _ctokens.Cancel();
+
+        Task.Run(async () =>
+        {
+            try
             {
-                NPLog.Instance.Warning("Server is not running.");
-                return;
+                await _controller.DisconnectAllClientsAsync();
+            }
+            catch (Exception ex)
+            {
+                NPLog.Instance.Error<ServerApp>($"Error during disconnecting clients: {ex.Message}");
             }
 
-            _ctokens.Cancel();
-
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    await _controller.DisconnectAllClientsAsync();
-                }
-                catch (Exception ex)
-                {
-                    NPLog.Instance.Error<ServerApp>($"Error during disconnecting clients: {ex.Message}");
-                }
-
-                try
-                {
-                    _networkListener.StopListening();
-                    //_networkListener.Dispose();
-                    //NPLog.Instance.Info("Socket resources disposed.");
-                }
-                catch (Exception ex)
-                {
-                    NPLog.Instance.Error<ServerApp>($"Error during socket cleanup: {ex.Message}");
-                }
-            });
-
-            NPLog.Instance.Info<ServerApp>("Server stopped successfully.");
-        }
-
-        public void Reset()
-        {
-            if (_isRunning == 1)
-            {
-                NPLog.Instance.Warning("Server is still stopping, waiting for the stop process to complete.");
-
-                this.Shutdown();
-                Thread.Sleep(5000);
-
-                this.Reset();
+                _networkListener.StopListening();
+                //_networkListener.Dispose();
+                //NPLog.Instance.Info("Socket resources disposed.");
             }
-            else
+            catch (Exception ex)
             {
-                this.Run();
-                NPLog.Instance.Info("Server reset successfully.");
+                NPLog.Instance.Error<ServerApp>($"Error during socket cleanup: {ex.Message}");
             }
-        }
+        });
 
-        public void SetMaintenanceMode(bool isMaintenance)
-        {
-            _isInMaintenanceMode = isMaintenance;
-            NPLog.Instance.Info(isMaintenance ? "Server is now in maintenance mode." : "Server has exited maintenance mode.");
-        }
+        NPLog.Instance.Info<ServerApp>("Server stopped successfully.");
+    }
 
-        public int GetActiveConnections()
+    public void Reset()
+    {
+        if (_isRunning == 1)
         {
-            return _controller.ActiveSessions();
-        }
+            NPLog.Instance.Warning("Server is still stopping, waiting for the stop process to complete.");
 
-        public bool IsServerRunning()
-        {
-            return _isRunning == 1;
-        }
+            this.Shutdown();
+            Thread.Sleep(5000);
 
-        public void CancelOperation()
-        {
-            _ctokens.Cancel();
-            _ctokens.Dispose(); // Disposes the token source
+            this.Reset();
         }
+        else
+        {
+            this.Run();
+            NPLog.Instance.Info("Server reset successfully.");
+        }
+    }
+
+    public void SetMaintenanceMode(bool isMaintenance)
+    {
+        _isInMaintenanceMode = isMaintenance;
+        NPLog.Instance.Info(isMaintenance ? "Server is now in maintenance mode." : "Server has exited maintenance mode.");
+    }
+
+    public int GetActiveConnections()
+    {
+        return _controller.ActiveSessions();
+    }
+
+    public bool IsServerRunning()
+    {
+        return _isRunning == 1;
+    }
+
+    public void CancelOperation()
+    {
+        _ctokens.Cancel();
+        _ctokens.Dispose(); // Disposes the token source
     }
 }

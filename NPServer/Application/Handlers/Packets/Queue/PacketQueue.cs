@@ -1,12 +1,10 @@
-﻿using NPServer.Application.Handlers.Packets;
-using NPServer.Infrastructure.Collections;
+﻿using NPServer.Infrastructure.Collections;
 
-namespace NPServer.Application.Handlers.Packets.Queue
+namespace NPServer.Application.Handlers.Packets.Queue;
+
+public class PacketQueue : CustomQueues<Packet>
 {
-    public class PacketQueue : CustomQueues<Packet>
+    public PacketQueue() : base()
     {
-        public PacketQueue() : base()
-        {
-        }
     }
 }

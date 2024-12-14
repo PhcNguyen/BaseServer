@@ -1,13 +1,12 @@
-﻿namespace NPServer.Core.Interfaces.Memory
+﻿namespace NPServer.Core.Interfaces.Memory;
+
+public interface IMultiSizeBufferPool
 {
-    public interface IMultiSizeBufferPool
-    {
-        void AllocateBuffers();
+    void AllocateBuffers();
 
-        byte[] RentBuffer(int size = 256);
+    byte[] RentBuffer(int size = 256);
 
-        void ReturnBuffer(byte[] buffer);
+    void ReturnBuffer(byte[] buffer);
 
-        double GetAllocationForSize(int size);
-    }
+    double GetAllocationForSize(int size);
 }

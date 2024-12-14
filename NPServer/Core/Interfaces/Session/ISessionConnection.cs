@@ -1,17 +1,16 @@
-﻿namespace NPServer.Core.Interfaces.Session
+﻿namespace NPServer.Core.Interfaces.Session;
+
+public interface ISessionConnection
 {
-    public interface ISessionConnection
-    {
-        bool IsConnected { get; }
+    bool IsConnected { get; }
 
-        string IpAddress { get; }
+    string IpAddress { get; }
 
-        void UpdateLastActivity();
+    void UpdateLastActivity();
 
-        void SetTimeout(System.TimeSpan timeout);
+    void SetTimeout(System.TimeSpan timeout);
 
-        bool IsTimedOut();
+    bool IsTimedOut();
 
-        void Dispose();
-    }
+    void Dispose();
 }

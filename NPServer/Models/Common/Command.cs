@@ -1,44 +1,43 @@
-﻿namespace NPServer.Models.Common
+﻿namespace NPServer.Models.Common;
+
+public enum Command : short
 {
-    public enum Command : short
-    {
-        None = 0,
-        Default,
+    None = 0,
+    Default,
 
-        // Hệ thống cơ bản
-        Ping,
+    // Hệ thống cơ bản
+    Ping,
 
-        Pong,
-        Heartbeat,
-        Close,
+    Pong,
+    Heartbeat,
+    Close,
 
-        // Quản lý khóa
-        SetKey,
+    // Quản lý khóa
+    SetKey,
 
-        GetKey,
-        DeleteKey,
+    GetKey,
+    DeleteKey,
 
-        // Quản lý người dùng
-        Register,
+    // Quản lý người dùng
+    Register,
 
-        Login,
-        Logout,
-        UpdatePassword,
-        ViewProfile,
-        UpdateProfile,
-        DeleteAccount,
+    Login,
+    Logout,
+    UpdatePassword,
+    ViewProfile,
+    UpdateProfile,
+    DeleteAccount,
 
-        // Quản lý hệ thống
-        Shutdown,
+    // Quản lý hệ thống
+    Shutdown,
 
-        Restart,
-        Status,
+    Restart,
+    Status,
 
-        // Kết quả xử lý
-        Success = 100,
+    // Kết quả xử lý
+    Success = 100,
 
-        Error = 101,
-        InvalidCommand = 102,
-        Timeout = 103,
-    }
+    Error = 101,
+    InvalidCommand = 102,
+    Timeout = 103,
 }

@@ -1,20 +1,19 @@
 ﻿using NPServer.Infrastructure.Services;
 using System;
 
-namespace NPServer.Core.Interfaces.Communication
+namespace NPServer.Core.Interfaces.Communication;
+
+public partial interface IAbstractPacket
 {
-    public partial interface IAbstractPacket
-    {
-        UniqueId Id { get; }
+    UniqueId Id { get; }
 
-        void ResetForPool();
+    void ResetForPool();
 
-        string ToJson();
+    string ToJson();
 
-        byte[] ToByteArray();
+    byte[] ToByteArray();
 
-        void ParseFromBytes(ReadOnlySpan<byte> data);
+    void ParseFromBytes(ReadOnlySpan<byte> data);
 
-        void SetId(UniqueId id);
-    }
+    void SetId(UniqueId id);
 }

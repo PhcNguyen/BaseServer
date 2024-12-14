@@ -8,95 +8,94 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NPServer.Infrastructure.Logging.Targets
+namespace NPServer.Infrastructure.Logging.Targets;
+
+public sealed class FileTarget : INPLogTarget, IDisposable
 {
-    public class FileTarget : INPLogTarget, IDisposable
+    private readonly string _directory;
+    private readonly ILogFormatter _loggerFormatter;
+    private readonly ConcurrentQueue<LogMessage> _logQueue;
+    private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly Task _workerTask;
+
+    public FileTarget(ILogFormatter loggerFormatter, string directory)
     {
-        private readonly string _directory;
-        private readonly ILogFormatter _loggerFormatter;
-        private readonly ConcurrentQueue<LogMessage> _logQueue;
-        private readonly CancellationTokenSource _cancellationTokenSource;
-        private readonly Task _workerTask;
+        _directory = directory ?? throw new ArgumentNullException(nameof(directory));
+        _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
+        _logQueue = new ConcurrentQueue<LogMessage>();
+        _cancellationTokenSource = new CancellationTokenSource();
 
-        public FileTarget(ILogFormatter loggerFormatter, string directory)
+        // Đảm bảo thư mục tồn tại
+        if (!Directory.Exists(_directory))
         {
-            _directory = directory ?? throw new ArgumentNullException(nameof(directory));
-            _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
-            _logQueue = new ConcurrentQueue<LogMessage>();
-            _cancellationTokenSource = new CancellationTokenSource();
+            Directory.CreateDirectory(_directory);
+        }
 
-            // Đảm bảo thư mục tồn tại
-            if (!Directory.Exists(_directory))
+        // Worker task để xử lý ghi log bất đồng bộ
+        _workerTask = Task.Run(ProcessLogQueueAsync, _cancellationTokenSource.Token);
+    }
+
+    public FileTarget() : this(new LogFormatter(), LoggingCongfig.LogDirectory)
+    {
+    }
+
+    public FileTarget(string directory) : this(new LogFormatter(), directory)
+    {
+    }
+
+    public void Publish(LogMessage logMessage)
+    {
+        ArgumentNullException.ThrowIfNull(logMessage);
+        _logQueue.Enqueue(logMessage); // Đưa log vào hàng đợi
+    }
+
+    private async Task ProcessLogQueueAsync()
+    {
+        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+        {
+            if (_logQueue.TryDequeue(out var logMessage))
             {
-                Directory.CreateDirectory(_directory);
-            }
-
-            // Worker task để xử lý ghi log bất đồng bộ
-            _workerTask = Task.Run(ProcessLogQueueAsync, _cancellationTokenSource.Token);
-        }
-
-        public FileTarget() : this(new LogFormatter(), LoggingCongfig.LogDirectory)
-        {
-        }
-
-        public FileTarget(string directory) : this(new LogFormatter(), directory)
-        {
-        }
-
-        public void Publish(LogMessage logMessage)
-        {
-            ArgumentNullException.ThrowIfNull(logMessage);
-            _logQueue.Enqueue(logMessage); // Đưa log vào hàng đợi
-        }
-
-        private async Task ProcessLogQueueAsync()
-        {
-            while (!_cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                if (_logQueue.TryDequeue(out var logMessage))
+                try
                 {
-                    try
-                    {
-                        await WriteLogAsync(logMessage);
-                    }
-                    catch (Exception ex)
-                    {
-                        // Xử lý ngoại lệ khi ghi log thất bại
-                        Console.Error.WriteLine($"Failed to write log: {ex.Message}");
-                    }
+                    await WriteLogAsync(logMessage);
                 }
-                else
+                catch (Exception ex)
                 {
-                    await Task.Delay(100); // Chờ một chút nếu hàng đợi rỗng
+                    // Xử lý ngoại lệ khi ghi log thất bại
+                    Console.Error.WriteLine($"Failed to write log: {ex.Message}");
                 }
             }
+            else
+            {
+                await Task.Delay(100); // Chờ một chút nếu hàng đợi rỗng
+            }
         }
+    }
 
-        private async Task WriteLogAsync(LogMessage logMessage)
-        {
-            string filePath = Path.Combine(_directory, CreateFileName(logMessage.Level));
-            string logEntry = _loggerFormatter.ApplyFormat(logMessage);
+    private async Task WriteLogAsync(LogMessage logMessage)
+    {
+        string filePath = Path.Combine(_directory, CreateFileName(logMessage.Level));
+        string logEntry = _loggerFormatter.ApplyFormat(logMessage);
 
-            // Ghi log vào file
-            byte[] logBytes = Encoding.UTF8.GetBytes(logEntry + Environment.NewLine);
-            using FileStream stream = new(filePath, FileMode.Append, FileAccess.Write, FileShare.Read);
-            await stream.WriteAsync(logBytes);
-        }
+        // Ghi log vào file
+        byte[] logBytes = Encoding.UTF8.GetBytes(logEntry + Environment.NewLine);
+        using FileStream stream = new(filePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+        await stream.WriteAsync(logBytes);
+    }
 
-        private static string CreateFileName(NPLogBase.Level level)
-        {
-            // Định dạng file: yyyy-MM-dd-INFO.log
-            return $"{level}.log";
-        }
+    private static string CreateFileName(NPLogBase.Level level)
+    {
+        // Định dạng file: yyyy-MM-dd-INFO.log
+        return $"{level}.log";
+    }
 
-        public void Dispose()
-        {
-            _cancellationTokenSource.Cancel();
-            _workerTask.Wait();
+    public void Dispose()
+    {
+        _cancellationTokenSource.Cancel();
+        _workerTask.Wait();
 
-            _cancellationTokenSource.Dispose();
+        _cancellationTokenSource.Dispose();
 
-            GC.SuppressFinalize(this);
-        }
+        GC.SuppressFinalize(this);
     }
 }

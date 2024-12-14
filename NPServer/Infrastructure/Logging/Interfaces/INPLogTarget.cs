@@ -1,11 +1,10 @@
 ﻿using NPServer.Infrastructure.Logging.Formatter;
 
-namespace NPServer.Infrastructure.Logging.Interfaces
-{
-    public interface INPLogTarget
-    {
-        void Publish(LogMessage logMessage);
+namespace NPServer.Infrastructure.Logging.Interfaces;
 
-        void Dispose();
-    }
+public interface INPLogTarget
+{
+    void Publish(LogMessage logMessage);
+
+    void Dispose();
 }
