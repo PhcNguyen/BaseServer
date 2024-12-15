@@ -1,4 +1,6 @@
-﻿namespace NPServer.Core.Memory;
+﻿using NPServer.Core.Memory;
+
+namespace NPServer.Core.Interfaces.Memory;
 
 /// <summary>
 /// Giao diện cho các đối tượng có thể được lưu trữ trong một <see cref="ObjectPool"/>.

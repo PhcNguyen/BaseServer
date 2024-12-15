@@ -1,4 +1,5 @@
-﻿using NPServer.Infrastructure.Logging;
+﻿using NPServer.Core.Interfaces.Memory;
+using NPServer.Infrastructure.Logging;
 using System.Collections.Generic;
 
 namespace NPServer.Core.Memory;
@@ -6,7 +7,7 @@ namespace NPServer.Core.Memory;
 /// <summary>
 /// Lưu trữ các instance <see cref="IPoolable"/> để tái sử dụng sau.
 /// </summary>
-public class ObjectPool
+public sealed class ObjectPool
 {
     private readonly Stack<IPoolable> _objects = new();
 

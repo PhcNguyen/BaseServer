@@ -6,7 +6,7 @@ namespace NPServer.Core.Memory;
 /// <summary>
 /// Cung cấp một pool các instance <see cref="List{T}"/> có thể tái sử dụng, tương tự như ArrayPool.
 /// </summary>
-public class ListPool<T>
+public sealed class ListPool<T>
 {
     private readonly Stack<List<T>> _listStack = new();
     private int _totalCount = 0;

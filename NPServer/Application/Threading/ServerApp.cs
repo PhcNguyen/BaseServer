@@ -19,7 +19,7 @@ internal sealed class ServerApp
     private bool _isInMaintenanceMode;
 
     private SessionController _controller;
-    private SocketListener _networkListener;
+    private TcpSocketListener _networkListener;
 
     private CancellationTokenSource _ctokens;
     private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
@@ -31,18 +31,14 @@ internal sealed class ServerApp
         _isInMaintenanceMode = false;
 
         _ctokens = tokenSource;
-        _networkListener = new SocketListener(
-            AddressFamily.InterNetwork, SocketType.Stream,
-            ProtocolType.Tcp, networkConfig.MaxConnections);
+        _networkListener = new TcpSocketListener(networkConfig.MaxConnections);
         _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
     }
 
     private void InitializeComponents()
     {
         _ctokens = new CancellationTokenSource();
-        _networkListener = new SocketListener(
-            AddressFamily.InterNetwork, SocketType.Stream,
-            ProtocolType.Tcp, networkConfig.MaxConnections);
+        _networkListener = new TcpSocketListener(networkConfig.MaxConnections);
         _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
     }
 

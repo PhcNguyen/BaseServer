@@ -14,7 +14,7 @@ namespace NPServer.Application.Handlers.Packets;
 internal sealed class PacketProcessor(ISessionManager sessionManager)
 {
     private readonly ISessionManager _sessionManager = sessionManager;
-    private readonly CommandController _commandPacketDispatcher = new();
+    private readonly CommandDispatcher _commandPacketDispatcher = new();
 
     /// <summary>
     /// Xử lý gói tin đến.

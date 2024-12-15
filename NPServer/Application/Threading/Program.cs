@@ -22,10 +22,6 @@ internal static class Program
 
         System.Console.ReadKey();
 
-        serverApp.Reset();
-
-        System.Console.ReadKey();
-
         serverApp.Shutdown();
     }
 }

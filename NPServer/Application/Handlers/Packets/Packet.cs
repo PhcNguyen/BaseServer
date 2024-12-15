@@ -1,6 +1,6 @@
 ﻿using NPServer.Core.Communication.Base;
 using NPServer.Core.Communication.Metadata;
-using NPServer.Core.Memory;
+using NPServer.Core.Interfaces.Memory;
 using NPServer.Models.Common;
 using System;
 

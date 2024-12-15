@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NPServer.Core.Interfaces.Memory;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
