@@ -1,6 +1,9 @@
 ﻿using NPServer.Commands.Abstract;
 using NPServer.Commands.Interfaces;
 using NPServer.Infrastructure.Logging;
+using System;
+using System.Collections.Immutable;
+using System.Linq;
 
 namespace NPServer.Commands;
 
@@ -9,16 +12,18 @@ namespace NPServer.Commands;
 /// </summary>
 internal sealed class CommandDispatcher : AbstractCommandDispatcher
 {
-    // Mảng tĩnh chứa các namespace nơi các trình xử lý lệnh được triển khai.
-    private static readonly string[] TargetNamespaces =
+    /// <summary>
+    /// ImmutableArray chứa các namespace nơi các trình xử lý lệnh được triển khai.
+    /// </summary>
+    private static readonly ImmutableArray<string> TargetNamespaces = 
     [
-        "NServer.Application.Handlers.Implementations",
+        "NServer.Application.Implementations"
     ];
 
     /// <summary>
     /// Khởi tạo một instance mới của lớp <see cref="CommandDispatcher"/>.
     /// </summary>
-    public CommandDispatcher() : base(TargetNamespaces)
+    public CommandDispatcher() : base([.. TargetNamespaces])
     {
     }
 
@@ -30,32 +35,42 @@ internal sealed class CommandDispatcher : AbstractCommandDispatcher
     /// Một tuple, phần tử đầu tiên là kết quả thực thi lệnh hoặc thông báo lỗi, 
     /// và phần tử thứ hai là dữ liệu bổ sung (nếu có).
     /// </returns>
-    public (object, object?) HandleCommand(ICommandInput input)
+    public (object Result, object? AdditionalData) HandleCommand(ICommandInput input)
     {
-        // Kiểm tra nếu lệnh tồn tại trong bộ nhớ cache ủy quyền lệnh.
-        if (!CommandDelegateCache.TryGetValue(input.Command, out var commandInfo))
-            return ($"Unknown command: {input.Command}", null);
+        // Kiểm tra đầu vào.
+        if (input == null || !Enum.IsDefined(input.Command))
+        {
+            return ("Invalid command input.", null);
+        }
 
+        // Kiểm tra nếu lệnh tồn tại trong bộ nhớ cache.
+        if (!CommandDelegateCache.TryGetValue(input.Command, out var commandInfo))
+        {
+            return ($"Unknown command: {input.Command}", null);
+        }
 
         var (requiredRole, func) = commandInfo;
 
-        // Kiểm tra nếu vai trò của người dùng đủ quyền thực thi lệnh.
+        // Kiểm tra quyền của người dùng.
         if (input.UserRole < requiredRole)
+        {
             return ($"Permission denied for command: {input.Command}", null);
+        }
 
         try
         {
-            // Thực thi hàm xử lý lệnh.
-            if (func(input) is not object result)
-                throw new System.InvalidOperationException("Invalid result type from command handler.");
-
-            return (result, null);
+            // Thực thi hàm xử lý lệnh và trả về kết quả.
+            var result = func(input);
+            return result is not null
+                ? (result, null)
+                : ("Command executed successfully, but no result was returned.", null);
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
-            // Ghi log lỗi khi thực thi lệnh.
+            // Ghi log lỗi chi tiết.
             NPLog.Instance.Error<CommandDispatcher>(
-                    $"Error executing command: {input.Command}. Exception: {ex.Message}");
+                $"Error executing command: {input.Command}. Exception: {ex.Message}"
+            );
             return ($"Error executing command: {input.Command}", null);
         }
     }

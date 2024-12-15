@@ -1,24 +1,18 @@
 ﻿using NPServer.Application.Handlers.Packets.Queue;
+using NPServer.Application.Handlers.Packets;
+using NPServer.Application.Handlers;
 using NPServer.Commands;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Logging;
 using NPServer.Models.Common;
-using System;
 using System.Threading;
+using System;
 
-namespace NPServer.Application.Handlers.Packets;
-
-/// <summary>
-/// Lớp chịu trách nhiệm xử lý gói tin đến và đi.
-/// </summary>
 internal sealed class PacketProcessor(ISessionManager sessionManager)
 {
     private readonly ISessionManager _sessionManager = sessionManager;
     private readonly CommandDispatcher _commandPacketDispatcher = new();
 
-    /// <summary>
-    /// Xử lý gói tin đến.
-    /// </summary>
     public void HandleIncomingPacket(Packet packet, PacketQueue outgoingQueue, PacketQueue inserverQueue)
     {
         try
@@ -26,14 +20,20 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
             if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                 return;
 
-            var (outgoingPacket, inServerPacket) = _commandPacketDispatcher.HandleCommand(
+            (object packetToSend, object? packetFromServer) = _commandPacketDispatcher.HandleCommand(
                 new CommandInput(packet, (Command)packet.Cmd, session.Role));
 
-            if (outgoingPacket is Packet validOutgoingPacket)
-                outgoingQueue.Enqueue(validOutgoingPacket);
+            if (packetToSend is string)
+            {
+                // Xử lý nếu packetToSend là string.
+                // Có thể log thông báo hoặc xử lý gì đó khác.
+                NPLog.Instance.Info<PacketProcessor>($"PacketToSend is a string: {packetToSend}");
+            }
+            else if (packetToSend is Packet outPacket)
+                outgoingQueue.Enqueue(outPacket);
 
-            if (inServerPacket is Packet validInServerPacket)
-                inserverQueue.Enqueue(validInServerPacket);
+            if (packetFromServer is Packet inPacket)
+                inserverQueue.Enqueue(inPacket);
         }
         catch (Exception ex)
         {
@@ -41,16 +41,13 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
         }
     }
 
-    /// <summary>
-    /// Xử lý gói tin đi.
-    /// </summary>
     public void HandleOutgoingPacket(Packet packet)
     {
-        if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
-            return;
-
         try
         {
+            if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
+                return;
+
             session.UpdateLastActivityTime();
 
             if (packet.PayloadData.Length == 0)
@@ -64,9 +61,6 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
         }
     }
 
-    /// <summary>
-    /// Thực hiện lại hành động không đồng bộ nhiều lần nếu thất bại.
-    /// </summary>
     private static void RetryAsync(Func<bool> action, int maxRetries, int delayMs)
     {
         for (int attempt = 0; attempt < maxRetries; attempt++)

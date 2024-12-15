@@ -1,9 +1,8 @@
-﻿using NPServer.Commands;
-using NPServer.Commands.Utils;
+﻿using NPServer.Commands.Utils;
 using NPServer.Models.Common;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
@@ -24,7 +23,7 @@ internal abstract class AbstractCommandDispatcher
     /// <summary>
     /// Cache các lệnh đã được đăng ký cùng với phương thức xử lý và vai trò yêu cầu.
     /// </summary>
-    protected readonly ConcurrentDictionary<Command, (AccessLevel RequiredRole, Func<object?, object> Handler)> CommandDelegateCache;
+    protected ImmutableDictionary<Command, (AccessLevel RequiredRole, Func<object?, object> Handler)> CommandDelegateCache;
 
     /// <summary>
     /// Khởi tạo đối tượng xử lý lệnh.
@@ -34,12 +33,14 @@ internal abstract class AbstractCommandDispatcher
     protected AbstractCommandDispatcher(string[] targetNamespaces)
     {
         var commandMethods = LoadCommandMethods(targetNamespaces);
-        CommandDelegateCache = new ConcurrentDictionary<Command, (AccessLevel, Func<object?, object>)>();
 
-        foreach (var (command, method, requiredRole) in commandMethods)
-        {
-            RegisterCommand(command, method, requiredRole);
-        }
+        // Chuyển danh sách lệnh thành ImmutableDictionary
+        CommandDelegateCache = commandMethods
+            .Select(cmd => new KeyValuePair<Command, (AccessLevel, Func<object?, object>)>(
+                cmd.Command,
+                (cmd.RequiredRole, CommandMethodHandler.CreateDelegate(cmd.Method))
+            ))
+            .ToImmutableDictionary();
     }
 
     /// <summary>
@@ -69,9 +70,21 @@ internal abstract class AbstractCommandDispatcher
     /// <param name="command">Lệnh cần đăng ký.</param>
     /// <param name="method">Phương thức xử lý lệnh.</param>
     /// <param name="requiredRole">Vai trò yêu cầu để thực hiện lệnh.</param>
-    private void RegisterCommand(Command command, MethodInfo method, AccessLevel requiredRole)
+    protected void RegisterCommand(Command command, MethodInfo method, AccessLevel requiredRole)
     {
         var commandDelegate = CommandMethodHandler.CreateDelegate(method);
-        CommandDelegateCache[command] = (requiredRole, commandDelegate);
+
+        // Thêm lệnh mới bằng cách tạo một dictionary bất biến mới
+        CommandDelegateCache = CommandDelegateCache.Add(command, (requiredRole, commandDelegate));
+    }
+
+    /// <summary>
+    /// Hủy đăng ký lệnh.
+    /// </summary>
+    /// <param name="command">Lệnh cần hủy đăng ký.</param>
+    protected void UnregisterCommand(Command command)
+    {
+        // Xóa lệnh bằng cách tạo dictionary bất biến mới
+        CommandDelegateCache = CommandDelegateCache.Remove(command);
     }
 }

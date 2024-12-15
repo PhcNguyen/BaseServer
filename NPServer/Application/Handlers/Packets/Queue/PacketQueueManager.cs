@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Threading;
+using System;
 
 namespace NPServer.Application.Handlers.Packets.Queue;
 
-/// <summary>
-/// Lớp PacketQueueManager chịu trách nhiệm quản lý hàng đợi các gói tin đến và đi.
-/// </summary>
 public class PacketQueueManager : IAsyncDisposable, IDisposable
 {
-    private readonly Dictionary<PacketQueueType, PacketQueue> _queues;
-    private readonly Dictionary<PacketQueueType, SemaphoreSlim> _signals;
+    private readonly IReadOnlyDictionary<PacketQueueType, PacketQueue> _queues;
+    private readonly IReadOnlyDictionary<PacketQueueType, SemaphoreSlim> _signals;
 
     public PacketQueueManager()
     {
-        _queues = [];
-        _signals = [];
+        Dictionary<PacketQueueType, PacketQueue> queues = [];
+        Dictionary<PacketQueueType, SemaphoreSlim> signals = [];
 
         foreach (PacketQueueType type in Enum.GetValues<PacketQueueType>())
         {
@@ -25,9 +22,12 @@ public class PacketQueueManager : IAsyncDisposable, IDisposable
 
             queue.PacketAdded += () => ReleaseSignal(type);
 
-            _queues[type] = queue;
-            _signals[type] = signal;
+            queues[type] = queue;
+            signals[type] = signal;
         }
+
+        _queues = queues;
+        _signals = signals;
     }
 
     /// <summary>

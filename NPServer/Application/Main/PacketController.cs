@@ -30,8 +30,8 @@ internal sealed class PacketController
 
     public void StartTasks()
     {
-        Task.Run(() => StartProcessing(PacketQueueType.In, HandleIncomingPacketBatch), _token);
-        Task.Run(() => StartProcessing(PacketQueueType.Out, HandleOutgoingPacketBatch), _token);
+        Task.Run(() => StartProcessing(PacketQueueType.Incoming, HandleIncomingPacketBatch), _token);
+        Task.Run(() => StartProcessing(PacketQueueType.Outgoing, HandleOutgoingPacketBatch), _token);
     }
 
     public void EnqueueIncomingPacket(UniqueId id, byte[] data)
@@ -43,7 +43,7 @@ internal sealed class PacketController
         packet.SetId(id);
         packet.ParseFromBytes(data);
 
-        _packetQueueManager.GetQueue(PacketQueueType.In).Enqueue(packet);
+        _packetQueueManager.GetQueue(PacketQueueType.Incoming).Enqueue(packet);
     }
 
     private void StartProcessing(PacketQueueType queueType, Action<List<Packet>> processBatch)
@@ -81,7 +81,7 @@ internal sealed class PacketController
             try
             {
                 _packetProcessor.HandleIncomingPacket(packet,
-                    _packetQueueManager.GetQueue(PacketQueueType.In),
+                    _packetQueueManager.GetQueue(PacketQueueType.Incoming),
                     _packetQueueManager.GetQueue(PacketQueueType.Server));
                 _packetPool.Return(packet);
             }
