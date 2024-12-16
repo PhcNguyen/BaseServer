@@ -1,7 +1,7 @@
-﻿using NPServer.Core.Communication.Metadata;
+﻿using NPServer.Core.Packets.Metadata;
 using System;
 
-namespace NPServer.Core.Communication.Utilities;
+namespace NPServer.Core.Packets.Utilities;
 
 /// <summary>
 /// Tiện ích kiểm tra và xác thực gói tin.

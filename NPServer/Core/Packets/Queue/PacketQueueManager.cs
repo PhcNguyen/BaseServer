@@ -3,11 +3,11 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 
-namespace NPServer.Application.Handlers.Packets.Queue;
+namespace NPServer.Core.Packets.Queue;
 
 public class PacketQueueManager : IAsyncDisposable, IDisposable
 {
-    private readonly IReadOnlyDictionary<PacketQueueType, PacketQueue> _queues;
+    private readonly Dictionary<PacketQueueType, PacketQueue> _queues;
     private readonly IReadOnlyDictionary<PacketQueueType, SemaphoreSlim> _signals;
 
     public PacketQueueManager()

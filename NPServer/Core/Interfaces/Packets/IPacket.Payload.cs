@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace NPServer.Core.Interfaces.Communication;
+namespace NPServer.Core.Interfaces.Packets;
 
-public partial interface IAbstractPacket
+public partial interface IPacket
 {
     Memory<byte> PayloadData { get; }
 

@@ -1,4 +1,4 @@
-﻿namespace NPServer.Core.Communication.Metadata;
+﻿namespace NPServer.Core.Packets.Metadata;
 
 public enum PacketType : byte
 {

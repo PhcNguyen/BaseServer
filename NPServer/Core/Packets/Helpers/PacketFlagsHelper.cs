@@ -1,9 +1,9 @@
-﻿using NPServer.Core.Communication.Metadata;
-using NPServer.Core.Interfaces.Communication;
+﻿using NPServer.Core.Packets.Metadata;
+using NPServer.Core.Interfaces.Packets;
 using System;
 using System.Collections.Generic;
 
-namespace NPServer.Core.Communication.Helpers;
+namespace NPServer.Core.Packets.Helpers;
 
 /// <summary>
 /// Tiện ích xử lý cờ trạng thái và độ ưu tiên của gói tin.
@@ -25,7 +25,7 @@ public static class PacketFlagsHelper
     /// <summary>
     /// Xác định độ ưu tiên của gói tin dựa trên cờ (flags).
     /// </summary>
-    public static PriorityLevel GetPriority(IAbstractPacket packet)
+    public static PriorityLevel GetPriority(IPacket packet)
     {
         var flags = packet.Flags;
 
@@ -47,7 +47,7 @@ public static class PacketFlagsHelper
     /// <param name="packet">Gói tin cần phân tích.</param>
     /// <param name="filter">Hàm lọc (tùy chọn).</param>
     /// <returns>Các cờ trạng thái được kích hoạt.</returns>
-    public static IEnumerable<PacketFlags> GetActiveFlags(this IAbstractPacket packet, Func<PacketFlags, bool>? filter = null)
+    public static IEnumerable<PacketFlags> GetActiveFlags(this IPacket packet, Func<PacketFlags, bool>? filter = null)
     {
         foreach (PacketFlags flag in Enum.GetValues<PacketFlags>())
         {

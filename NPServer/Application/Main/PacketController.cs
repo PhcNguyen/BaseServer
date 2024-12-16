@@ -1,13 +1,15 @@
-﻿using NPServer.Application.Handlers.Packets;
-using NPServer.Application.Handlers.Packets.Queue;
-using NPServer.Core.Communication.Utilities;
+﻿using NPServer.Core.Packets.Utilities;
 using NPServer.Core.Interfaces.Session;
+using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Memory;
+using NPServer.Core.Packets;
 using NPServer.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NPServer.Core.Packets.Queue;
+using NPServer.Application.Handlers.Packets;
 
 namespace NPServer.Application.Main;
 
@@ -46,7 +48,7 @@ internal sealed class PacketController
         _packetQueueManager.GetQueue(PacketQueueType.Incoming).Enqueue(packet);
     }
 
-    private void StartProcessing(PacketQueueType queueType, Action<List<Packet>> processBatch)
+    private void StartProcessing(PacketQueueType queueType, Action<List<IPacket>> processBatch)
     {
         try
         {
@@ -74,16 +76,19 @@ internal sealed class PacketController
         }
     }
 
-    private void HandleIncomingPacketBatch(List<Packet> packetsBatch)
+    private void HandleIncomingPacketBatch(List<IPacket> packetsBatch)
     {
         Parallel.ForEach(packetsBatch, packet =>
         {
             try
             {
-                _packetProcessor.HandleIncomingPacket(packet,
+                _packetProcessor.HandleIncomingPacket(
+                    packet,
                     _packetQueueManager.GetQueue(PacketQueueType.Incoming),
-                    _packetQueueManager.GetQueue(PacketQueueType.Server));
-                _packetPool.Return(packet);
+                    _packetQueueManager.GetQueue(PacketQueueType.Server)
+                );
+
+                _packetPool.Return((Packet)packet);
             }
             catch (Exception ex)
             {
@@ -92,14 +97,14 @@ internal sealed class PacketController
         });
     }
 
-    private void HandleOutgoingPacketBatch(List<Packet> packetsBatch)
+    private void HandleOutgoingPacketBatch(List<IPacket> packetsBatch)
     {
         Parallel.ForEach(packetsBatch, packet =>
         {
             try
             {
                 _packetProcessor.HandleOutgoingPacket(packet);
-                _packetPool.Return(packet);
+                _packetPool.Return((Packet)packet);
             }
             catch (Exception ex)
             {

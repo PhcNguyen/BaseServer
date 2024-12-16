@@ -1,27 +1,27 @@
-﻿using NPServer.Core.Communication.Metadata;
-using NPServer.Core.Interfaces.Communication;
+﻿using NPServer.Core.Packets.Metadata;
+using NPServer.Core.Interfaces.Packets;
 using System;
 
-namespace NPServer.Core.Communication.Base;
+namespace NPServer.Core.Packets;
 
-public partial class AbstractPacket : IAbstractPacket
+public partial class Packet : IPacket
 {
     private const int _headerSize = PacketMetadata.HEADERSIZE;
 
     /// <summary>
     /// Type để xác định loại gói tin.
     /// </summary>
-    public PacketType Type { get; protected set; } = PacketType.NONE;
+    public PacketType Type { get; private set; } = PacketType.NONE;
 
     /// <summary>
     /// Cờ trạng thái của gói tin.
     /// </summary>
-    public PacketFlags Flags { get; protected set; } = PacketFlags.NONE;
+    public PacketFlags Flags { get; private set; } = PacketFlags.NONE;
 
     /// <summary>
     /// Command để xác định loại gói tin.
     /// </summary>
-    public short Cmd { get; protected set; } = 0;
+    public short Cmd { get; private set; } = 0;
 
     /// <summary>
     /// Phương thức để thiết lập loại gói tin.
@@ -56,16 +56,5 @@ public partial class AbstractPacket : IAbstractPacket
     /// Thiết lập giá trị lệnh từ một đối tượng enum bất kỳ.
     /// </summary>
     /// <param name="command">Đối tượng enum cần thiết lập.</param>
-    public void SetCmd(object command)
-    {
-        if (command is Enum enumCommand)
-        {
-            Cmd = Convert.ToInt16(enumCommand); // Chuyển từ enum sang giá trị số (short)
-        }
-        else
-        {
-            // Ném ngoại lệ nếu không phải là enum hợp lệ
-            throw new ArgumentException("Command must be an enum type.", nameof(command));
-        }
-    }
+    public void SetCmd(Enum command) => Cmd = Convert.ToInt16(command);
 }

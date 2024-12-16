@@ -1,11 +1,12 @@
 ﻿using NPServer.Infrastructure.Collections;
+using NPServer.Core.Interfaces.Packets;
 
-namespace NPServer.Application.Handlers.Packets.Queue;
+namespace NPServer.Core.Packets.Queue;
 
 /// <summary>
 /// Hàng đợi các gói tin (Packet) cho các thao tác liên quan đến xử lý gói tin trong hệ thống.
 /// </summary>
-public class PacketQueue : CustomQueues<Packet>
+public class PacketQueue : CustomQueues<IPacket>
 {
     /// <summary>
     /// Khởi tạo một hàng đợi gói tin.

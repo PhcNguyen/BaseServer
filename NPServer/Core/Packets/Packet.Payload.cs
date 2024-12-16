@@ -1,16 +1,16 @@
-﻿using NPServer.Core.Interfaces.Communication;
+﻿using NPServer.Core.Interfaces.Packets;
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Buffers;
+using System.Collections.Generic;
 
-namespace NPServer.Core.Communication.Base;
+namespace NPServer.Core.Packets;
 
 /// <summary>
 /// Lớp cơ sở cho các gói tin với khả năng quản lý dữ liệu payload.
 /// </summary>
-public partial class AbstractPacket : IAbstractPacket
+public partial class Packet : IPacket
 {
     private Memory<byte> _payload;
     private const int MaxDataSize = int.MaxValue - 1024;
@@ -21,7 +21,7 @@ public partial class AbstractPacket : IAbstractPacket
     public Memory<byte> PayloadData
     {
         get => _payload;
-        protected set
+        private set
         {
             if (value.Length > MaxDataSize)
                 throw new ArgumentOutOfRangeException(nameof(value), "Payload too large.");

@@ -1,19 +1,20 @@
-﻿using NPServer.Application.Handlers.Packets.Queue;
-using NPServer.Application.Handlers.Packets;
-using NPServer.Application.Handlers;
-using NPServer.Commands;
+﻿using NPServer.Commands;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Logging;
+using NPServer.Core.Interfaces.Packets;
 using NPServer.Models.Common;
 using System.Threading;
 using System;
+using NPServer.Core.Packets.Queue;
+
+namespace NPServer.Application.Handlers.Packets;
 
 internal sealed class PacketProcessor(ISessionManager sessionManager)
 {
     private readonly ISessionManager _sessionManager = sessionManager;
     private readonly CommandDispatcher _commandPacketDispatcher = new();
 
-    public void HandleIncomingPacket(Packet packet, PacketQueue outgoingQueue, PacketQueue inserverQueue)
+    public void HandleIncomingPacket(IPacket packet, PacketQueue outgoingQueue, PacketQueue inserverQueue)
     {
         try
         {
@@ -21,7 +22,7 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
                 return;
 
             (object packetToSend, object? packetFromServer) = _commandPacketDispatcher.HandleCommand(
-                new CommandInput(packet, (Command)packet.Cmd, session.Role));
+                new Input(packet, (Command)packet.Cmd, session.Role));
 
             if (packetToSend is string)
             {
@@ -29,10 +30,10 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
                 // Có thể log thông báo hoặc xử lý gì đó khác.
                 NPLog.Instance.Info<PacketProcessor>($"PacketToSend is a string: {packetToSend}");
             }
-            else if (packetToSend is Packet outPacket)
+            else if (packetToSend is IPacket outPacket)
                 outgoingQueue.Enqueue(outPacket);
 
-            if (packetFromServer is Packet inPacket)
+            if (packetFromServer is IPacket inPacket)
                 inserverQueue.Enqueue(inPacket);
         }
         catch (Exception ex)
@@ -41,7 +42,7 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
         }
     }
 
-    public void HandleOutgoingPacket(Packet packet)
+    public void HandleOutgoingPacket(IPacket packet)
     {
         try
         {

@@ -1,8 +1,8 @@
-﻿using NPServer.Core.Communication.Metadata;
+﻿using NPServer.Core.Packets.Metadata;
 
-namespace NPServer.Core.Interfaces.Communication;
+namespace NPServer.Core.Interfaces.Packets;
 
-public partial interface IAbstractPacket
+public partial interface IPacket
 {
     PacketType Type { get; }
     PacketFlags Flags { get; }
@@ -18,5 +18,5 @@ public partial interface IAbstractPacket
 
     void SetCmd(short command);
 
-    void SetCmd(object command);
+    void SetCmd(System.Enum command);
 }

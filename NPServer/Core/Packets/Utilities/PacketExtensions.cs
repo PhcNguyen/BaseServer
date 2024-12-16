@@ -1,7 +1,7 @@
-﻿using NPServer.Core.Communication.Metadata;
+﻿using NPServer.Core.Packets.Metadata;
 using System;
 
-namespace NPServer.Application.Handlers.Packets;
+namespace NPServer.Core.Packets.Utilities;
 
 /// <summary>
 /// Cung cấp các tiện ích mở rộng cho việc xử lý gói tin.
@@ -77,6 +77,6 @@ public static class PacketExtensions
         short command = BitConverter.ToInt16(span[PacketMetadata.COMMANDOFFSET..]);
         byte[] payload = span[PacketMetadata.PAYLOADOFFSET..length].ToArray();
 
-        return new Packet(type, flags, command, payload);
+        return new Packet(type: (PacketType)type, flags: (PacketFlags)flags, command: command, payload: payload);
     }
 }

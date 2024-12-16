@@ -1,4 +1,4 @@
-﻿namespace NPServer.Application.Handlers.Packets.Queue;
+﻿namespace NPServer.Core.Packets.Queue;
 
 /// <summary>
 /// Enum đại diện cho các loại hàng đợi gói tin khác nhau.

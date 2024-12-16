@@ -1,6 +1,6 @@
 ﻿using NPClient.Core;
 using NPClient.Core.Helper;
-using NPServer.Core.Communication.Metadata;
+using NPServer.Core.Packets.Metadata;
 using NPServer.Models.Common;
 using NPServer.Packets;
 using System;
