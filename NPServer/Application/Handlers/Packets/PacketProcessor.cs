@@ -12,7 +12,7 @@ namespace NPServer.Application.Handlers.Packets;
 internal sealed class PacketProcessor(ISessionManager sessionManager)
 {
     private readonly ISessionManager _sessionManager = sessionManager;
-    private readonly CommandDispatcher _commandPacketDispatcher = new();
+    private readonly CommandDispatcher _commandDispatcher = new();
 
     public void HandleIncomingPacket(IPacket packet, PacketQueue outgoingQueue, PacketQueue inserverQueue)
     {
@@ -21,7 +21,7 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
             if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
                 return;
 
-            (object packetToSend, object? packetFromServer) = _commandPacketDispatcher.HandleCommand(
+            (object packetToSend, object? packetFromServer) = _commandDispatcher.HandleCommand(
                 new Input(packet, (Command)packet.Cmd, session.Role));
 
             if (packetToSend is string)

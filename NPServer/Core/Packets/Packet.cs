@@ -65,6 +65,6 @@ public partial class Packet : IPacket, IPoolable
         Flags = PacketFlags.NONE;
         Cmd = -1;
         PayloadData = Memory<byte>.Empty;
-        Signature = [];
+        _signature = [];
     }
 }

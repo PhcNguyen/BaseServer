@@ -10,7 +10,7 @@ public partial class Packet : IPacket
     /// <summary>
     /// Tổng chiều dài của gói tin, bao gồm header và payload.
     /// </summary>
-    public int Length => _headerSize + _payload.Length;
+    public int Length => _headerSize + _payload.Length + _signature.Length;
 
     /// <summary>
     /// Chuyển đổi gói tin thành mảng byte để gửi qua mạng.
@@ -18,13 +18,13 @@ public partial class Packet : IPacket
     /// <returns>Mảng byte của gói tin.</returns>
     public byte[] ToByteArray()
     {
+        this.SignPacket(); // Ký gói tin trước khi chuyển đổi
+
         // Sử dụng ArrayPool để giảm chi phí bộ nhớ heap
         byte[] packet = ArrayPool<byte>.Shared.Rent(Length);
 
         try
         {
-            this.SignPacket();
-
             Span<byte> span = packet.AsSpan(0, Length);
 
             // Header
@@ -36,14 +36,18 @@ public partial class Packet : IPacket
             // Payload
             _payload.Span.CopyTo(span[PacketMetadata.PAYLOADOFFSET..]);
 
-            // Copy signature
-            Signature.CopyTo(span[Length..]);
+            if (_signature.Length > (Length - PacketMetadata.PAYLOADOFFSET - _payload.Length))
+                throw new InvalidOperationException("Signature length exceeds allocated space.");
 
-            return span[..(Length + Signature.Length)].ToArray();
+            // Copy signature
+            _signature.CopyTo(span[(Length - _signature.Length)..]);
+
+            return span[..(Length)].ToArray();
         }
         finally
         {
             // Đảm bảo trả lại bộ nhớ vào ArrayPool ngay cả khi có ngoại lệ
+            Array.Clear(packet, 0, Length);
             ArrayPool<byte>.Shared.Return(packet);
         }
     }
@@ -73,8 +77,8 @@ public partial class Packet : IPacket
             // Payload
             PayloadData = data[PacketMetadata.PAYLOADOFFSET..length].ToArray();
 
-            // Signature
-            Signature = data[length..].ToArray();
+            // _signature
+            _signature = data[length..].ToArray();
 
             if (!VerifySignature()) 
                 return false;
@@ -94,17 +98,13 @@ public partial class Packet : IPacket
     /// <returns>Chuỗi JSON đại diện cho gói tin.</returns>
     public string ToJson()
     {
-        string payloadString = _payload.Length > 0
-            ? Convert.ToBase64String(PayloadData.ToArray())
-            : string.Empty;
-
         var json = new
         {
             Flags,
             Cmd,
             PayloadLength = _payload.Length,
-            Payload = payloadString,
-            Signature = Convert.ToBase64String(Signature)
+            Payload = _payload.Length > 0 ? Convert.ToBase64String(PayloadData.ToArray()) : null,
+            Signature = _signature.Length > 0 ? Convert.ToBase64String(_signature) : null
         };
 
         return System.Text.Json.JsonSerializer.Serialize(json);

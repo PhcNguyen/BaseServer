@@ -1,54 +1,75 @@
 ﻿using System;
+using System.Buffers;
+using System.Security.Cryptography;
 
 namespace NPServer.Core.Packets;
 
 public partial class Packet
 {
-    /// <summary>
-    /// Chữ ký để xác thực gói tin.
-    /// </summary>
-    private byte[] Signature = [];
+    private byte[] _signature = [];
 
-    /// <summary> 
-    /// Ký gói tin. 
-    /// </summary> 
     private void SignPacket()
     {
-        Signature = CreateSignature(ExtractSignableData());
+        int bufferSize = this.CalculateBufferSize();
+
+        Span<byte> buffer = bufferSize <= 1024
+            ? stackalloc byte[bufferSize]
+            : ArrayPool<byte>.Shared.Rent(bufferSize);
+
+        try
+        {
+            this.FillSignableData(buffer);
+            _signature = CreateSignature(buffer);
+        }
+        finally
+        {
+            if (buffer.Length > 1024)
+                ArrayPool<byte>.Shared.Return(buffer.ToArray());
+        }
     }
 
-    /// <summary>
-    /// Xác thực chữ ký gói tin.
-    /// </summary>
-    /// <returns>True nếu chữ ký hợp lệ, ngược lại là False.</returns>
     private bool VerifySignature()
     {
-        byte[] expectedSignature = CreateSignature(ExtractSignableData());
-        return Signature.Length == expectedSignature.Length &&
-               Signature.AsSpan().SequenceEqual(expectedSignature);
+        if (_signature == null || _signature.Length != 32)
+            return false;
+
+        int bufferSize = this.CalculateBufferSize();
+
+        Span<byte> buffer = bufferSize <= 1024
+            ? stackalloc byte[bufferSize]
+            : ArrayPool<byte>.Shared.Rent(bufferSize);
+
+        try
+        {
+            this.FillSignableData(buffer);
+
+            Span<byte> expectedSignature = stackalloc byte[32];
+            SHA256.HashData(buffer, expectedSignature);
+
+            return _signature.AsSpan().SequenceEqual(expectedSignature);
+        }
+        finally
+        {
+            if (buffer.Length > 1024)
+                ArrayPool<byte>.Shared.Return(buffer.ToArray());
+        }
     }
 
-    /// <summary>
-    /// Lấy dữ liệu cần ký từ gói tin.
-    /// </summary>
-    /// <returns>Mảng byte của dữ liệu cần ký.</returns>
-    private ReadOnlyMemory<byte> ExtractSignableData()
+    private int CalculateBufferSize()
     {
-        byte[] payloadBytes = PayloadData.ToArray();
-        byte[] cmdBytes = BitConverter.GetBytes(Cmd);
-
-        byte[] combined = new byte[cmdBytes.Length + payloadBytes.Length];
-
-        Buffer.BlockCopy(cmdBytes, 0, combined, 0, cmdBytes.Length);
-        Buffer.BlockCopy(payloadBytes, 0, combined, cmdBytes.Length , payloadBytes.Length);
-
-        return new ReadOnlyMemory<byte>(combined);
+        return 2 + 1 + 1 + PayloadData.Length; // Cmd (2 bytes) + Type (1 byte) + Flags (1 byte) + Payload
     }
 
-    /// <summary>
-    /// Tạo chữ ký xác thực gói tin dựa trên nội dung hiện tại.
-    /// </summary>
-    /// <returns>Chữ ký dạng byte array.</returns>
-    private byte[] CreateSignature(ReadOnlyMemory<byte> signableData) => 
-        System.Security.Cryptography.SHA256.HashData(signableData.Span);
+    private void FillSignableData(Span<byte> buffer)
+    {
+        BitConverter.TryWriteBytes(buffer[..2], Cmd); // Cmd: 2 bytes
+        buffer[2] = (byte)Type;                      // Type: 1 byte
+        buffer[3] = (byte)Flags;                     // Flags: 1 byte
+        this.PayloadData.Span.CopyTo(buffer[4..]);   // PayloadData
+    }
+
+    private static byte[] CreateSignature(ReadOnlySpan<byte> signableData)
+    {
+        return SHA256.HashData(signableData);
+    }
 }

@@ -2,7 +2,7 @@
 using NPClient.Core.Helper;
 using NPServer.Core.Packets.Metadata;
 using NPServer.Models.Common;
-using NPServer.Packets;
+using NPServer.Core.Packets;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -96,7 +96,7 @@ public partial class Tool : Form
         PacketFlags selectedFlags = (PacketFlags)comboFlags.SelectedItem;
         Command cmd = (Command)comboCmd.SelectedItem;
 
-        var packet = new Packet(0, (byte)selectedFlags, (sbyte)cmd, ConverterHelper.ToBytes(TextPayload.Text));
+        var packet = new Packet(0, selectedFlags, (short)cmd, ConverterHelper.ToBytes(TextPayload.Text));
         _tcpClientManager.SendData(packet.ToByteArray());
     }
 }

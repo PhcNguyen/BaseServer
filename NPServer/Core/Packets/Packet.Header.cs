@@ -40,7 +40,11 @@ public partial class Packet : IPacket
     /// <summary>
     /// Phương thức để loại bỏ cờ trạng thái.
     /// </summary>
-    public void DisableFlag(PacketFlags flag) => Flags &= ~flag;
+    public void DisableFlag(PacketFlags flag) 
+    { 
+        if (HasFlag(flag))
+            Flags &= ~flag; 
+    }
 
     /// <summary>
     /// Kiểm tra xem flag có tồn tại hay không.
@@ -56,5 +60,18 @@ public partial class Packet : IPacket
     /// Thiết lập giá trị lệnh từ một đối tượng enum bất kỳ.
     /// </summary>
     /// <param name="command">Đối tượng enum cần thiết lập.</param>
-    public void SetCmd(Enum command) => Cmd = Convert.ToInt16(command);
+    public void SetCmd(Enum command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        if (Enum.IsDefined(command.GetType(), command))
+            Cmd = Convert.ToInt16(command);
+        else
+            throw new ArgumentException("The provided enum value is invalid.", nameof(command));
+    }
+
+    public override string ToString()
+    {
+        return $"Packet: Cmd={Cmd}, Type={Type}, Flags={Flags}";
+    }
 }

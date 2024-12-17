@@ -53,18 +53,9 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     /// </summary>
     /// <param name="sender">Nguồn của sự kiện.</param>
     /// <param name="e">Dữ liệu sự kiện socket nhận.</param>
-    private void OnDataReceived(object sender, SocketReceivedEventArgs e)
-    {
-        if (Crc32x86.VerifyCrc32(e.Data, out byte[]? originalData) && originalData != null)
-        {
-            DataReceived?.Invoke(originalData);
-        }
-        else
-        {
-            Console.WriteLine("test case network faild");
-        }
-    }
-
+    private void OnDataReceived(object sender, SocketReceivedEventArgs e) =>
+        DataReceived?.Invoke(e.Data);
+    
     /// <summary>
     /// Gửi dữ liệu đến khách hàng thông qua socket.
     /// </summary>
@@ -79,7 +70,8 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     {
         try
         {
-            SocketWriter.Send(Crc32x86.AddCrc32(data));
+            
+            SocketWriter.Send(data);
             return true;
         }
         catch (Exception ex)

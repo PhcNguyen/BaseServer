@@ -1,5 +1,5 @@
 ﻿using NPClient.Core.Network;
-using NPServer.Application.Packets;
+using NPServer.Core.Packets;
 using NPServer.Core.Packets.Metadata;
 using NPServer.Infrastructure.Security;
 using NPServer.Models.Common;
@@ -54,7 +54,7 @@ public class TCPClientManager
 
     public void SendData(byte[] data)
     {
-        _tcpClient?.SendData(Crc32x86.AddCrc32(data));
+        _tcpClient?.SendData(data);
         ConsoleMessage?.Invoke("Dữ liệu đã được gửi.", Color.Blue, FontStyle.Regular);
     }
 
@@ -67,9 +67,8 @@ public class TCPClientManager
                 byte[] data = _tcpClient.ReadData();
                 if (data.Length > 0)
                 {
-                    Crc32x86.VerifyCrc32(data, out byte[]? dw);
                     Packet p = new();
-                    p.ParseFromBytes(dw);
+                    p.ParseFromBytes(data);
 
                     string receivedMessage = System.Text.Encoding.UTF8.GetString(p.PayloadData.ToArray());
                     ConsoleMessage?.Invoke($"Dữ liệu nhận được từ server: {receivedMessage}", Color.Purple, FontStyle.Regular);
@@ -89,9 +88,18 @@ public class TCPClientManager
             if (_tcpClient != null && _tcpClient.IsConnect)
             {
                 byte[] pingPacket = System.Text.Encoding.UTF8.GetBytes("pong");
-                Packet packet = new((byte)PacketType.NONE, (byte)PacketFlags.NONE, (short)Command.Ping, pingPacket);
+                Packet packet = new(PacketType.NONE, PacketFlags.NONE, Command.Ping, pingPacket);
 
-                _tcpClient.SendData(packet.ToByteArray());
+                byte[] dataToSend = packet.ToByteArray();
+
+                if (dataToSend.Length > 0)
+                {
+                    _tcpClient.SendData(dataToSend);
+                }
+                else
+                {
+                    ConsoleMessage?.Invoke("Gói tin ping rỗng hoặc không hợp lệ.", Color.Red, FontStyle.Italic);
+                }
             }
         }
         catch (Exception ex)
@@ -99,4 +107,5 @@ public class TCPClientManager
             ConsoleMessage?.Invoke($"Lỗi khi gửi ping: {ex.Message}", Color.Red, FontStyle.Italic);
         }
     }
+
 }
