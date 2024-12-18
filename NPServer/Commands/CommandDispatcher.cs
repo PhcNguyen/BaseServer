@@ -3,7 +3,6 @@ using NPServer.Commands.Interfaces;
 using NPServer.Infrastructure.Logging;
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace NPServer.Commands;
 

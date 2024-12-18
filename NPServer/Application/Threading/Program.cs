@@ -1,6 +1,4 @@
 ﻿using NPServer.Application.Main;
-using NPServer.Core.Packets;
-using NPServer.Infrastructure.Helper;
 using System.Threading;
 
 namespace NPServer.Application.Threading;
