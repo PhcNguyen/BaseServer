@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace NPServer.Application.Helper;
+namespace NPServer.Application.Helper.Authentication;
 
-public static class EmailValidator
+public static class EmailHelper
 {
     /// <summary>
     /// Kiểm tra xem địa chỉ email có hợp lệ không.

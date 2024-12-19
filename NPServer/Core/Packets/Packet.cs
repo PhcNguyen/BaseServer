@@ -1,6 +1,6 @@
-﻿using NPServer.Core.Packets.Metadata;
+﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Packets;
-using NPServer.Core.Interfaces.Memory;
+using NPServer.Core.Packets.Metadata;
 using NPServer.Infrastructure.Services;
 using System;
 

@@ -47,7 +47,7 @@ internal sealed class SessionController
     {
         _sessionMonitor.ErrorOccurred += (message, exception) => NPLog.Instance.Error<SessionMonitor>(message, exception);
 
-        _packetContainer.StartTasks();
+        _packetContainer.InitializePacketProcessingTasks();
         Task monitorSessionsTask = _sessionMonitor.MonitorSessionsAsync();
 
         Task.Run(async () =>

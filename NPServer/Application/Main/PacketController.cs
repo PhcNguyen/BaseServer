@@ -1,39 +1,39 @@
-﻿using NPServer.Core.Packets.Utilities;
-using NPServer.Core.Interfaces.Session;
+﻿using NPServer.Application.Handlers;
+using NPServer.Application.Helper;
 using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Memory;
 using NPServer.Core.Packets;
+using NPServer.Core.Packets.Queue;
+using NPServer.Core.Packets.Utilities;
+using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Services;
+using NPServer.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using NPServer.Core.Packets.Queue;
-using NPServer.Application.Handlers.Packets;
 
 namespace NPServer.Application.Main;
 
-internal sealed class PacketController
+/// <summary>
+/// Bộ điều khiển xử lý gói tin cho server.
+/// </summary>
+internal sealed class PacketController(CancellationToken token)
 {
-    private readonly ObjectPool _packetPool;
-    private readonly CancellationToken _token;
-    private readonly ISessionManager _sessionManager;
-    private readonly PacketProcessor _packetProcessor;
-    private readonly PacketQueueManager _packetQueueManager;
+    private readonly ObjectPool _packetPool = new();
+    private readonly CancellationToken _token = token;
+    private readonly CommandDispatcher _commandDispatcher = new();
+    private readonly PacketQueueManager _packetQueueManager = new();
+    private readonly ISessionManager _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
 
-    public PacketController(CancellationToken token)
+    public void InitializePacketProcessingTasks()
     {
-        _token = token;
-        _packetPool = new ObjectPool();
-        _packetQueueManager = new PacketQueueManager();
-        _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
-        _packetProcessor = new PacketProcessor(_sessionManager);
-    }
+        Task.Run(() => RunQueueProcessor(PacketQueueType.Incoming, packet =>
+            ProcessOutgoingPacket(packet, _packetQueueManager.GetQueue(PacketQueueType.Outgoing), _packetQueueManager.GetQueue(PacketQueueType.Server))
+        ), _token);
 
-    public void StartTasks()
-    {
-        Task.Run(() => StartProcessing(PacketQueueType.Incoming, HandleIncomingPacketBatch), _token);
-        Task.Run(() => StartProcessing(PacketQueueType.Outgoing, HandleOutgoingPacketBatch), _token);
+        Task.Run(() => RunQueueProcessor(PacketQueueType.Outgoing, ProcessIncomingPacket), _token);
     }
 
     public void EnqueueIncomingPacket(UniqueId id, byte[] data)
@@ -48,22 +48,19 @@ internal sealed class PacketController
         _packetQueueManager.GetQueue(PacketQueueType.Incoming).Enqueue(packet);
     }
 
-    private void StartProcessing(PacketQueueType queueType, Action<List<IPacket>> processBatch)
+    private void RunQueueProcessor(PacketQueueType queueType, Action<IPacket> processPacket)
     {
         try
         {
             while (!_token.IsCancellationRequested)
             {
-                // Chờ tín hiệu hàng đợi
                 _packetQueueManager.WaitForQueue(queueType, _token);
 
-                // Lấy batch gói tin từ hàng đợi
                 var packetsBatch = _packetQueueManager
                     .GetQueue(queueType)
                     .DequeueBatch(50);
 
-                // Xử lý batch gói tin
-                processBatch(packetsBatch);
+                ProcessPacketBatch(queueType, packetsBatch, processPacket);
             }
         }
         catch (OperationCanceledException)
@@ -72,44 +69,83 @@ internal sealed class PacketController
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error in queue processing ({queueType}): {ex.Message}");
+            Console.WriteLine($"Critical error processing queue ({queueType}): {ex.Message}");
         }
     }
 
-    private void HandleIncomingPacketBatch(List<IPacket> packetsBatch)
+    private void ProcessPacketBatch(PacketQueueType queueType, List<IPacket> packetsBatch, Action<IPacket> processPacket)
     {
-        Parallel.ForEach(packetsBatch, packet =>
+        try
         {
-            try
+            Parallel.ForEach(packetsBatch, packet =>
             {
-                _packetProcessor.HandleIncomingPacket(
-                    packet,
-                    _packetQueueManager.GetQueue(PacketQueueType.Incoming),
-                    _packetQueueManager.GetQueue(PacketQueueType.Server)
-                );
-
-                _packetPool.Return((Packet)packet);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error processing incoming packet: {ex.Message}");
-            }
-        });
+                try
+                {
+                    processPacket(packet);
+                    _packetPool.Return((Packet)packet);
+                }
+                catch (Exception ex)
+                {
+                    NPLog.Instance.Error<PacketController>($"Error processing packet in {queueType} queue: {ex.Message}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Critical error processing batch in {queueType} queue: {ex.Message}");
+        }
     }
 
-    private void HandleOutgoingPacketBatch(List<IPacket> packetsBatch)
+    private void ProcessOutgoingPacket(IPacket packet, PacketQueue outgoingQueue, PacketQueue inserverQueue)
     {
-        Parallel.ForEach(packetsBatch, packet =>
+        try
         {
-            try
+            if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
+                return;
+
+            (object packetToSend, object? packetFromServer) = _commandDispatcher.HandleCommand(
+                new CommandInput(packet, (Command)packet.Cmd, session.Role));
+
+            if (packetToSend is string)
             {
-                _packetProcessor.HandleOutgoingPacket(packet);
-                _packetPool.Return((Packet)packet);
+                NPLog.Instance.Info<PacketController>($"PacketToSend is a string: {packetToSend}");
             }
-            catch (Exception ex)
+            else if (packetToSend is IPacket outPacket)
             {
-                Console.WriteLine($"Error processing outgoing packet: {ex.Message}");
+                outgoingQueue.Enqueue(outPacket);
             }
-        });
+
+            if (packetFromServer is IPacket inPacket)
+            {
+                inserverQueue.Enqueue(inPacket);
+            }
+        }
+        catch (Exception ex)
+        {
+            NPLog.Instance.Error<PacketController>($"[ProcessOutgoingPacket] Error processing packet: {ex}");
+        }
+    }
+
+    private void ProcessIncomingPacket(IPacket packet)
+    {
+        try
+        {
+            if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
+                return;
+
+            session.UpdateLastActivityTime();
+
+            if (packet.PayloadData.Length == 0)
+                return;
+
+            RetryHelper.Execute(() => session.Network.Send(packet.ToByteArray()), maxRetries: 3, delayMs: 100,
+                onRetry: attempt => NPLog.Instance.Warning<PacketController>($"Retrying send for packet {packet.Id}, attempt {attempt}."),
+                onFailure: () => NPLog.Instance.Error<PacketController>($"Failed to send packet {packet.Id} after retries.")
+            );
+        }
+        catch (Exception ex)
+        {
+            NPLog.Instance.Error<PacketController>($"[ProcessIncomingPacket] Error sending packet: {ex}");
+        }
     }
 }

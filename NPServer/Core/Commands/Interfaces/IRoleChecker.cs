@@ -1,6 +1,6 @@
 ﻿using NPServer.Models.Common;
 
-namespace NPServer.Commands.Interfaces;
+namespace NPServer.Core.Commands.Interfaces;
 
 public interface IRoleChecker
 {

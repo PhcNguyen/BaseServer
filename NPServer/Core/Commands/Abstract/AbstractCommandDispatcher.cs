@@ -1,4 +1,4 @@
-﻿using NPServer.Commands.Utils;
+﻿using NPServer.Core.Commands.Utils;
 using NPServer.Models.Common;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
-namespace NPServer.Commands.Abstract;
+namespace NPServer.Core.Commands.Abstract;
 
 /// <summary>
 /// Lớp cơ sở xử lý các lệnh trong hệ thống.

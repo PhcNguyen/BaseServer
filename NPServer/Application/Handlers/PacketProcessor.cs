@@ -1,5 +1,4 @@
-﻿using NPServer.Commands;
-using NPServer.Core.Interfaces.Session;
+﻿using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Logging;
 using NPServer.Core.Interfaces.Packets;
 using NPServer.Models.Common;
@@ -7,7 +6,7 @@ using System.Threading;
 using System;
 using NPServer.Core.Packets.Queue;
 
-namespace NPServer.Application.Handlers.Packets;
+namespace NPServer.Application.Handlers;
 
 internal sealed class PacketProcessor(ISessionManager sessionManager)
 {
@@ -22,7 +21,7 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
                 return;
 
             (object packetToSend, object? packetFromServer) = _commandDispatcher.HandleCommand(
-                new Input(packet, (Command)packet.Cmd, session.Role));
+                new CommandInput(packet, (Command)packet.Cmd, session.Role));
 
             if (packetToSend is string)
             {
@@ -38,7 +37,7 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
         }
         catch (Exception ex)
         {
-            NPLog.Instance.Error<PacketProcessor>($"[HandleIncomingPacket] Error processing packet: {ex}");
+            NPLog.Instance.Error<PacketProcessor>($"[HandlePacketProcessing] Error processing packet: {ex}");
         }
     }
 
@@ -58,7 +57,7 @@ internal sealed class PacketProcessor(ISessionManager sessionManager)
         }
         catch (Exception ex)
         {
-            NPLog.Instance.Error<PacketProcessor>($"[HandleOutgoingPacket] Error sending packet: {ex}");
+            NPLog.Instance.Error<PacketProcessor>($"[ProcessIncomingPacket] Error sending packet: {ex}");
         }
     }
 

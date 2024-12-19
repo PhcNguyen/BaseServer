@@ -1,12 +1,12 @@
-﻿using NPServer.Commands;
+﻿using NPServer.Core.Commands;
 using NPServer.Models.Common;
 
-namespace NPServer.Application.Handlers.Implementations;
+namespace NPServer.Application.Handlers.System;
 
 /// <summary>
 /// Lớp xử lý các lệnh hệ thống từ phía khách hàng.
 /// </summary>
-internal static class EventSystem
+internal static class Event
 {
     /// <summary>
     /// Phương thức xử lý lệnh ping.

@@ -1,5 +1,5 @@
-﻿using NPServer.Infrastructure.Collections;
-using NPServer.Core.Interfaces.Packets;
+﻿using NPServer.Core.Interfaces.Packets;
+using NPServer.Infrastructure.Collections;
 
 namespace NPServer.Core.Packets.Queue;
 

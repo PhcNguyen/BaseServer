@@ -24,7 +24,7 @@
 //    {
 //        byte[] data = packet.PayloadData.ToArray();
 
-//        string[]? input = DataValidator.ParseInput(data, 2);
+//        string[]? input = DataHelper.ParseInput(data, 2);
 
 //        if (input == null)
 //        {
@@ -37,7 +37,7 @@
 
 //        var (email, password) = (input[0].Trim(), input[1].Trim());
 
-//        if (!EmailValidator.IsEmailValid(email) || !PasswordValidator.IsPasswordValid(password))
+//        if (!EmailHelper.IsEmailValid(email) || !PasswordHelper.IsPasswordValid(password))
 //        {
 //            packet.ResetForPool();
 //            packet.SetCmd(Command.Error);
@@ -81,7 +81,7 @@
 //    {
 //        byte[] data = packet.PayloadData.ToArray();
 
-//        string[]? input = DataValidator.ParseInput(data, 2);
+//        string[]? input = DataHelper.ParseInput(data, 2);
 
 //        if (input == null)
 //        {
@@ -94,7 +94,7 @@
 
 //        var (email, password) = (input[0].Trim(), input[1].Trim());
 
-//        if (!EmailValidator.IsEmailValid(email))
+//        if (!EmailHelper.IsEmailValid(email))
 //        {
 //            packet.ResetForPool();
 //            packet.SetCmd(Command.Error);
@@ -160,7 +160,7 @@
 //    {
 //        byte[] data = packet.PayloadData.ToArray();
 
-//        string[]? input = DataValidator.ParseInput(data, 1);
+//        string[]? input = DataHelper.ParseInput(data, 1);
 //        if (input == null)
 //        {
 //            packet.ResetForPool();
@@ -198,7 +198,7 @@
 //    {
 //        byte[] data = packet.PayloadData.ToArray();
 
-//        string[]? input = DataValidator.ParseInput(data, 3);
+//        string[]? input = DataHelper.ParseInput(data, 3);
 //        if (input == null)
 //        {
 //            packet.ResetForPool();
@@ -210,7 +210,7 @@
 
 //        var (email, currentPassword, newPassword) = (input[0].Trim(), input[1].Trim(), input[2].Trim());
 
-//        if (!PasswordValidator.IsPasswordValid(newPassword))
+//        if (!PasswordHelper.IsPasswordValid(newPassword))
 //        {
 //            packet.ResetForPool();
 //            packet.SetCmd(Command.Error);

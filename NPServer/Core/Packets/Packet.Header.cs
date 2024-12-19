@@ -1,5 +1,5 @@
-﻿using NPServer.Core.Packets.Metadata;
-using NPServer.Core.Interfaces.Packets;
+﻿using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets.Metadata;
 using System;
 
 namespace NPServer.Core.Packets;
@@ -40,10 +40,10 @@ public partial class Packet : IPacket
     /// <summary>
     /// Phương thức để loại bỏ cờ trạng thái.
     /// </summary>
-    public void DisableFlag(PacketFlags flag) 
-    { 
+    public void DisableFlag(PacketFlags flag)
+    {
         if (HasFlag(flag))
-            Flags &= ~flag; 
+            Flags &= ~flag;
     }
 
     /// <summary>

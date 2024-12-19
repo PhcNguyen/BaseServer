@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace NPServer.Application.Helper;
+namespace NPServer.Application.Helper.Authentication;
 
 /// <summary>
 /// Cung cấp các phương thức để kiểm tra độ mạnh của mật khẩu.
 /// </summary>
-public static class PasswordValidator
+public static class PasswordHelper
 {
     private static readonly HashSet<char> SpecialChars = new("!@#$%^&*(),.?\"{}|<>");
 

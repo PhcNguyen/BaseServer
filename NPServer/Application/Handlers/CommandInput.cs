@@ -1,9 +1,9 @@
-﻿using NPServer.Commands.Interfaces;
+﻿using NPServer.Core.Commands.Interfaces;
 using NPServer.Models.Common;
 
-namespace NPServer.Application.Handlers.Packets;
+namespace NPServer.Application.Handlers;
 
-public sealed class Input(object packet, Command command, AccessLevel accessLevel)
+public sealed class CommandInput(object packet, Command command, AccessLevel accessLevel)
     : ICommandInput
 {
     // Gói tin từ client hoặc các dữ liệu liên quan

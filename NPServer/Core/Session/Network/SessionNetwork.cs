@@ -55,7 +55,7 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     /// <param name="e">Dữ liệu sự kiện socket nhận.</param>
     private void OnDataReceived(object sender, SocketReceivedEventArgs e) =>
         DataReceived?.Invoke(e.Data);
-    
+
     /// <summary>
     /// Gửi dữ liệu đến khách hàng thông qua socket.
     /// </summary>
@@ -70,7 +70,6 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     {
         try
         {
-            
             SocketWriter.Send(data);
             return true;
         }

@@ -1,6 +1,6 @@
 ﻿using NPServer.Models.Common;
 
-namespace NPServer.Commands.Interfaces;
+namespace NPServer.Core.Commands.Interfaces;
 
 /// <summary>
 /// Giao diện đại diện cho dữ liệu đầu vào của một lệnh.

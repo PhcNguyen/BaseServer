@@ -1,5 +1,5 @@
-﻿using NPServer.Core.Packets.Metadata;
-using NPServer.Core.Interfaces.Packets;
+﻿using NPServer.Core.Interfaces.Packets;
+using NPServer.Core.Packets.Metadata;
 using System;
 using System.Buffers;
 
@@ -80,7 +80,7 @@ public partial class Packet : IPacket
             // _signature
             _signature = data[length..].ToArray();
 
-            if (!VerifySignature()) 
+            if (!VerifySignature())
                 return false;
         }
         catch

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NPServer.Core.Network.Listeners;
 
-public class TcpSocketListener(int maxConnections) 
+public class TcpSocketListener(int maxConnections)
     : SocketListenerBase(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, maxConnections)
 {
     public override void StartListening(string? ipAddress, int port)

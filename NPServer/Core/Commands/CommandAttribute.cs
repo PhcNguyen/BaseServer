@@ -1,4 +1,4 @@
-﻿namespace NPServer.Commands;
+﻿namespace NPServer.Core.Commands;
 
 /// <summary>
 /// Attribute để đánh dấu các phương thức xử lý lệnh.
@@ -12,7 +12,7 @@
 /// <param name="command">Lệnh được liên kết với phương thức.</param>
 /// <param name="requiredRole">Vai trò yêu cầu để thực thi lệnh.</param>
 [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false)]
-public sealed class CommandAttribute(Models.Common.Command command, Models.Common.AccessLevel requiredRole) 
+public sealed class CommandAttribute(Models.Common.Command command, Models.Common.AccessLevel requiredRole)
     : System.Attribute
 {
     /// <summary>

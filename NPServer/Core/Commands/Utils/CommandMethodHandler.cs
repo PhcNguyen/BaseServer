@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace NPServer.Commands.Utils;
+namespace NPServer.Core.Commands.Utils;
 
 public static class CommandMethodHandler
 {

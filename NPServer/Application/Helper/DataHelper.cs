@@ -2,7 +2,7 @@
 
 namespace NPServer.Application.Helper;
 
-public static class DataValidator
+public static class DataHelper
 {
     public static bool ValidateInput(string[] parts, int expectedLength) =>
         parts.Length == expectedLength;

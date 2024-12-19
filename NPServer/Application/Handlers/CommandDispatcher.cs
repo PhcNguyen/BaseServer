@@ -1,10 +1,10 @@
-﻿using NPServer.Commands.Abstract;
-using NPServer.Commands.Interfaces;
+﻿using NPServer.Core.Commands.Abstract;
+using NPServer.Core.Commands.Interfaces;
 using NPServer.Infrastructure.Logging;
 using System;
 using System.Collections.Immutable;
 
-namespace NPServer.Commands;
+namespace NPServer.Application.Handlers;
 
 /// <summary>
 /// Xử lý việc phân phối và thực thi các lệnh trong server.
@@ -14,9 +14,10 @@ internal sealed class CommandDispatcher : AbstractCommandDispatcher
     /// <summary>
     /// ImmutableArray chứa các namespace nơi các trình xử lý lệnh được triển khai.
     /// </summary>
-    private static readonly ImmutableArray<string> TargetNamespaces = 
+    private static readonly ImmutableArray<string> TargetNamespaces =
     [
-        "NServer.Application.Implementations"
+        "NServer.Application.Handlers.System",
+        "NServer.Application.Handlers.Authentication"
     ];
 
     /// <summary>

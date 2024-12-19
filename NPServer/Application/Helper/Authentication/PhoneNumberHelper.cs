@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 
-namespace NPServer.Application.Helper;
+namespace NPServer.Application.Helper.Authentication;
 
 /// <summary>
 /// Cung cấp các phương thức để kiểm tra tính hợp lệ của số điện thoại.
 /// </summary>
-public static class PhoneNumberValidator
+public static class PhoneNumberHelper
 {
     // Tập hợp các ký tự đặc biệt hợp lệ
     private static readonly HashSet<char> ValidSpecialChars = ['-', ' ', '(', ')', '+'];
