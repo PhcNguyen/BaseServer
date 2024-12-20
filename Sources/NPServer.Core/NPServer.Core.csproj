@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+        <Platforms>AnyCPU;x64</Platforms>
+        <IsPublishable>false</IsPublishable>
+	    <Nullable>enable</Nullable>
+    </PropertyGroup>
+  
+      <ItemGroup>
+        <ProjectReference Include="..\NPServer.Models\NPServer.Models.csproj" />
+        <ProjectReference Include="..\NPServer.Infrastructure\NPServer.Infrastructure.csproj" />
+      </ItemGroup>
+</Project>
