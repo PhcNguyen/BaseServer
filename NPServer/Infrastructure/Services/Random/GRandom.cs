@@ -5,7 +5,7 @@ namespace NPServer.Infrastructure.Services.Random;
 /// <summary>
 /// Lớp hỗ trợ sinh số ngẫu nhiên với nhiều kiểu dữ liệu và phạm vi khác nhau.
 /// </summary>
-public class GRandom
+public sealed class GRandom
 {
     public const int RandMax = 0x7fffffff; // Giá trị lớn nhất có thể sinh ra
 

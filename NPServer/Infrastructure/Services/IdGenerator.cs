@@ -18,7 +18,7 @@ public enum IdType
 /// <summary>
 /// Tạo các id 64-bit giống như snowflake cho nhiều mục đích khác nhau.
 /// </summary>
-public class IdGenerator
+public sealed class IdGenerator
 {
     // Dựa trên id snowflake (xem tại đây: https://en.wikipedia.org/wiki/Snowflake_ID)
     // Cấu trúc hiện tại:

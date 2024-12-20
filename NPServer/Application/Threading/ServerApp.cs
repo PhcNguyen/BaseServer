@@ -18,8 +18,9 @@ internal sealed class ServerApp
     private int _isRunning;
     private bool _isInMaintenanceMode;
 
-    private SessionController _controller;
+    private PacketController _packetController;
     private TcpSocketListener _networkListener;
+    private SessionController _sessionController;
 
     private CancellationTokenSource _ctokens;
     private readonly NetworkConfig networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
@@ -31,15 +32,17 @@ internal sealed class ServerApp
         _isInMaintenanceMode = false;
 
         _ctokens = tokenSource;
+        _packetController = new PacketController(_ctokens.Token);
         _networkListener = new TcpSocketListener(networkConfig.MaxConnections);
-        _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
+        _sessionController = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
     }
 
     private void InitializeComponents()
     {
         _ctokens = new CancellationTokenSource();
+        _packetController = new PacketController(_ctokens.Token);
         _networkListener = new TcpSocketListener(networkConfig.MaxConnections);
-        _controller = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
+        _sessionController = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
     }
 
     public void Run()
@@ -52,6 +55,11 @@ internal sealed class ServerApp
 
         // Khởi tạo lại các thành phần
         InitializeComponents();
+
+        _sessionController.HandleOccurred += (id, data) =>
+        {
+            _packetController.EnqueueIncomingPacket(id, data);
+        };
 
         CancellationToken token = _ctokens.Token;
 
@@ -111,7 +119,7 @@ internal sealed class ServerApp
                     continue;
                 }
 
-                _controller.AcceptClient(acceptSocket);
+                _sessionController.AcceptClient(acceptSocket);
             }
             catch (SocketException ex)
             {
@@ -138,7 +146,7 @@ internal sealed class ServerApp
         {
             try
             {
-                await _controller.DisconnectAllClientsAsync();
+                await _sessionController.DisconnectAllClientsAsync();
             }
             catch (Exception ex)
             {
@@ -181,12 +189,12 @@ internal sealed class ServerApp
     public void SetMaintenanceMode(bool isMaintenance)
     {
         _isInMaintenanceMode = isMaintenance;
-        NPLog.Instance.Info(isMaintenance ? "Server is now in maintenance mode." : "Server has exited maintenance mode.");
+        NPLog.Instance.Info(isMaintenance ? "Server is now in maintenance mode." : "CoServer has exited maintenance mode.");
     }
 
     public int GetActiveConnections()
     {
-        return _controller.ActiveSessions();
+        return _sessionController.ActiveSessions();
     }
 
     public bool IsServerRunning()

@@ -33,7 +33,7 @@
 		<WarningLevel>5</WarningLevel>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Folder Include="Billing\" />
+	  <Folder Include="Database\" />
 	</ItemGroup>
 
 	<!-- Thêm các package tham chiếu -->

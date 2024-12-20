@@ -15,7 +15,7 @@ internal class TCPCustom(string serverIp, int serverPort)
 
     public bool IsConnect = false;
 
-    // Kết nối đến Server
+    // Kết nối đến CoServer
     public void Connect()
     {
         try
@@ -33,7 +33,7 @@ internal class TCPCustom(string serverIp, int serverPort)
         }
     }
 
-    // Gửi dữ liệu tới Server
+    // Gửi dữ liệu tới CoServer
     public void SendData(byte[] data)
     {
         if (_tcpClient != null && _tcpClient.Connected)

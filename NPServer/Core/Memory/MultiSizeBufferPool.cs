@@ -1,5 +1,5 @@
-﻿using NPServer.Core.Buffers;
-using NPServer.Core.Interfaces.Memory;
+﻿using NPServer.Core.Interfaces.Memory;
+using NPServer.Infrastructure.Buffers;
 using System;
 using System.Linq;
 

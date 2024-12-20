@@ -2,7 +2,7 @@
 
 namespace NPServer.Infrastructure.Services.Random;
 
-public class Rand(uint seed) : RandMwc(seed)
+public sealed class Rand(uint seed) : RandMwc(seed)
 {
     public uint Get(uint max)
     {

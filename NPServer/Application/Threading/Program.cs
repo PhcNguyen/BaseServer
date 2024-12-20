@@ -1,4 +1,5 @@
 ﻿using NPServer.Application.Main;
+using NPServer.Infrastructure.Services;
 using System.Threading;
 
 namespace NPServer.Application.Threading;
@@ -6,6 +7,7 @@ namespace NPServer.Application.Threading;
 internal static class Program
 {
     private static readonly CancellationTokenSource _ctokens = new();
+    private static readonly ServerApp _serverApp = Singleton.GetInstance<ServerApp>(() => new ServerApp(_ctokens));
 
     private static void Main()
     {
@@ -16,12 +18,10 @@ internal static class Program
 
         Thread.Sleep(1000);
 
-        ServerApp serverApp = new(_ctokens);
-
-        serverApp.Run();
+        _serverApp.Run();
 
         System.Console.ReadKey();
 
-        serverApp.Shutdown();
+        _serverApp.Shutdown();
     }
 }

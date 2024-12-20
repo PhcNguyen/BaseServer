@@ -5,5 +5,5 @@ namespace NPServer.Infrastructure.Settings;
 
 internal static class LoggingCongfig
 {
-    public static readonly string LogDirectory = Path.Combine(PathConfig.LogFolder, DateTime.Now.ToString("yyMMdd"));
+    public static string LogDirectory = Path.Combine(PathConfig.LogFolder, DateTime.Now.ToString("yyMMdd"));
 }

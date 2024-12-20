@@ -6,7 +6,7 @@ namespace NPServer.Infrastructure.Collections;
 /// <summary>
 /// Bộ chọn ngẫu nhiên các phần tử từ một bộ sưu tập, hỗ trợ các chế độ có trọng số và không trọng số.
 /// </summary>
-public class Picker<T>
+public sealed class Picker<T>
 {
     /// <summary>
     /// Đại diện cho một phần tử với trọng số dùng để chọn ngẫu nhiên.

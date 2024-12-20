@@ -3,7 +3,7 @@
 namespace NPServer.Infrastructure.Services.Random;
 
 // More info on MWC random: https://en.wikipedia.org/wiki/Multiply-with-carry_pseudorandom_number_generator
-public class RandMwc
+public abstract class RandMwc
 {
     private ulong _seed;
     public const uint RandMax = 0xffffffff;

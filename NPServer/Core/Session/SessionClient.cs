@@ -54,14 +54,14 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     public AccessLevel Role = AccessLevel.Guests;
 
     /// <summary>
-    /// Sự kiện cảnh báo.
-    /// </summary>
-    public event Action<string>? WarningOccurred;
-
-    /// <summary>
     /// Sự kiện thông tin.
     /// </summary>
     public event Action<string>? InfoOccurred;
+
+    /// <summary>
+    /// Sự kiện cảnh báo.
+    /// </summary>
+    public event Action<string>? WarningOccurred;
 
     /// <summary>
     /// Sự kiện lỗi.
@@ -78,6 +78,22 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     AccessLevel ISessionClient.Role => Role;
 
     ISessionNetwork ISessionClient.Network => _network;
+
+    /// <summary>
+    /// Cập nhật thời gian hoạt động của phiên làm việc.
+    /// </summary>
+    public void UpdateLastActivityTime() => _connection.UpdateLastActivity();
+
+    /// <summary>
+    /// Kiểm tra xem phiên làm việc có hết thời gian chờ không.
+    /// </summary>
+    /// <returns>True nếu phiên làm việc đã hết thời gian chờ, ngược lại False.</returns>
+    public bool IsSessionTimedOut() => _connection.IsTimedOut();
+
+    /// <summary>
+    /// Kiểm tra xem socket có hợp lệ hay không.
+    /// </summary>
+    public bool IsSocketInvalid() => _isDisposed || _network.IsDispose;
 
     /// <summary>
     /// Kết nối và bắt đầu xử lý dữ liệu từ khách hàng.
@@ -159,22 +175,6 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
             ErrorOccurred?.Invoke($"Error during disconnect", ex);
         }
     }
-
-    /// <summary>
-    /// Cập nhật thời gian hoạt động của phiên làm việc.
-    /// </summary>
-    public void UpdateLastActivityTime() => _connection.UpdateLastActivity();
-
-    /// <summary>
-    /// Kiểm tra xem phiên làm việc có hết thời gian chờ không.
-    /// </summary>
-    /// <returns>True nếu phiên làm việc đã hết thời gian chờ, ngược lại False.</returns>
-    public bool IsSessionTimedOut() => _connection.IsTimedOut();
-
-    /// <summary>
-    /// Kiểm tra xem socket có hợp lệ hay không.
-    /// </summary>
-    public bool IsSocketInvalid() => _isDisposed || _network.IsDispose;
 
     /// <summary>
     /// Giải phóng tài nguyên của phiên làm việc.

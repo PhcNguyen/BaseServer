@@ -1,18 +1,17 @@
-﻿using NPServer.Core.Commands.Utils;
-using NPServer.Models.Common;
+﻿using NPServer.Models.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
-namespace NPServer.Core.Commands.Abstract;
+namespace NPServer.Core.Commands;
 
 /// <summary>
 /// Lớp cơ sở xử lý các lệnh trong hệ thống.
 /// Cung cấp cơ chế đăng ký và thực thi các lệnh dựa trên phương thức.
 /// </summary>
-internal abstract class AbstractCommandDispatcher
+internal abstract class CommandDispatcherBase
 {
     /// <summary>
     /// Cờ binding cho các phương thức lệnh (bao gồm Public, Static, và Instance).
@@ -30,7 +29,7 @@ internal abstract class AbstractCommandDispatcher
     /// Tải các phương thức lệnh từ các namespace mục tiêu và đăng ký chúng.
     /// </summary>
     /// <param name="targetNamespaces">Danh sách các namespace mà từ đó các phương thức lệnh sẽ được tải.</param>
-    protected AbstractCommandDispatcher(string[] targetNamespaces)
+    protected CommandDispatcherBase(string[] targetNamespaces)
     {
         var commandMethods = LoadCommandMethods(targetNamespaces);
 
@@ -38,7 +37,7 @@ internal abstract class AbstractCommandDispatcher
         CommandDelegateCache = commandMethods
             .Select(cmd => new KeyValuePair<Command, (AccessLevel, Func<object?, object>)>(
                 cmd.Command,
-                (cmd.RequiredRole, CommandMethodHandler.CreateDelegate(cmd.Method))
+                (cmd.RequiredRole, CreateDelegate(cmd.Method))
             ))
             .ToImmutableDictionary();
     }
@@ -72,7 +71,7 @@ internal abstract class AbstractCommandDispatcher
     /// <param name="requiredRole">Vai trò yêu cầu để thực hiện lệnh.</param>
     protected void RegisterCommand(Command command, MethodInfo method, AccessLevel requiredRole)
     {
-        var commandDelegate = CommandMethodHandler.CreateDelegate(method);
+        var commandDelegate = CreateDelegate(method);
 
         // Thêm lệnh mới bằng cách tạo một dictionary bất biến mới
         CommandDelegateCache = CommandDelegateCache.Add(command, (requiredRole, commandDelegate));
@@ -86,5 +85,40 @@ internal abstract class AbstractCommandDispatcher
     {
         // Xóa lệnh bằng cách tạo dictionary bất biến mới
         CommandDelegateCache = CommandDelegateCache.Remove(command);
+    }
+
+    /// <summary>
+    /// Tạo delegate từ phương thức đã cho để thực thi lệnh.
+    /// </summary>
+    /// <param name="method">Phương thức cần tạo delegate.</param>
+    /// <returns>Delegate thực thi phương thức tương ứng.</returns>
+    private static Func<object?, object> CreateDelegate(MethodInfo method)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+
+        if (method.ReturnType != typeof(object))
+            throw new ArgumentException("Method must return object", nameof(method));
+
+        var parameters = method.GetParameters();
+
+        if (parameters.Length == 0)
+        {
+            return _ =>
+            {
+                var result = method.Invoke(null, null);
+                return result ?? throw new InvalidOperationException("Method returned null or an invalid result.");
+            };
+        }
+
+        if (parameters.Length == 1 && parameters[0].ParameterType == typeof(object))
+        {
+            return (parameter) =>
+            {
+                var result = method.Invoke(null, [parameter!]);
+                return result ?? throw new InvalidOperationException("Method returned null or an invalid result.");
+            };
+        }
+
+        throw new ArgumentException("Method signature is invalid. It must either have no parameters or one object parameter.");
     }
 }

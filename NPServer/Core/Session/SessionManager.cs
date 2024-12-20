@@ -24,25 +24,6 @@ public sealed class SessionManager : ISessionManager
     private int _sessionCount = 0;
 
     /// <summary>
-    /// Quản lý giới hạn kết nối cho một địa chỉ IP cụ thể.
-    /// </summary>
-    /// <param name="ipAddress">Địa chỉ IP cần kiểm tra.</param>
-    /// <param name="isAdding">Xác định xem có đang thêm kết nối mới hay không.</param>
-    /// <returns>Trả về <c>true</c> nếu kết nối được phép, ngược lại là <c>false</c>.</returns>
-    private bool ManageConnLimit(string ipAddress, bool isAdding)
-    {
-        if (isAdding)
-        {
-            return _connLimiter.IsConnectionAllowed(ipAddress);
-        }
-        else
-        {
-            _connLimiter.ConnectionClosed(ipAddress);
-            return true;
-        }
-    }
-
-    /// <summary>
     /// Thêm session mới vào danh sách và cập nhật số lượng session.
     /// </summary>
     /// <param name="session">Phiên làm việc cần thêm.</param>
@@ -69,7 +50,7 @@ public sealed class SessionManager : ISessionManager
     /// <returns>Trả về phiên làm việc nếu tìm thấy, nếu không trả về <c>null</c>.</returns>
     public ISessionClient? GetSession(UniqueId sessionId)
     {
-        _activeSessions.TryGetValue(sessionId, out var session);
+        _activeSessions.TryGetValue(sessionId, out ISessionClient? session);
         return session;
     }
 
@@ -89,7 +70,7 @@ public sealed class SessionManager : ISessionManager
     /// <returns>Trả về <c>true</c> nếu xóa thành công, ngược lại là <c>false</c>.</returns>
     public bool RemoveSession(UniqueId sessionId)
     {
-        bool isRemoved = _activeSessions.TryRemove(sessionId, out var session);
+        bool isRemoved = _activeSessions.TryRemove(sessionId, out ISessionClient? session);
 
         if (session != null)
         {
@@ -116,5 +97,25 @@ public sealed class SessionManager : ISessionManager
     public int Count()
     {
         return _sessionCount;
+    }
+
+
+    /// <summary>
+    /// Quản lý giới hạn kết nối cho một địa chỉ IP cụ thể.
+    /// </summary>
+    /// <param name="ipAddress">Địa chỉ IP cần kiểm tra.</param>
+    /// <param name="isAdding">Xác định xem có đang thêm kết nối mới hay không.</param>
+    /// <returns>Trả về <c>true</c> nếu kết nối được phép, ngược lại là <c>false</c>.</returns>
+    private bool ManageConnLimit(string ipAddress, bool isAdding)
+    {
+        if (isAdding)
+        {
+            return _connLimiter.IsConnectionAllowed(ipAddress);
+        }
+        else
+        {
+            _connLimiter.ConnectionClosed(ipAddress);
+            return true;
+        }
     }
 }

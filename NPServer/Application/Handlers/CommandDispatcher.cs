@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Commands.Abstract;
+﻿using NPServer.Core.Commands;
 using NPServer.Core.Commands.Interfaces;
 using NPServer.Infrastructure.Logging;
 using System;
@@ -9,7 +9,7 @@ namespace NPServer.Application.Handlers;
 /// <summary>
 /// Xử lý việc phân phối và thực thi các lệnh trong server.
 /// </summary>
-internal sealed class CommandDispatcher : AbstractCommandDispatcher
+internal sealed class CommandDispatcher : CommandDispatcherBase
 {
     /// <summary>
     /// ImmutableArray chứa các namespace nơi các trình xử lý lệnh được triển khai.
@@ -32,7 +32,7 @@ internal sealed class CommandDispatcher : AbstractCommandDispatcher
     /// </summary>
     /// <param name="input">Đầu vào lệnh chứa tên lệnh và ngữ cảnh người dùng.</param>
     /// <returns>
-    /// Một tuple, phần tử đầu tiên là kết quả thực thi lệnh hoặc thông báo lỗi, 
+    /// Một tuple, phần tử đầu tiên là kết quả thực thi lệnh hoặc thông báo lỗi,
     /// và phần tử thứ hai là dữ liệu bổ sung (nếu có).
     /// </returns>
     public (object Result, object? AdditionalData) HandleCommand(ICommandInput input)

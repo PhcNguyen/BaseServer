@@ -20,8 +20,12 @@ internal sealed class SessionController
     private readonly CancellationToken _canceltoken;
     private readonly SessionMonitor _sessionMonitor;
     private readonly ISessionManager _sessionManager;
-    private readonly PacketController _packetContainer;
     private readonly IMultiSizeBufferPool _multiSizeBuffer;
+
+    /// <summary>
+    /// Sự kiện thông tin.
+    /// </summary>
+    public event Action<UniqueId, byte[]>? HandleOccurred;
 
     /// <summary>
     /// Khởi tạo một <see cref="SessionController"/> mới.
@@ -34,7 +38,6 @@ internal sealed class SessionController
         _sessionManager = Singleton.GetInstanceOfInterface<ISessionManager>();
         _multiSizeBuffer = Singleton.GetInstanceOfInterface<IMultiSizeBufferPool>();
 
-        _packetContainer = new PacketController(_canceltoken);
         _sessionMonitor = new SessionMonitor(_sessionManager, _canceltoken);
 
         this.Initialization();
@@ -47,7 +50,6 @@ internal sealed class SessionController
     {
         _sessionMonitor.ErrorOccurred += (message, exception) => NPLog.Instance.Error<SessionMonitor>(message, exception);
 
-        _packetContainer.InitializePacketProcessingTasks();
         Task monitorSessionsTask = _sessionMonitor.MonitorSessionsAsync();
 
         Task.Run(async () =>
@@ -90,7 +92,7 @@ internal sealed class SessionController
 
             session.Network.DataReceived += data =>
             {
-                _packetContainer.EnqueueIncomingPacket(session.Id, data);
+                HandleOccurred?.Invoke(session.Id, data);
             };
 
             session.Network.ErrorOccurred += (message, exception) => NPLog.Instance.Error<SessionClient>(message, exception);

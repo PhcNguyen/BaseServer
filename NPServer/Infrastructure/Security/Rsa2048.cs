@@ -7,7 +7,7 @@ namespace NPServer.Infrastructure.Security;
 /// <summary>
 /// Lớp RsaCipher cung cấp các chức năng mã hóa và giải mã sử dụng thuật toán RSA.
 /// </summary>
-public class Rsa2048 : IDisposable
+public sealed class Rsa2048 : IDisposable
 {
     private readonly RSA _rsa;
     private bool _disposed;
@@ -72,7 +72,7 @@ public class Rsa2048 : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    protected virtual void Dispose(bool disposing)
+    public void Dispose(bool disposing)
     {
         if (!_disposed)
         {
