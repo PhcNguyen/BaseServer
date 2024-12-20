@@ -34,7 +34,7 @@ public sealed class FileTarget : INPLogTarget, IDisposable
         _workerTask = Task.Run(ProcessLogQueueAsync, _cancellationTokenSource.Token);
     }
 
-    public FileTarget() : this(new LogFormatter(), LoggingCongfig.LogDirectory)
+    public FileTarget() : this(new LogFormatter(), NPLogCongfig.LogDirectory)
     {
     }
 
