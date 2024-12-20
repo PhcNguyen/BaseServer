@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace NPServer.Infrastructure.Services.Time;
+namespace NPServer.Shared.Time;
 
 /// <summary>
 /// Cung cấp các chức năng xử lý thời gian chính xác cho hệ thống.

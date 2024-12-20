@@ -1,6 +1,6 @@
-﻿using NPServer.Infrastructure.Config;
+﻿using NPServer.Shared.Configuration;
 
-namespace NPServer.Infrastructure.Settings;
+namespace NPServer.Core.Network;
 
 /// <summary>
 /// Lớp cấu hình mạng, cung cấp các cấu hình liên quan đến kết nối mạng.

@@ -1,8 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
 		<Platforms>AnyCPU;x64</Platforms>
 		<IsPublishable>false</IsPublishable>
-		<Nullable>enable</Nullable>		
+		<Nullable>enable</Nullable>
+		<DebugType>none</DebugType>
 	</PropertyGroup>
+
+	<Target Name="CleanObjFolder" AfterTargets="Build">
+		<RemoveDir Directories="$(ProjectDir)NPServer.Models\obj" ContinueOnError="true" />
+	</Target>
+	
 </Project>

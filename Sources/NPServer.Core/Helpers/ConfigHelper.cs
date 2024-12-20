@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace NPServer.Infrastructure.Helper;
+namespace NPServer.Shared.Helper;
 
 public static class ConfigHelper
 {

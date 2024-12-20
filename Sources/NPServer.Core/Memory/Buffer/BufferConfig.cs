@@ -1,7 +1,6 @@
-﻿using NPServer.Infrastructure.Config;
-using System.Linq;
+﻿using NPServer.Shared.Configuration;
 
-namespace NPServer.Infrastructure.Settings;
+namespace NPServer.Core.Memory.Buffer;
 
 public sealed class BufferConfig : ConfigContainer
 {

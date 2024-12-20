@@ -1,5 +1,5 @@
 ﻿using NPServer.Core.Interfaces.Memory;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 using System;
 
 namespace NPServer.Core.Interfaces.Packets;

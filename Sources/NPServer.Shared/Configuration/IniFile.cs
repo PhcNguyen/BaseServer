@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace NPServer.Infrastructure.Config;
+namespace NPServer.Shared.Configuration;
 
 /// <summary>
 /// Một lớp bao bọc để đọc và ghi các tệp ini.

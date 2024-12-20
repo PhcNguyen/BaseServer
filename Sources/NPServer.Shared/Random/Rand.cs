@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NPServer.Infrastructure.Services.Random;
+namespace NPServer.Shared.Random;
 
 public sealed class Rand(uint seed) : RandMwc(seed)
 {

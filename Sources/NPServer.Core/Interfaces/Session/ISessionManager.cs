@@ -1,4 +1,4 @@
-﻿using NPServer.Infrastructure.Services;
+﻿using NPServer.Shared.Services;
 using System.Collections.Generic;
 
 namespace NPServer.Core.Interfaces.Session;

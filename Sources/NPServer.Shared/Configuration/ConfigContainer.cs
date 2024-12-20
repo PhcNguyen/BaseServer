@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace NPServer.Infrastructure.Config;
+namespace NPServer.Shared.Configuration;
 
 /// <summary>
 /// Thuộc tính để bỏ qua các thuộc tính khi khởi tạo các container cấu hình.
@@ -14,7 +14,7 @@ public class ConfigIgnoreAttribute : Attribute
 /// Cung cấp quyền truy cập vào các giá trị cấu hình.
 /// </summary>
 /// <remarks>
-/// Các lớp triển khai lớp này nên có hậu tố Config trong tên của chúng (ví dụ, FooConfig). Tên phần và khóa của tệp ini được lấy từ tên lớp và thuộc tính.
+/// Các lớp triển khai lớp này nên có hậu tố Configuration trong tên của chúng (ví dụ, FooConfig). Tên phần và khóa của tệp ini được lấy từ tên lớp và thuộc tính.
 /// </remarks>
 public abstract class ConfigContainer
 {
@@ -27,7 +27,7 @@ public abstract class ConfigContainer
         Type type = GetType();  // Sử dụng reflection để lấy cấu hình
 
         string section = type.Name;
-        if (section.EndsWith("Config", StringComparison.OrdinalIgnoreCase))
+        if (section.EndsWith("Configuration", StringComparison.OrdinalIgnoreCase))
             section = section[..^6];
 
         foreach (var property in type.GetProperties())
@@ -49,7 +49,7 @@ public abstract class ConfigContainer
             configFile.WriteValue(section, property.Name, property.GetValue(this)?.ToString() ?? "");
 
             // Kiểm tra nếu giá trị null hoặc là chuỗi rỗng
-            if (value == null || (value is string strValue && strValue == string.Empty)) continue;
+            if (value == null || value is string strValue && strValue == string.Empty) continue;
 
             property.SetValue(this, value);  // Gán giá trị đọc được từ tệp cấu hình vào thuộc tính
         }

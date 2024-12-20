@@ -1,5 +1,5 @@
 ﻿using NPServer.Application.Main;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 using System.Threading;
 
 namespace NPServer.Application.Threading;

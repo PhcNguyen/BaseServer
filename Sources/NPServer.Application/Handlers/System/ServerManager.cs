@@ -1,7 +1,7 @@
 ﻿using NPServer.Application.Threading;
 using NPServer.Core.Commands;
 using NPServer.Models.Common;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 
 namespace NPServer.Application.Handlers.System;
 

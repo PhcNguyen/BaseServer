@@ -1,5 +1,4 @@
-﻿using NPServer.Infrastructure.Settings;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 
 namespace NPServer.Core.Network.Listeners;
 

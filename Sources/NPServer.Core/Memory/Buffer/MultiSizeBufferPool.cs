@@ -1,9 +1,8 @@
 ﻿using NPServer.Core.Interfaces.Memory;
-using NPServer.Infrastructure.Buffers;
 using System;
 using System.Linq;
 
-namespace NPServer.Core.Memory;
+namespace NPServer.Core.Memory.Buffer;
 
 /// <summary>
 /// Quản lý các bộ đệm có nhiều kích thước khác nhau.

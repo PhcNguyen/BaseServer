@@ -1,6 +1,6 @@
 ﻿using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,12 +13,12 @@ namespace NPServer.Core.Session;
 /// Lớp này chịu trách nhiệm quản lý, thêm, xóa và lấy các session hiện tại của người dùng.
 /// </para>
 /// </summary>
-public sealed class SessionManager : ISessionManager
+public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
 {
     // Lưu trữ tất cả các session hiện tại trong một ConcurrentDictionary.
     private readonly ConcurrentDictionary<UniqueId, ISessionClient> _activeSessions = new();
 
-    private readonly IConnLimiter _connLimiter = Singleton.GetInstance<IConnLimiter>();
+    private readonly IConnLimiter _connLimiter = connLimiter;
 
     // Biến đếm số lượng session hiện tại.
     private int _sessionCount = 0;

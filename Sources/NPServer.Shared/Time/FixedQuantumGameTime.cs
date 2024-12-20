@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NPServer.Infrastructure.Services.Time;
+namespace NPServer.Shared.Time;
 
 /// <summary>
 /// Đại diện cho thời gian trong game, được cập nhật theo các bước cố định (quantums).

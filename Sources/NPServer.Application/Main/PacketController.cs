@@ -7,7 +7,7 @@ using NPServer.Core.Packets;
 using NPServer.Core.Packets.Queue;
 using NPServer.Core.Packets.Utilities;
 using NPServer.Infrastructure.Logging;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 using NPServer.Models.Common;
 using System;
 using System.Collections.Generic;

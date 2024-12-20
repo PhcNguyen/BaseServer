@@ -37,9 +37,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\NPServer.Core\NPServer.Core.csproj"/>
-		<ProjectReference Include="..\NPServer.Models\NPServer.Models.csproj"/>		
-		<ProjectReference Include="..\NPServer.Infrastructure\NPServer.Infrastructure.csproj"/>
+		<ProjectReference Include="..\NPServer.Core\NPServer.Core.csproj" />
+		<ProjectReference Include="..\NPServer.Models\NPServer.Models.csproj" />		
+		<ProjectReference Include="..\NPServer.Infrastructure\NPServer.Infrastructure.csproj" />
 	</ItemGroup>
+	
+	<Target Name="CleanObjFolder" AfterTargets="Build">
+		<RemoveDir Directories="$(ProjectDir)NPServer.Application\obj" ContinueOnError="true" />
+	</Target>
 
 </Project>

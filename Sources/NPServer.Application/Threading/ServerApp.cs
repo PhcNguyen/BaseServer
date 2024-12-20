@@ -2,10 +2,10 @@
 using NPServer.Core.Helpers;
 using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Network.Listeners;
-using NPServer.Infrastructure.Config;
 using NPServer.Infrastructure.Logging;
-using NPServer.Infrastructure.Services;
-using NPServer.Infrastructure.Settings;
+using NPServer.Shared.Configuration;
+using NPServer.Shared.Services;
+using NPServer.Core.Network;
 using System;
 using System.Net.Sockets;
 using System.Threading;

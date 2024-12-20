@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 
-namespace NPServer.Infrastructure.Buffers;
+namespace NPServer.Core.Memory.Buffer;
 
 /// <summary>
 /// Quản lý các pool của các bộ đệm dùng chung.

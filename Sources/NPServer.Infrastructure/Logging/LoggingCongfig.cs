@@ -1,7 +1,8 @@
-﻿using System;
+﻿using NPServer.Shared.Default;
+using System;
 using System.IO;
 
-namespace NPServer.Infrastructure.Settings;
+namespace NPServer.Infrastructure.Logging;
 
 public static class LoggingCongfig
 {

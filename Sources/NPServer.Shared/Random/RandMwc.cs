@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NPServer.Infrastructure.Services.Random;
+namespace NPServer.Shared.Random;
 
 // More info on MWC random: https://en.wikipedia.org/wiki/Multiply-with-carry_pseudorandom_number_generator
 public abstract class RandMwc

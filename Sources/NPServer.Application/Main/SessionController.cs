@@ -2,7 +2,7 @@
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Session;
 using NPServer.Infrastructure.Logging;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 using System;
 using System.Linq;
 using System.Net.Sockets;

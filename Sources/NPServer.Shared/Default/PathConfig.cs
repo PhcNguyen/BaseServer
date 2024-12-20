@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace NPServer.Infrastructure.Settings;
+namespace NPServer.Shared.Default;
 
 public static class PathConfig
 {

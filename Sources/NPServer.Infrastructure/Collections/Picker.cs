@@ -1,4 +1,4 @@
-﻿using NPServer.Infrastructure.Services.Random;
+﻿using NPServer.Shared.Random;
 using System.Collections.Generic;
 
 namespace NPServer.Infrastructure.Collections;

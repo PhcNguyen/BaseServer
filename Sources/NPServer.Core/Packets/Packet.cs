@@ -1,7 +1,7 @@
 ﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Packets.Metadata;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 using System;
 
 namespace NPServer.Core.Packets;

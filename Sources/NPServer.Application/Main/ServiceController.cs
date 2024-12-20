@@ -3,15 +3,15 @@ using NPServer.Core.Helpers;
 using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Memory;
 using NPServer.Core.Network.Firewall;
 using NPServer.Core.Session;
-using NPServer.Infrastructure.Config;
-using NPServer.Infrastructure.Helper;
 using NPServer.Infrastructure.Logging;
-using NPServer.Infrastructure.Services;
-using NPServer.Infrastructure.Settings;
+using NPServer.Shared.Services;
+using NPServer.Shared.Configuration;
+using NPServer.Shared.Helper;
 using System;
+using NPServer.Core.Memory.Buffer;
+using NPServer.Core.Network;
 
 namespace NPServer.Application.Main;
 
@@ -53,10 +53,11 @@ internal static class ServiceController
         Singleton.Register<CommandDispatcher>();
 
         // Core
-        Singleton.Register<ISessionManager, SessionManager>();
-
         Singleton.Register<IConnLimiter, ConnLimiter>(() =>
         new ConnLimiter(_networkConfig.MaxConnections));
+
+        Singleton.Register<ISessionManager, SessionManager>(() =>
+        new SessionManager(Singleton.GetInstanceOfInterface<IConnLimiter>()));
 
         Singleton.Register<IFirewallRateLimit, FirewallRateLimit>(() =>
         new FirewallRateLimit(_networkConfig.MaxAllowedRequests,

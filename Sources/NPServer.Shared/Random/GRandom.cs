@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace NPServer.Infrastructure.Services.Random;
+namespace NPServer.Shared.Random;
 
 /// <summary>
 /// Lớp hỗ trợ sinh số ngẫu nhiên với nhiều kiểu dữ liệu và phạm vi khác nhau.

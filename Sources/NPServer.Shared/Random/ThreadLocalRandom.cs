@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace NPServer.Infrastructure.Services.Random;
+namespace NPServer.Shared.Random;
 
 /// <summary>
 /// Cung cấp các phương thức sinh số ngẫu nhiên hiệu suất cao và an toàn trong môi trường đa luồng.
@@ -76,7 +76,7 @@ public static class ThreadLocalRandom
             ulong randomValue = NextUInt64();
             for (int j = 0; j < length; j++)
             {
-                Unsafe.Add(ref start, i + j) = (byte)(randomValue >> (j * 8) & 0xFF);
+                Unsafe.Add(ref start, i + j) = (byte)(randomValue >> j * 8 & 0xFF);
             }
         }
     }

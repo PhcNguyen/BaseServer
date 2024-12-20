@@ -1,6 +1,5 @@
 ﻿using NPServer.Infrastructure.Logging.Formatter;
 using NPServer.Infrastructure.Logging.Interfaces;
-using NPServer.Infrastructure.Settings;
 using System;
 using System.Collections.Concurrent;
 using System.IO;

@@ -1,7 +1,7 @@
 ﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Session.Network;
-using NPServer.Infrastructure.Services;
+using NPServer.Shared.Services;
 using NPServer.Models.Common;
 using System;
 using System.IO;

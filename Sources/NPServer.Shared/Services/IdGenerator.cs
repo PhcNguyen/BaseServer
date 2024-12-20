@@ -1,8 +1,8 @@
-﻿using NPServer.Infrastructure.Services.Time;
+﻿using NPServer.Shared.Time;
 using System;
 using System.Threading;
 
-namespace NPServer.Infrastructure.Services;
+namespace NPServer.Shared.Services;
 
 public enum IdType
 {

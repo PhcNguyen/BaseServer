@@ -1,8 +1,8 @@
-﻿using NPServer.Infrastructure.Services.Random;
-using NPServer.Infrastructure.Services.Time;
+﻿using NPServer.Shared.Random;
+using NPServer.Shared.Time;
 using System;
 
-namespace NPServer.Infrastructure.Services;
+namespace NPServer.Shared.Services;
 
 /// <summary>
 /// Đại diện cho một ID phiên duy nhất.
@@ -11,7 +11,7 @@ namespace NPServer.Infrastructure.Services;
 /// Khởi tạo một thể hiện mới của lớp <see cref="UniqueId"/> với giá trị được chỉ định.
 /// </remarks>
 /// <param name="value">Giá trị của ID.</param>
-public readonly struct UniqueId(uint value) : System.IEquatable<UniqueId>, System.IComparable<UniqueId>
+public readonly struct UniqueId(uint value) : IEquatable<UniqueId>, IComparable<UniqueId>
 {
     private const string Alphabet = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private const int Base = 36;

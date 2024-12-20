@@ -1,9 +1,9 @@
-﻿using NPServer.Infrastructure.Settings;
+﻿using NPServer.Shared.Default;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NPServer.Infrastructure.Config;
+namespace NPServer.Shared.Configuration;
 
 /// <summary>
 /// Một singleton cung cấp quyền truy cập vào các container giá trị cấu hình.
@@ -23,7 +23,7 @@ public sealed class ConfigManager
     /// </summary>
     private ConfigManager()
     {
-        string path = Path.Combine(PathConfig.DataDirectory, "Config.ini");
+        string path = Path.Combine(PathConfig.DataDirectory, "Configuration.ini");
         _iniFile = new(path);
     }
 
