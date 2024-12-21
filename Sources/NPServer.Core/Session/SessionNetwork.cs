@@ -1,8 +1,8 @@
 ﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.IO;
-using NPServer.Infrastructure.Security;
 using System;
+using System.Text;
 using System.Net.Sockets;
 
 namespace NPServer.Core.Session;
@@ -53,14 +53,6 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     }
 
     /// <summary>
-    /// Xử lý sự kiện khi nhận dữ liệu từ socket.
-    /// </summary>
-    /// <param name="sender">Nguồn của sự kiện.</param>
-    /// <param name="e">Dữ liệu sự kiện socket nhận.</param>
-    private void OnDataReceived(object sender, SocketReceivedEventArgs e) =>
-        DataReceived?.Invoke(e.Data);
-
-    /// <summary>
     /// Gửi dữ liệu dưới dạng mảng byte.
     /// </summary>
     /// <param name="data">Dữ liệu cần gửi.</param>
@@ -88,7 +80,7 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     {
         try
         {
-            SocketWriter.Send(Crc32x86.AddCrc32(data));
+            SocketWriter.Send(Encoding.UTF8.GetBytes(data));
             return true;
         }
         catch (Exception ex)
@@ -136,4 +128,12 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     {
         Dispose(false);
     }
+
+    /// <summary>
+    /// Xử lý sự kiện khi nhận dữ liệu từ socket.
+    /// </summary>
+    /// <param name="sender">Nguồn của sự kiện.</param>
+    /// <param name="e">Dữ liệu sự kiện socket nhận.</param>
+    private void OnDataReceived(object sender, SocketReceivedEventArgs e) =>
+        DataReceived?.Invoke(e.Data);
 }

@@ -27,6 +27,7 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     : ISessionClient, IDisposable
 {
     private bool _isDisposed = false;
+
     private readonly UniqueId _id = UniqueId.NewId();
     private readonly CancellationToken _token = token;
     private readonly SessionConnection _connection = new(socket, timeout);
@@ -40,7 +41,7 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     /// <summary>
     /// Cấp độ truy cập của phiên.
     /// </summary>
-    public AccessLevel Role = AccessLevel.Guests;
+    public AccessLevel Role { get; private set; } = AccessLevel.Guests;
 
     /// <summary>
     /// Mạng kết nối của phiên.
@@ -80,6 +81,14 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     AccessLevel ISessionClient.Role => Role;
 
     ISessionNetwork ISessionClient.Network => _network;
+
+    /// <summary>
+    /// Cập nhật role của phiên.
+    /// </summary>
+    public void SetRole(AccessLevel newRole)
+    {
+        Role = newRole;
+    }
 
     /// <summary>
     /// Cập nhật thời gian hoạt động gần nhất của phiên.
@@ -172,7 +181,8 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
 
         try
         {
-            Dispose();
+            _network.SocketReader?.Cancel();
+            this.Dispose();
             InfoOccurred?.Invoke($"Session {_id} disconnected from {_connection.IpAddress}");
         }
         catch (Exception ex)

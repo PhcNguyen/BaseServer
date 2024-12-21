@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NPServer.Infrastructure.Collections;
+namespace NPServer.Shared.Collections;
 
 /// <summary>
 /// Đại diện cho một phạm vi với giới hạn dưới (Min) và giới hạn trên (Max).
@@ -30,6 +30,6 @@ public struct Range<T>(T min, T max) where T : IComparable<T>
     /// <returns>True nếu hai phạm vi giao nhau; ngược lại, false.</returns>
     public readonly bool Intersects(Range<T> other)
     {
-        return (Min.CompareTo(other.Max) <= 0) && (Max.CompareTo(other.Min) >= 0);
+        return Min.CompareTo(other.Max) <= 0 && Max.CompareTo(other.Min) >= 0;
     }
 }

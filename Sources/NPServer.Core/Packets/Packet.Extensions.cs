@@ -70,12 +70,12 @@ public partial class Packet : IPacket
 
         try
         {
-            Type = (PacketType)data[PacketMetadata.TYPEOFFSET];
-            Flags = (PacketFlags)data[PacketMetadata.FLAGSOFFSET];
-            Cmd = BitConverter.ToInt16(data[PacketMetadata.COMMANDOFFSET..]);
+            this.Type = (PacketType)data[PacketMetadata.TYPEOFFSET];
+            this.Flags = (PacketFlags)data[PacketMetadata.FLAGSOFFSET];
+            this.Cmd = BitConverter.ToInt16(data[PacketMetadata.COMMANDOFFSET..]);
 
             // Payload
-            PayloadData = data[PacketMetadata.PAYLOADOFFSET..length].ToArray();
+            this.PayloadData = data[PacketMetadata.PAYLOADOFFSET..length].ToArray();
 
             // _signature
             _signature = data[length..].ToArray();
@@ -108,5 +108,56 @@ public partial class Packet : IPacket
         };
 
         return System.Text.Json.JsonSerializer.Serialize(json);
+    }
+
+    /// <summary>
+    /// Kiểm tra sự tương đương giữa hai gói tin.
+    /// </summary>
+    /// <param name="obj">Gói tin để so sánh.</param>
+    /// <returns>True nếu tương đương, ngược lại False.</returns>
+    public override bool Equals(object? obj)
+    {
+        if (obj is Packet otherPacket)
+        {
+            return Flags == otherPacket.Flags &&
+                   Cmd == otherPacket.Cmd &&
+                   Equals(this.PayloadData, otherPacket.PayloadData) &&
+                   Equals(_signature, otherPacket._signature);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Tính mã băm bằng cách kết hợp các thành phần chính của gói tin.
+    /// </summary>
+    public override int GetHashCode()
+    {
+        int hashCode = HashCode.Combine(Flags, Cmd, _payload.Length, _signature.Length);
+        return hashCode;
+    }
+
+    /// <summary>
+    /// Tạo một bản sao của gói tin hiện tại.
+    /// </summary>
+    /// <returns>Bản sao của gói tin.</returns>
+    public IPacket Clone()
+    {
+        var newPacket = new Packet
+        {
+            Flags = this.Flags,
+            Cmd = this.Cmd,
+            PayloadData = this.PayloadData.ToArray(),
+            _signature = [.. this._signature]
+        };
+        return newPacket;
+    }
+
+    /// <summary>
+    /// Kiểm tra tính hợp lệ của chữ ký (signature) của gói tin.
+    /// </summary>
+    /// <returns>True nếu chữ ký hợp lệ, ngược lại False.</returns>
+    public bool ValidateSignature()
+    {
+        return VerifySignature();
     }
 }

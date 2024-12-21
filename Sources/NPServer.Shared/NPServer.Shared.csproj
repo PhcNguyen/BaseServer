@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
-		<OutputType>Library</OutputType>
 		<TargetFramework>net9.0</TargetFramework>
-		<ImplicitUsings>disable</ImplicitUsings>
+		<OutputType>Library</OutputType>
 		<Platforms>AnyCPU</Platforms>
 		<Nullable>enable</Nullable>
 		<DebugType>none</DebugType>
@@ -21,5 +19,4 @@
 		<OutputPath>..\..\bin\Release\</OutputPath>
 		<IntermediateOutputPath>..\..\obj\Release\</IntermediateOutputPath>
 	</PropertyGroup>
-
 </Project>

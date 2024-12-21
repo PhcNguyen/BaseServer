@@ -1,11 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
-using System;
-using System.Linq;
-
-namespace NPServer.Infrastructure.Collections;
+namespace NPServer.Shared.Collections;
 
 /// <summary>
 /// Lớp cơ sở cho các hàng đợi gói tin, cung cấp các phương thức chung để quản lý hàng đợi.

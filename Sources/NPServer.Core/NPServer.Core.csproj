@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-		<OutputType>Library</OutputType>
 		<TargetFramework>net9.0</TargetFramework>
-		<ImplicitUsings>disable</ImplicitUsings>
-        <Platforms>AnyCPU</Platforms>
-        <IsPublishable>false</IsPublishable>
-	    <Nullable>enable</Nullable>
+		<OutputType>Library</OutputType>
+		<Platforms>AnyCPU</Platforms>
+		<IsPublishable>false</IsPublishable>
+		<Nullable>enable</Nullable>
 		<DebugType>none</DebugType>
 		<GenerateJson>false</GenerateJson>
     </PropertyGroup>
@@ -27,7 +26,7 @@
 	<ItemGroup>
         <ProjectReference Include="..\NPServer.Models\NPServer.Models.csproj" />
 		<ProjectReference Include="..\NPServer.Shared\NPServer.Shared.csproj" />
-		<ProjectReference Include="..\NPServer.Infrastructure\NPServer.Infrastructure.csproj" />
+		
     </ItemGroup>
 	
 </Project>

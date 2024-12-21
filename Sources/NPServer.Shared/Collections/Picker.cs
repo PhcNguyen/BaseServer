@@ -1,7 +1,7 @@
 ﻿using NPServer.Shared.Random;
 using System.Collections.Generic;
 
-namespace NPServer.Infrastructure.Collections;
+namespace NPServer.Shared.Collections;
 
 /// <summary>
 /// Bộ chọn ngẫu nhiên các phần tử từ một bộ sưu tập, hỗ trợ các chế độ có trọng số và không trọng số.

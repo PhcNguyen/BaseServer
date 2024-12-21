@@ -18,6 +18,7 @@ public class SocketReader : IDisposable
 
     private byte[] _buffer;
     private bool _disposed = false;
+    private bool _isReceiving = false;
     private CancellationTokenSource? _cts;
 
     /// <summary>
@@ -34,6 +35,11 @@ public class SocketReader : IDisposable
     /// Kiểm tra xem đối tượng đã được giải phóng hay chưa.
     /// </summary>
     public bool Disposed => _disposed;
+
+    /// <summary>
+    /// Kiểm tra xem đối tượng có đang nhận dư liệu.
+    /// </summary>
+    public bool IsReceiving => _isReceiving;
 
     /// <summary>
     /// Khởi tạo một đối tượng <see cref="SocketReader"/> mới.
@@ -62,13 +68,20 @@ public class SocketReader : IDisposable
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
+        if (_cts == null || _cts.IsCancellationRequested)
+        {
+            this.HandleException(new OperationCanceledException(), "Receive cancelled or already stopped.");
+            return;
+        }
+
         if (externalCancellationToken != null)
         {
             // Liên kết token bên ngoài với token nội bộ
             _cts = CancellationTokenSource.CreateLinkedTokenSource(externalCancellationToken.Value);
         }
 
-        StartReceiving();
+        _isReceiving = true;
+        this.StartReceiving();
     }
 
     /// <summary>
@@ -83,22 +96,28 @@ public class SocketReader : IDisposable
         {
             if (!_socket.ReceiveAsync(_receiveEventArgs))
             {
-                OnReceiveCompleted(this, _receiveEventArgs);
+                this.OnReceiveCompleted(this, _receiveEventArgs);
             }
         }
         catch (ObjectDisposedException ex)
         {
-            Dispose();
-            OnError?.Invoke($"Socket disposed: {ex.Message}", ex);
+            _isReceiving = false;
+
+            this.Dispose();
+            this.HandleException(ex, $"Socket disposed: {ex.Message}");
         }
         catch (InvalidOperationException)
         {
-            Dispose();
+            _isReceiving = false;
+
+            this.Dispose();
         }
         catch (Exception ex)
         {
-            Dispose();
-            OnError?.Invoke($"Unexpected error: {ex.Message}", ex);
+            _isReceiving = false;
+
+            this.Dispose();
+            this.HandleException(ex, $"Unexpected error: {ex.Message}");
         }
     }
 
@@ -116,7 +135,7 @@ public class SocketReader : IDisposable
 
             if (!HandleSocketError(e))
             {
-                Dispose();
+                this.Dispose();
                 throw new InvalidOperationException($"Socket error: {e.SocketError}");
             }
 
@@ -127,28 +146,32 @@ public class SocketReader : IDisposable
                 int dataSize = BitConverter.ToInt32(sizeBytes);
 
                 // Kiểm tra kích thước và điều chỉnh bộ đệm nếu cần
-                ResizeBufferIfNeeded(dataSize);
+                this.ResizeBufferIfNeeded(dataSize);
 
                 // Tạo sự kiện khi dữ liệu đã đầy đủ
-                OnDataReceived(new SocketReceivedEventArgs(e.Buffer.Take(bytesRead).ToArray()));
+                this.OnDataReceived(new SocketReceivedEventArgs(e.Buffer.Take(bytesRead).ToArray()));
             }
             else
             {
-                await Task.Delay(20).ConfigureAwait(false);
+                await Task.Delay(10).ConfigureAwait(false);
                 await Task.Yield();
             }
 
             // Tiếp tục nhận dữ liệu
-            StartReceiving();
+            this.StartReceiving();
         }
         catch (OperationCanceledException)
         {
-            Dispose();
+            _isReceiving = false;
+
+            this.Dispose();
         }
         catch (Exception ex)
         {
-            Dispose();
-            OnError?.Invoke($"Error in OnReceiveCompleted: {ex.Message}", ex);
+            _isReceiving = false;
+
+            this.Dispose();
+            this.HandleException(ex, $"Error in OnReceiveCompleted: {ex.Message}");
         }
     }
 
@@ -159,6 +182,26 @@ public class SocketReader : IDisposable
     protected virtual void OnDataReceived(SocketReceivedEventArgs e)
     {
         DataReceived?.Invoke(this, e);
+    }
+
+    /// <summary>
+    /// Dừng việc nhận dữ liệu và hủy bỏ tất cả hoạt động liên quan.
+    /// </summary>
+    public void Cancel()
+    {
+        if (_disposed) return;
+
+        try
+        {
+            _cts?.Cancel(); // Hủy token
+            _cts?.Dispose();
+            _cts = null;
+            _isReceiving = false;
+        }
+        catch (Exception ex)
+        {
+            this.HandleException(ex, $"Error while cancelling: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -190,6 +233,16 @@ public class SocketReader : IDisposable
                 _cts?.Cancel();
                 _cts?.Dispose();
 
+                // Giải phóng các tài nguyên socket
+                try
+                {
+                    _socket.Shutdown(SocketShutdown.Both);
+                }
+                catch
+                {
+                    // Xử lý lỗi nếu socket đã bị giải phóng
+                }
+
                 // Đóng socket an toàn
                 _socket?.Close(timeout: 1000); // Thêm timeout
             }
@@ -197,6 +250,7 @@ public class SocketReader : IDisposable
         finally
         {
             _disposed = true;
+            _isReceiving = false;
         }
     }
 
@@ -221,6 +275,12 @@ public class SocketReader : IDisposable
             _buffer = _multiSizeBuffer.RentBuffer(dataSize);
             _receiveEventArgs.SetBuffer(_buffer, 0, _buffer.Length);
         }
+    }
+
+    private void HandleException(Exception ex, string message)
+    {
+        Dispose();
+        OnError?.Invoke(message, ex);
     }
 
     private readonly Func<SocketAsyncEventArgs, bool> HandleSocketError = (e) =>

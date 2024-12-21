@@ -1,4 +1,4 @@
-﻿using NPServer.Infrastructure.Logging;
+﻿using System;
 using System.Collections.Generic;
 
 namespace NPServer.Core.Memory;
@@ -10,6 +10,11 @@ public sealed class ListPool<T>
 {
     private readonly Stack<List<T>> _listStack = new();
     private int _totalCount = 0;
+
+    /// <summary>
+    /// Sự kiện thông tin.
+    /// </summary>
+    public event Action<string>? TraceOccurred;
 
     /// <summary>
     /// Singleton instance
@@ -25,7 +30,7 @@ public sealed class ListPool<T>
         {
             if (_listStack.Count == 0)
             {
-                NPLog.Instance.Trace($"Rent(): Tạo một instance mới của List<{typeof(T).Name}> (TotalCount={++_totalCount})");
+                TraceOccurred?.Invoke($"Rent(): Tạo một instance mới của List<{typeof(T).Name}> (TotalCount={++_totalCount})");
                 return [];
             }
 

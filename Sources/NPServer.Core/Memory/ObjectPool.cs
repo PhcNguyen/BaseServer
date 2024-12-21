@@ -1,5 +1,5 @@
 ﻿using NPServer.Core.Interfaces.Memory;
-using NPServer.Infrastructure.Logging;
+using System;
 using System.Collections.Generic;
 
 namespace NPServer.Core.Memory;
@@ -10,6 +10,11 @@ namespace NPServer.Core.Memory;
 public sealed class ObjectPool
 {
     private readonly Stack<IPoolable> _objects = new();
+
+    /// <summary>
+    /// Sự kiện thông tin.
+    /// </summary>
+    public event Action<string>? TraceOccurred;
 
     /// <summary>
     /// Tổng số đối tượng đã tạo.
@@ -31,7 +36,7 @@ public sealed class ObjectPool
             T @object = new();
 
             TotalCount++;
-            NPLog.Instance.Trace($"Get<T>(): Đã tạo một instance mới của {typeof(T).Name} (TotalCount={TotalCount})");
+            TraceOccurred?.Invoke($"Get<T>(): Đã tạo một instance mới của {typeof(T).Name} (TotalCount={TotalCount})");
 
             return @object;
         }
