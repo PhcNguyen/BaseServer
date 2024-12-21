@@ -17,7 +17,7 @@ namespace NPServer.Application.Main;
 /// <summary>
 /// Lớp ServiceRegistry chịu trách nhiệm đăng ký các dịch vụ trong hệ thống.
 /// </summary>
-internal static class ServiceController
+public static class ServiceController
 {
     private static readonly BufferConfig _bufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
     private static readonly NetworkConfig _networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();

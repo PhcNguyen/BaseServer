@@ -1,18 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
 	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
-		<OutputType>Library</OutputType>
-		<Platforms>AnyCPU</Platforms>
-		<IsPublishable>false</IsPublishable>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<Nullable>enable</Nullable>
-		<DebugType>none</DebugType>
-		<GenerateJson>false</GenerateJson>
+		<UseWPF>true</UseWPF>
+		<AssemblyName>NPServerUI</AssemblyName>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<OutputPath>..\..\bin\Debug\</OutputPath>
 		<IntermediateOutputPath>..\..\obj\Debug\</IntermediateOutputPath>
-		<DocumentationFile>..\..\bin\Debug\NPServer.Infrastructure.xml</DocumentationFile>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<Optimize>true</Optimize>
@@ -20,11 +18,15 @@
 		<UseCompression>true</UseCompression>
 		<OutputPath>..\..\bin\Release\</OutputPath>
 		<IntermediateOutputPath>..\..\obj\Release\</IntermediateOutputPath>
-		<DocumentationFile>..\..\bin\Release\NPServer.Infrastructure.xml</DocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\NPServer.Shared\NPServer.Shared.csproj" />
+		<ProjectReference Include="..\NPServer.Application\NPServer.Application.csproj" />
 	</ItemGroup>
-	
+
+	<ItemGroup>
+	  <Folder Include="A\" />
+	</ItemGroup>
+
 </Project>

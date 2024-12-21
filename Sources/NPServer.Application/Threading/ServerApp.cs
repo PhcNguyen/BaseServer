@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace NPServer.Application.Threading;
 
-internal sealed class ServerApp
+public sealed class ServerApp
 {
     private int _isRunning;
     private bool _isInMaintenanceMode;
