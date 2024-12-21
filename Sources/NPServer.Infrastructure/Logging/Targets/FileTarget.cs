@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace NPServer.Infrastructure.Logging.Targets;
 
+/// <summary>
+/// Lớp FileTarget cung cấp khả năng ghi thông điệp log vào file với hỗ trợ đa luồng và định dạng log tùy chỉnh.
+/// </summary>
 public sealed class FileTarget : INPLogTarget, IDisposable
 {
     private readonly string _directory;
@@ -17,6 +20,11 @@ public sealed class FileTarget : INPLogTarget, IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly Task _workerTask;
 
+    /// <summary>
+    /// Khởi tạo đối tượng FileTarget với định dạng log và thư mục lưu trữ.
+    /// </summary>
+    /// <param name="loggerFormatter">Đối tượng thực hiện định dạng log.</param>
+    /// <param name="directory">Thư mục nơi các file log được lưu trữ.</param>
     public FileTarget(ILogFormatter loggerFormatter, string directory)
     {
         _directory = directory ?? throw new ArgumentNullException(nameof(directory));
@@ -34,14 +42,25 @@ public sealed class FileTarget : INPLogTarget, IDisposable
         _workerTask = Task.Run(ProcessLogQueueAsync, _cancellationTokenSource.Token);
     }
 
+    /// <summary>
+    /// Khởi tạo đối tượng FileTarget với định dạng mặc định và thư mục mặc định.
+    /// </summary>
     public FileTarget() : this(new LogFormatter(), NPLogCongfig.LogDirectory)
     {
     }
 
+    /// <summary>
+    /// Khởi tạo đối tượng FileTarget với thư mục lưu trữ.
+    /// </summary>
+    /// <param name="directory">Thư mục nơi các file log được lưu trữ.</param>
     public FileTarget(string directory) : this(new LogFormatter(), directory)
     {
     }
 
+    /// <summary>
+    /// Xuất thông điệp log vào hàng đợi để ghi vào file.
+    /// </summary>
+    /// <param name="logMessage">Thông điệp log cần xuất.</param>
     public void Publish(LogMessage logMessage)
     {
         ArgumentNullException.ThrowIfNull(logMessage);
@@ -71,6 +90,10 @@ public sealed class FileTarget : INPLogTarget, IDisposable
         }
     }
 
+    /// <summary>
+    /// Ghi thông điệp log vào file theo định dạng và file cụ thể.
+    /// </summary>
+    /// <param name="logMessage">Thông điệp log cần ghi.</param>
     private async Task WriteLogAsync(LogMessage logMessage)
     {
         string filePath = Path.Combine(_directory, CreateFileName(logMessage.Level));
@@ -82,12 +105,19 @@ public sealed class FileTarget : INPLogTarget, IDisposable
         await stream.WriteAsync(logBytes);
     }
 
+    /// <summary>
+    /// Tạo tên file log theo mức độ log.
+    /// </summary>
+    /// <param name="level">Mức độ log cần tạo tên file.</param>
     private static string CreateFileName(NPLogBase.Level level)
     {
         // Định dạng file: yyyy-MM-dd-INFO.log
         return $"{level}.log";
     }
 
+    /// <summary>
+    /// Giải phóng tài nguyên và hủy bỏ luồng xử lý log.
+    /// </summary>
     public void Dispose()
     {
         _cancellationTokenSource.Cancel();

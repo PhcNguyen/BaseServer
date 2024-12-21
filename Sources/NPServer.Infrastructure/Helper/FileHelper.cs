@@ -5,29 +5,39 @@ using System.Text.Json;
 namespace NPServer.Infrastructure.Helper;
 
 /// <summary>
-/// Makes it easier to load and save files.
+/// Cung cấp các phương thức giúp dễ dàng tải và lưu các tập tin.
 /// </summary>
 public static class FileHelper
 {
     /// <summary>
-    /// Returns a path relative to server root directory.
+    /// Trả về đường dẫn tương đối so với thư mục gốc của máy chủ.
     /// </summary>
+    /// <param name="filePath">Đường dẫn tập tin đầy đủ.</param>
+    /// <returns>Đường dẫn tương đối so với thư mục gốc của máy chủ.</returns>
     public static string GetRelativePath(string filePath)
     {
         return Path.GetRelativePath(PathConfig.Base ?? "", filePath);
     }
 
     /// <summary>
-    /// Deserializes a <typeparamref name="T"/> from a JSON file located at the specified path.
+    /// Deserializes một đối tượng từ tệp JSON tại đường dẫn đã chỉ định.
     /// </summary>
+    /// <typeparam name="T">Kiểu dữ liệu cần deserializing.</typeparam>
+    /// <param name="path">Đường dẫn đến tệp JSON.</param>
+    /// <param name="options">Các tùy chọn JsonSerializer.</param>
+    /// <returns>Đối tượng deserialized từ JSON.</returns>
     public static T? DeserializeJson<T>(string path, JsonSerializerOptions? options = null)
     {
         return JsonSerializer.Deserialize<T>(File.ReadAllText(path), options);
     }
 
     /// <summary>
-    /// Serializes a <typeparamref name="T"/> to JSON and saves it to the specified path.
+    /// Serializes một đối tượng <typeparamref name="T"/> thành JSON và lưu vào đường dẫn đã chỉ định.
     /// </summary>
+    /// <typeparam name="T">Kiểu dữ liệu cần serializing.</typeparam>
+    /// <param name="path">Đường dẫn đến tệp JSON.</param>
+    /// <param name="object">Đối tượng cần serializing.</param>
+    /// <param name="options">Các tùy chọn JsonSerializer.</param>
     public static void SerializeJson<T>(string path, T @object, JsonSerializerOptions? options = null)
     {
         string? dirName = Path.GetDirectoryName(path);
@@ -39,13 +49,21 @@ public static class FileHelper
     }
 
     /// <summary>
-    /// Saves the provided <see cref="string"/> to a text file in the server root directory.
+    /// Lưu văn bản vào một tệp văn bản trong thư mục gốc của máy chủ.
     /// </summary>
+    /// <param name="fileName">Tên tệp.</param>
+    /// <param name="text">Nội dung văn bản cần lưu.</param>
     public static void SaveTextFileToRoot(string fileName, string text)
     {
         File.WriteAllText(Path.Combine(PathConfig.Base, fileName), text);
     }
 
+    /// <summary>
+    /// Tạo bản sao lưu cho tệp tin tại đường dẫn chỉ định và giữ số lượng bản sao lưu tối đa.
+    /// </summary>
+    /// <param name="filePath">Đường dẫn của tệp cần sao lưu.</param>
+    /// <param name="maxBackups">Số lượng bản sao lưu tối đa cho phép.</param>
+    /// <returns>true nếu tạo bản sao lưu thành công, ngược lại false.</returns>
     public static bool CreateFileBackup(string filePath, int maxBackups)
     {
         if (maxBackups == 0)
@@ -55,16 +73,12 @@ public static class FileHelper
             return false;
 
         // Cache backup file names for reuse.
-        // NOTE: We can also reuse the same string array for multiple calls of this function,
-        // but it's probably not going to be called often enough to be worth it.
         string[] backupPaths = new string[maxBackups];
 
         // Look for a free backup index
         int freeIndex = -1;
         for (int i = 0; i < maxBackups; i++)
         {
-            // Backup path strings are created on demand so that we don't end up creating
-            // a lot of unneeded strings when we don't have a lot of backup files.
             backupPaths[i] = $"{filePath}.bak{i}";
 
             if (File.Exists(backupPaths[i]) == false)

@@ -70,6 +70,10 @@ public partial class Packet : IPacket
             throw new ArgumentException("The provided enum value is invalid.", nameof(command));
     }
 
+    /// <summary>
+    /// Trả về chuỗi mô tả thông tin của gói tin.
+    /// </summary>
+    /// <returns>Chuỗi mô tả thông tin của gói tin.</returns>
     public override string ToString()
     {
         return $"Packet: Cmd={Cmd}, Type={Type}, Flags={Flags}";

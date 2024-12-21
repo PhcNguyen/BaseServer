@@ -1,8 +1,7 @@
 ﻿using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Core.Session.Network;
-using NPServer.Shared.Services;
 using NPServer.Models.Common;
+using NPServer.Shared.Services;
 using System;
 using System.IO;
 using System.Net.Sockets;
@@ -34,24 +33,34 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     private readonly SessionNetwork _network = new(socket, multiSizeBuffer);
 
     /// <summary>
-    /// Kiểm tra trạng thái kết nối của phiên làm việc.
+    /// ID duy nhất của phiên khách hàng.
     /// </summary>
-    public bool IsConnected { get; private set; }
+    public UniqueId Id => _id;
 
     /// <summary>
-    /// Địa chỉ IP của khách hàng.
+    /// Cấp độ truy cập của phiên.
     /// </summary>
-    public string IpAddress => _connection.IpAddress;
+    public AccessLevel Role = AccessLevel.Guests;
 
     /// <summary>
-    /// Khóa phiên làm việc (dành cho mã hóa hoặc xác thực).
+    /// Mạng kết nối của phiên.
+    /// </summary>
+    public SessionNetwork Network => _network;
+
+    /// <summary>
+    /// Khóa mã hóa của phiên.
     /// </summary>
     public byte[] Key { get; init; } = [];
 
     /// <summary>
-    /// Vai trò của người dùng.
+    /// Kiểm tra xem phiên có đang kết nối hay không.
     /// </summary>
-    public AccessLevel Role = AccessLevel.Guests;
+    public bool IsConnected { get; private set; }
+
+    /// <summary>
+    /// Địa chỉ IP của client đang kết nối.
+    /// </summary>
+    public string IpAddress => _connection.IpAddress;
 
     /// <summary>
     /// Sự kiện thông tin.
@@ -68,19 +77,12 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     /// </summary>
     public event Action<string, Exception>? ErrorOccurred;
 
-    /// <summary>
-    /// ID duy nhất của phiên làm việc.
-    /// </summary>
-    public UniqueId Id => _id;
-
-    public SessionNetwork Network => _network;
-
     AccessLevel ISessionClient.Role => Role;
 
     ISessionNetwork ISessionClient.Network => _network;
 
     /// <summary>
-    /// Cập nhật thời gian hoạt động của phiên làm việc.
+    /// Cập nhật thời gian hoạt động gần nhất của phiên.
     /// </summary>
     public void UpdateLastActivityTime() => _connection.UpdateLastActivity();
 
@@ -96,7 +98,7 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     public bool IsSocketInvalid() => _isDisposed || _network.IsDispose;
 
     /// <summary>
-    /// Kết nối và bắt đầu xử lý dữ liệu từ khách hàng.
+    /// Kết nối phiên làm việc.
     /// </summary>
     public void Connect()
     {
@@ -127,6 +129,9 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
         }
     }
 
+    /// <summary>
+    /// Kết nối lại phiên làm việc. 
+    /// </summary>
     public void Reconnect()
     {
         if (!IsConnected)

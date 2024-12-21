@@ -3,11 +3,11 @@
 	<!-- Sử dụng SDK mặc định cho ứng dụng .NET -->
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<Nullable>enable</Nullable>
-		<Platforms>AnyCPU;x64</Platforms>
-		<ImplicitUsings>disable</ImplicitUsings>
 		<TargetFramework>net9.0</TargetFramework>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Platforms>AnyCPU</Platforms>
+		<GenerateJson>false</GenerateJson>
 		<AssemblyName>NPServer</AssemblyName>
 
 		<StartupObject>NPServer.Application.Threading.Program</StartupObject>
@@ -15,35 +15,40 @@
 
 	<!-- Cấu hình khi chạy ở chế độ Debug -->
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<PlatformTarget>AnyCPU</PlatformTarget>
-		<DebugSymbols>true</DebugSymbols>
-		<DebugType>full</DebugType>
 		<Optimize>false</Optimize>
-		<OutputPath>bin\Debug\</OutputPath>
-		<DefineConstants>DEBUG;TRACE</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
+		<DebugType>full</DebugType>
 		<WarningLevel>5</WarningLevel>
+		<ErrorReport>prompt</ErrorReport>
+		<DebugSymbols>true</DebugSymbols>
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+		<OutputPath>..\..\bin\Debug\</OutputPath>
+		<IntermediateOutputPath>..\..\obj\Release\</IntermediateOutputPath>
 	</PropertyGroup>
 
-	<!-- Cấu hình khi chạy ở chế độ Release -->
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-		<PlatformTarget>AnyCPU</PlatformTarget>
-		<DebugType>pdbonly</DebugType>
 		<Optimize>true</Optimize>
-		<OutputPath>bin\Release\</OutputPath>
-		<DefineConstants>TRACE</DefineConstants>
-		<ErrorReport>prompt</ErrorReport>
 		<WarningLevel>5</WarningLevel>
+		<DebugType>pdbonly</DebugType>
+		<ErrorReport>prompt</ErrorReport>
+		<UseCompression>true</UseCompression>
+		<DefineConstants>TRACE</DefineConstants>
+		<OutputPath>..\..\bin\Release\</OutputPath>
+		<IntermediateOutputPath>..\..\obj\Release\</IntermediateOutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\NPServer.Core\NPServer.Core.csproj" />
-		<ProjectReference Include="..\NPServer.Models\NPServer.Models.csproj" />		
+		<ProjectReference Include="..\NPServer.Models\NPServer.Models.csproj" />
 		<ProjectReference Include="..\NPServer.Infrastructure\NPServer.Infrastructure.csproj" />
 	</ItemGroup>
-	
-	<Target Name="CleanObjFolder" AfterTargets="Build">
-		<RemoveDir Directories="$(ProjectDir)NPServer.Application\obj" ContinueOnError="true" />
-	</Target>
+
+	<PropertyGroup>
+		<RunCodeAnalysis>true</RunCodeAnalysis>
+		<CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+		<IncludeSourceLink>true</IncludeSourceLink>
+		<Deterministic>true</Deterministic>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+		<CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
 
 </Project>

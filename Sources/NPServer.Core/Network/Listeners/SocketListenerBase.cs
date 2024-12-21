@@ -9,7 +9,14 @@ namespace NPServer.Core.Network.Listeners;
 /// </summary>
 public abstract class SocketListenerBase : IDisposable
 {
+    /// <summary>
+    /// Socket được sử dụng để lắng nghe kết nối từ client.
+    /// </summary>
     protected Socket ListenerSocket { get; private set; }
+
+    /// <summary>
+    /// Số lượng kết nối tối đa mà listener có thể xử lý cùng lúc.
+    /// </summary>
     protected readonly int MaxConnections;
 
     /// <summary>

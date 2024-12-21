@@ -11,6 +11,9 @@ public sealed class ListPool<T>
     private readonly Stack<List<T>> _listStack = new();
     private int _totalCount = 0;
 
+    /// <summary>
+    /// Singleton instance
+    /// </summary>
     public static ListPool<T> Instance { get; } = new();
 
     /// <summary>

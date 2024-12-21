@@ -4,6 +4,9 @@ using System.Reflection;
 
 namespace NPServer.Core.Helpers;
 
+/// <summary>
+/// Lớp helper cho các tác vụ liên quan đến Assembly.
+/// </summary>
 public static class AssemblyHelper
 {
     /// <summary>

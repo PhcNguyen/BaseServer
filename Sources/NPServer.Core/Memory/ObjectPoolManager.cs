@@ -12,6 +12,9 @@ public sealed class ObjectPoolManager
 {
     private readonly Dictionary<Type, ObjectPool> _poolDict = []; // Lưu trữ các pool theo kiểu dữ liệu
 
+    /// <summary>
+    /// Singleton instance
+    /// </summary>
     public static ObjectPoolManager Instance { get; } = new(); // Singleton
 
     private ObjectPoolManager()

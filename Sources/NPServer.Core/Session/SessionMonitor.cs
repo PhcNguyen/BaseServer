@@ -29,9 +29,9 @@ public sealed class SessionMonitor(ISessionManager sessionManager, CancellationT
     public event Action<string, Exception>? ErrorOccurred;
 
     /// <summary>
-    /// Giám sát các phiên làm việc không đồng bộ, kiểm tra và đóng các kết nối không hợp lệ.
+    /// Theo dõi trạng thái các phiên khách hàng một cách bất kỳ.
     /// </summary>
-    /// <returns>Task đại diện cho tác vụ giám sát phiên làm việc.</returns>
+    /// <returns>Task theo dõi các phiên khách hàng.</returns>
     public async Task MonitorSessionsAsync()
     {
         while (!_token.IsCancellationRequested)
@@ -56,10 +56,9 @@ public sealed class SessionMonitor(ISessionManager sessionManager, CancellationT
     }
 
     /// <summary>
-    /// Đóng kết nối của một phiên làm việc nếu kết nối không hợp lệ hoặc đã hết thời gian.
+    /// Đóng kết nối của một phiên khách hàng cụ thể.
     /// </summary>
-    /// <param name="session">Phiên làm việc cần đóng kết nối.</param>
-    /// <returns>Task đại diện cho tác vụ đóng kết nối.</returns>
+    /// <param name="session">Phiên khách hàng cần đóng kết nối.</param>
     public void CloseConnection(ISessionClient session)
     {
         try

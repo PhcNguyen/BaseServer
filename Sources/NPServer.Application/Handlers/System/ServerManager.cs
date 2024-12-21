@@ -42,7 +42,6 @@ internal static class ServerManager
     {
         try
         {
-            
             return true;
         }
         catch

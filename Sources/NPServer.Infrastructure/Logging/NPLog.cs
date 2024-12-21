@@ -84,46 +84,90 @@ public sealed class NPLog : NPLogBase
     /// </summary>
     public void Info(string message) => Log(Level.INFO, message);
 
+    /// <summary>
+    /// Ghi một thông điệp với mức độ INFO.
+    /// </summary>
     public void Info<TClass>(string message) where TClass : class =>
         Log<TClass>(Level.INFO, message);
 
+    /// <summary>
+    /// Ghi một thông điệp với mức độ DEBUG.
+    /// </summary>
+    /// <param name="message">Thông điệp cần ghi.</param>
     public void Debug(string message) => Log(Level.DEBUG, message);
 
+    /// <summary>
+    /// Ghi một thông điệp với mức độ DEBUG.
+    /// </summary>
+    /// <param name="message">Thông điệp cần ghi.</param>
     public void Debug<TClass>(string message) where TClass : class =>
         Log<TClass>(Level.DEBUG, message);
 
+    /// <summary>
+    /// Ghi một thông điệp với mức độ TRACE.
+    /// </summary>
+    /// <param name="message">Thông điệp cần ghi.</param>
     public void Trace(string message) => Log(Level.TRACE, message);
 
+    /// <summary>
+    /// Ghi một thông điệp với mức độ AUDIT.
+    /// </summary>
+    /// <param name="message">Thông điệp cần ghi.</param>
     public void Audit(string message) => Log(Level.AUDIT, message);
 
+    /// <summary>
+    /// Ghi một thông điệp với mức độ SECURITY.
+    /// </summary>
+    /// <param name="message">Thông điệp cần ghi.</param>
     public void Security(string message) => Log(Level.SECURITY, message);
 
     /// <summary>
     /// Ghi một thông điệp cảnh báo.
     /// </summary>
+    /// <param name="message">Thông điệp cần ghi.</param>
     public void Warning(string message) => Log(Level.WARNING, message);
 
+    /// <summary>
+    /// Ghi một thông điệp cảnh báo.
+    /// </summary>
+    /// <param name="message">Thông điệp cần ghi.</param>
     public void Warning<TClass>(string message) where TClass : class =>
         Log<TClass>(Level.WARNING, message);
 
     /// <summary>
-    /// Ghi một thông điệp lỗi với một ngoại lệ.
+    /// Ghi một thông điệp lỗi kèm theo ngoại lệ.
     /// </summary>
+    /// <param name="exception">Đối tượng ngoại lệ liên quan.</param>
     public void Error(Exception exception) =>
         Log(Level.ERROR, LogFormatter.FormatExceptionMessage(exception));
 
     /// <summary>
-    /// Ghi một thông điệp lỗi với một thông điệp và ngoại lệ.
+    /// Ghi một thông điệp lỗi kèm theo thông điệp và ngoại lệ.
     /// </summary>
+    /// <param name="message">Thông điệp lỗi.</param>
+    /// <param name="exception">Đối tượng ngoại lệ liên quan.</param>
     public void Error(string message, Exception exception) =>
         Log(Level.ERROR, $"{message}: {LogFormatter.FormatExceptionMessage(exception)}");
 
+    /// <summary>
+    /// Ghi một thông điệp lỗi kèm theo thông điệp và ngoại lệ.
+    /// </summary>
+    /// <param name="message">Thông điệp lỗi.</param>
     public void Error<TClass>(string message) where TClass : class =>
         Log<TClass>(Level.ERROR, message);
 
+    /// <summary>
+    /// Ghi một thông điệp lỗi kèm theo thông điệp và ngoại lệ.
+    /// </summary>
+    /// <param name="exception">Đối tượng ngoại lệ liên quan.</param>
     public void Error<TClass>(Exception exception) where TClass : class =>
         Log<TClass>(Level.ERROR, LogFormatter.FormatExceptionMessage(exception));
 
+    /// <summary>
+    /// Ghi một thông điệp lỗi kèm theo thông điệp và ngoại lệ.
+    /// </summary>
+    /// <param name="message">Thông điệp lỗi.</param>
+    /// <param name="exception">Đối tượng ngoại lệ liên quan.</param>
     public void Error<TClass>(string message, Exception exception) where TClass : class =>
         Log<TClass>(Level.ERROR, $"{message}: {LogFormatter.FormatExceptionMessage(exception)}");
 }

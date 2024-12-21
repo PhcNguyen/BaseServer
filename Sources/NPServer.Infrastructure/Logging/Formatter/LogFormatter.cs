@@ -4,12 +4,23 @@ using System.Text;
 
 namespace NPServer.Infrastructure.Logging.Formatter;
 
+/// <summary>
+/// Lớp định dạng cho thông điệp nhật ký.
+/// </summary>
 public sealed class LogFormatter : ILogFormatter
 {
+    /// <summary>
+    /// Khởi tạo một đối tượng <see cref="LogFormatter"/>.
+    /// </summary>
     public LogFormatter()
     {
     }
 
+    /// <summary>
+    /// Áp dụng định dạng cho thông điệp log.
+    /// </summary>
+    /// <param name="logMessage">Đối tượng thông điệp log cần định dạng.</param>
+    /// <returns>Chuỗi định dạng của thông điệp log.</returns>
     public string ApplyFormat(LogMessage logMessage)
     {
         ArgumentNullException.ThrowIfNull(logMessage);
@@ -31,6 +42,11 @@ public sealed class LogFormatter : ILogFormatter
         return logBuilder.ToString();
     }
 
+    /// <summary>
+    /// Định dạng thông điệp ngoại lệ thành chuỗi.
+    /// </summary>
+    /// <param name="exception">Ngoại lệ cần định dạng.</param>
+    /// <returns>Chuỗi định dạng thông điệp ngoại lệ.</returns>
     public static string FormatExceptionMessage(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);

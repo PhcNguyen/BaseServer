@@ -21,8 +21,8 @@ public class SocketReader : IDisposable
     private CancellationTokenSource? _cts;
 
     /// <summary>
-    // Sự kiện khi dữ liệu được nhận
-    /// <summary>
+    /// Sự kiện khi dữ liệu được nhận
+    /// </summary>
     public event EventHandler<SocketReceivedEventArgs>? DataReceived;
 
     /// <summary>
@@ -39,6 +39,7 @@ public class SocketReader : IDisposable
     /// Khởi tạo một đối tượng <see cref="SocketReader"/> mới.
     /// </summary>
     /// <param name="socket">Socket dùng để nhận dữ liệu.</param>
+    /// <param name="multiSizeBuffer"></param>
     /// <exception cref="ArgumentNullException">Ném ra khi socket là null.</exception>
     public SocketReader(Socket socket, IMultiSizeBufferPool multiSizeBuffer)
     {
@@ -199,6 +200,9 @@ public class SocketReader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Giải phóng tài nguyên.
+    /// </summary>
     public void Dispose()
     {
         Dispose(disposing: true);

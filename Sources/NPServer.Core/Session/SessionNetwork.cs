@@ -5,7 +5,7 @@ using NPServer.Infrastructure.Security;
 using System;
 using System.Net.Sockets;
 
-namespace NPServer.Core.Session.Network;
+namespace NPServer.Core.Session;
 
 /// <summary>
 /// Quản lý vận chuyển phiên làm việc, bao gồm gửi và nhận dữ liệu qua socket.
@@ -34,12 +34,16 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     /// </summary>
     public event Action<string, Exception>? ErrorOccurred;
 
+    /// <summary>
+    /// Kiểm tra xem đối tượng đã được giải phóng hay chưa.
+    /// </summary>
     public bool IsDispose => _disposed;
 
     /// <summary>
     /// Khởi tạo một thể hiện mới của lớp <see cref="SessionNetwork"/>.
     /// </summary>
     /// <param name="socket">Socket của khách hàng.</param>
+    /// <param name="multiSizeBuffer"></param>
     public SessionNetwork(Socket socket, IMultiSizeBufferPool multiSizeBuffer)
     {
         SocketWriter = new(socket, multiSizeBuffer);
@@ -57,14 +61,9 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
         DataReceived?.Invoke(e.Data);
 
     /// <summary>
-    /// Gửi dữ liệu đến khách hàng thông qua socket.
+    /// Gửi dữ liệu dưới dạng mảng byte.
     /// </summary>
-    /// <param name="data">Dữ liệu cần gửi, có thể là mảng byte, chuỗi hoặc gói tin.</param>
-    /// <returns>True nếu gửi thành công, ngược lại False.</returns>
-    /// <summary>
-    /// Gửi dữ liệu dạng byte[] đến khách hàng thông qua socket.
-    /// </summary>
-    /// <param name="data">Dữ liệu cần gửi, dạng byte[]</param>
+    /// <param name="data">Dữ liệu cần gửi.</param>
     /// <returns>True nếu gửi thành công, ngược lại False.</returns>
     public bool Send(byte[] data)
     {
@@ -81,9 +80,9 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
     }
 
     /// <summary>
-    /// Gửi dữ liệu dạng chuỗi đến khách hàng thông qua socket.
+    /// Gửi dữ liệu dưới dạng chuỗi.
     /// </summary>
-    /// <param name="data">Dữ liệu cần gửi, dạng chuỗi</param>
+    /// <param name="data">Dữ liệu cần gửi dưới dạng chuỗi.</param>
     /// <returns>True nếu gửi thành công, ngược lại False.</returns>
     public bool Send(string data)
     {
@@ -130,7 +129,9 @@ public sealed class SessionNetwork : IDisposable, ISessionNetwork
         // Giải phóng các tài nguyên không phải managed (nếu có).
     }
 
-    // Finalizer (Destructor) trong trường hợp nếu Dispose chưa được gọi.
+    /// <summary>
+    /// Finalizer (Destructor) trong trường hợp nếu Dispose chưa được gọi.
+    /// </summary>
     ~SessionNetwork()
     {
         Dispose(false);

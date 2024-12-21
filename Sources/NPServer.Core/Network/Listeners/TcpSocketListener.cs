@@ -6,14 +6,30 @@ using System.Threading.Tasks;
 
 namespace NPServer.Core.Network.Listeners;
 
-public class TcpSocketListener(int maxConnections)
+/// <summary>
+/// Lớp quản lý lắng nghe socket TCP với khả năng chấp nhận kết nối từ client.
+/// </summary>
+/// <remarks>
+/// Khởi tạo một TcpSocketListener với số kết nối tối đa.
+/// </remarks>
+/// <param name="maxConnections">Số lượng kết nối tối đa cho listener.</param>
+public class TcpSocketListener(int maxConnections) 
     : SocketListenerBase(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, maxConnections)
 {
+
+    /// <summary>
+    /// Bắt đầu lắng nghe kết nối từ client.
+    /// </summary>
+    /// <param name="ipAddress">Địa chỉ IP để lắng nghe. Nếu là null, sẽ sử dụng tất cả các giao diện.</param>
+    /// <param name="port">Cổng lắng nghe.</param>
     public override void StartListening(string? ipAddress, int port)
     {
         SocketHelper.BindAndListen(base.ListenerSocket, ipAddress, port, base.MaxConnections);
     }
 
+    /// <summary>
+    /// Đặt lại listener, dừng lắng nghe và giải phóng tài nguyên.
+    /// </summary>
     public void ResetListener()
     {
         StopListening();
@@ -23,6 +39,11 @@ public class TcpSocketListener(int maxConnections)
         ResetListenerSocket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
     }
 
+    /// <summary>
+    /// Chấp nhận kết nối từ client.
+    /// </summary>
+    /// <returns>Socket của client được chấp nhận.</returns>
+    /// <exception cref="InvalidOperationException">Nếu có lỗi trong quá trình chấp nhận kết nối.</exception>
     public Socket? AcceptClient()
     {
         try
@@ -40,13 +61,11 @@ public class TcpSocketListener(int maxConnections)
     }
 
     /// <summary>
-    /// Chấp nhận kết nối client một cách bất đồng bộ.
+    /// Chấp nhận kết nối từ client một cách bất đồng bộ.
     /// </summary>
     /// <param name="token">Token hủy để dừng việc chấp nhận kết nối khi cần thiết.</param>
     /// <returns>Socket của client được chấp nhận.</returns>
-    /// <exception cref="ObjectDisposedException">Nếu socket đã bị đóng trong quá trình Accept.</exception>
-    /// <exception cref="OperationCanceledException">Nếu thao tác bị hủy bởi token.</exception>
-    /// <exception cref="Exception">Nếu có lỗi không mong muốn khác xảy ra.</exception>
+    /// <exception cref="InvalidOperationException">Nếu có lỗi trong quá trình chấp nhận kết nối.</exception>
     public async Task<Socket?> AcceptClientAsync(CancellationToken token)
     {
         try

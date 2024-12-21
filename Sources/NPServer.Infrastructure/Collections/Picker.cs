@@ -18,7 +18,14 @@ public sealed class Picker<T>
     /// <param name="weight">Trọng số của phần tử.</param>
     public class WeightedElement(T? element, int weight)
     {
+        /// <summary>
+        /// Phần tử cần lưu trữ.
+        /// </summary>
         public T? Element { get; } = element;
+
+        /// <summary>
+        /// Trọng số của phần tử.
+        /// </summary>
         public int Weight { get; } = weight;
     }
 

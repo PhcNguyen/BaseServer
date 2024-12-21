@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace NPServer.Infrastructure.Logging.Targets;
 
+/// <summary>
+/// Lớp ConsoleTarget cung cấp khả năng xuất thông điệp nhật ký ra console với màu sắc tương ứng với mức độ log.
+/// </summary>
 public sealed class ConsoleTarget : INPLogTarget, IDisposable
 {
     private readonly ILogFormatter _loggerFormatter;
@@ -14,6 +17,10 @@ public sealed class ConsoleTarget : INPLogTarget, IDisposable
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly Task _workerTask;
 
+    /// <summary>
+    /// Khởi tạo đối tượng ConsoleTarget với định dạng log cụ thể.
+    /// </summary>
+    /// <param name="loggerFormatter">Đối tượng thực hiện định dạng log.</param>
     public ConsoleTarget(ILogFormatter loggerFormatter)
     {
         _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
@@ -21,10 +28,17 @@ public sealed class ConsoleTarget : INPLogTarget, IDisposable
         _workerTask = Task.Run(() => ProcessLogQueueAsync(_cancellationTokenSource.Token));
     }
 
+    /// <summary>
+    /// Khởi tạo đối tượng ConsoleTarget với định dạng mặc định.
+    /// </summary>
     public ConsoleTarget() : this(new LogFormatter())
     {
     }
 
+    /// <summary>
+    /// Xuất thông điệp log ra console.
+    /// </summary>
+    /// <param name="logMessage">Thông điệp log cần xuất.</param>
     public void Publish(LogMessage logMessage)
     {
         ArgumentNullException.ThrowIfNull(logMessage);
@@ -55,6 +69,10 @@ public sealed class ConsoleTarget : INPLogTarget, IDisposable
         }
     }
 
+    /// <summary>
+    /// Đặt màu sắc cho mức độ log.
+    /// </summary>
+    /// <param name="level">Mức độ log cần đặt màu sắc.</param>
     private static void SetForegroundColor(NPLogBase.Level level)
     {
         var color = level switch
@@ -73,6 +91,9 @@ public sealed class ConsoleTarget : INPLogTarget, IDisposable
         Console.ForegroundColor = color;
     }
 
+    /// <summary>
+    /// Giải phóng tài nguyên và hủy bỏ luồng xử lý log.
+    /// </summary>
     public void Dispose()
     {
         _cancellationTokenSource.Cancel();

@@ -16,19 +16,54 @@ public abstract class NPLogBase
     /// </summary>
     public enum Level
     {
+        /// <summary>
+        /// Không ghi nhật ký.
+        /// </summary>
         NONE,
+
+        /// <summary>
+        /// Cấp độ ghi nhật ký chi tiết nhất.
+        /// </summary>
         TRACE,
+
+        /// <summary>
+        /// Ghi lại thông tin chi tiết dùng cho gỡ lỗi.
+        /// </summary>
         DEBUG,
+
+        /// <summary>
+        /// Ghi nhật ký thông tin chung.
+        /// </summary>
         INFO,
+
+        /// <summary>
+        /// Ghi cảnh báo về vấn đề cần chú ý.
+        /// </summary>
         WARNING,
+
+        /// <summary>
+        /// Ghi thông tin lỗi.
+        /// </summary>
         ERROR,
+
+        /// <summary>
+        /// Ghi thông tin các lỗi nghiêm trọng.
+        /// </summary>
         CRITICAL,
-        AUDIT, // Dùng để ghi lại các sự kiện quan trọng, như thay đổi cấu hình.
-        SECURITY // Dùng để ghi lại các sự kiện bảo mật, như đăng nhập thất bại.
+
+        /// <summary>
+        /// Ghi lại các sự kiện quan trọng, như thay đổi cấu hình.
+        /// </summary>
+        AUDIT,
+
+        /// <summary>
+        /// Ghi lại các sự kiện bảo mật, như đăng nhập thất bại.
+        /// </summary>
+        SECURITY
     }
 
     private readonly NPLogPublisher _logPublisher = new();
-    protected bool _isTurned = true;
+    private bool _isTurned = true;
 
     /// <summary>
     /// Mức độ ghi nhật ký mặc định.
@@ -40,6 +75,9 @@ public abstract class NPLogBase
     /// </summary>
     protected IEnumerable<LogMessage> Messages => _logPublisher.Messages;
 
+    /// <summary>
+    /// Lấy đối tượng quản lý ghi nhật ký.
+    /// </summary>
     protected INPLogPublisher LoggerHandlerManager => _logPublisher;
 
     /// <summary>

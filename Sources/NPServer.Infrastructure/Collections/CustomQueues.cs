@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
+
+using System;
+using System.Linq;
 
 namespace NPServer.Infrastructure.Collections;
 
 /// <summary>
 /// Lớp cơ sở cho các hàng đợi gói tin, cung cấp các phương thức chung để quản lý hàng đợi.
 /// </summary>
+/// <typeparam name="TClass">Loại dữ liệu của gói tin.</typeparam>
 public abstract class CustomQueues<TClass> : IDisposable where TClass : class
 {
     private readonly ConcurrentQueue<TClass> _queue = new();
@@ -24,6 +25,7 @@ public abstract class CustomQueues<TClass> : IDisposable where TClass : class
     /// <summary>
     /// Thêm gói tin vào hàng đợi.
     /// </summary>
+    /// <param name="packet">Gói tin cần thêm vào hàng đợi.</param>
     public void Enqueue(TClass packet)
     {
         if (packet == null) throw new ArgumentNullException(nameof(packet), "Packet cannot be null.");
@@ -45,6 +47,7 @@ public abstract class CustomQueues<TClass> : IDisposable where TClass : class
     /// <summary>
     /// Lấy một lô gói tin từ hàng đợi để xử lý theo nhóm.
     /// </summary>
+    /// <param name="batchSize">Kích thước của nhóm gói tin cần lấy.</param>
     public List<TClass> DequeueBatch(int batchSize)
     {
         if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
@@ -53,29 +56,6 @@ public abstract class CustomQueues<TClass> : IDisposable where TClass : class
         while (batch.Count < batchSize && _queue.TryDequeue(out var packet))
         {
             batch.Add(packet);
-        }
-
-        return batch;
-    }
-
-    /// <summary>
-    /// Lấy gói tin theo nhóm không đồng bộ, hỗ trợ chờ tín hiệu mới.
-    /// </summary>
-    public async Task<List<TClass>> DequeueBatchAsync(int batchSize, CancellationToken cancellationToken = default)
-    {
-        if (batchSize <= 0) throw new ArgumentOutOfRangeException(nameof(batchSize), "Batch size must be greater than zero.");
-        var batch = new List<TClass>(batchSize);
-
-        while (batch.Count < batchSize && !cancellationToken.IsCancellationRequested)
-        {
-            if (_queue.TryDequeue(out var packet))
-            {
-                batch.Add(packet);
-            }
-            else
-            {
-                await Task.WhenAny(_semaphore.WaitAsync(cancellationToken), Task.Delay(10, cancellationToken));
-            }
         }
 
         return batch;
@@ -145,19 +125,7 @@ public abstract class CustomQueues<TClass> : IDisposable where TClass : class
     }
 
     /// <summary>
-    /// Lấy gói tin đầu tiên từ hàng đợi mà không xóa nó và hủy bỏ nếu có tín hiệu.
-    /// </summary>
-    public async Task<TClass?> PeekAsync(CancellationToken cancellationToken = default)
-    {
-        if (_queue.TryPeek(out var packet)) return packet;
-
-        // Chờ tín hiệu mới khi hàng đợi rỗng
-        await Task.WhenAny(_semaphore.WaitAsync(cancellationToken), Task.Delay(10, cancellationToken));
-        return _queue.TryPeek(out var result) ? result : null;
-    }
-
-    /// <summary>
-    /// Giải phóng tài nguyên được sử dụng bởi <see cref="CustomQueues"/>.
+    /// Giải phóng tài nguyên được sử dụng bởi <see cref="CustomQueues{TClass}"/>.
     /// </summary>
     protected virtual void Dispose(bool disposing)
     {
@@ -172,6 +140,9 @@ public abstract class CustomQueues<TClass> : IDisposable where TClass : class
         _disposed = true;
     }
 
+    /// <summary>
+    /// Giải phóng tài nguyên.
+    /// </summary>
     public void Dispose()
     {
         Dispose(true);

@@ -4,57 +4,57 @@ using System.Text;
 namespace NPServer.Infrastructure.Helper;
 
 /// <summary>
-/// Provides helper methods for converting between byte arrays and different data types.
+/// Cung cấp các phương thức trợ giúp để chuyển đổi giữa các mảng byte và các kiểu dữ liệu khác nhau.
 /// </summary>
 public static class ConverterHelper
 {
     /// <summary>
-    /// Converts an integer to a byte array.
+    /// Chuyển đổi một số nguyên thành mảng byte.
     /// </summary>
-    /// <param name="value">The integer value to convert.</param>
-    /// <returns>A byte array representing the integer value.</returns>
+    /// <param name="value">Giá trị số nguyên cần chuyển đổi.</param>
+    /// <returns>Mảng byte đại diện cho giá trị số nguyên.</returns>
     public static byte[] ToByteArray(int value) => BitConverter.GetBytes(value);
 
     /// <summary>
-    /// Converts a string to a byte array using UTF-8 encoding.
+    /// Chuyển đổi một chuỗi thành mảng byte sử dụng mã hóa UTF-8.
     /// </summary>
-    /// <param name="str">The string to convert.</param>
-    /// <returns>A byte array representing the string.</returns>
+    /// <param name="str">Chuỗi cần chuyển đổi.</param>
+    /// <returns>Mảng byte đại diện cho chuỗi.</returns>
     public static byte[] ToByteArray(string str) => Encoding.UTF8.GetBytes(str);
 
     /// <summary>
-    /// Converts a double to a byte array.
+    /// Chuyển đổi một số thực thành mảng byte.
     /// </summary>
-    /// <param name="value">The double value to convert.</param>
-    /// <returns>A byte array representing the double value.</returns>
+    /// <param name="value">Giá trị số thực cần chuyển đổi.</param>
+    /// <returns>Mảng byte đại diện cho giá trị số thực.</returns>
     public static byte[] ToByteArray(double value) => BitConverter.GetBytes(value);
 
     /// <summary>
-    /// Converts a byte array to an integer.
+    /// Chuyển đổi một mảng byte thành số nguyên.
     /// </summary>
-    /// <param name="byteArray">The byte array to convert.</param>
-    /// <returns>The integer value represented by the byte array.</returns>
+    /// <param name="byteArray">Mảng byte cần chuyển đổi.</param>
+    /// <returns>Giá trị số nguyên được đại diện bởi mảng byte.</returns>
     public static int ToInt(byte[] byteArray) => BitConverter.ToInt32(byteArray, 0);
 
     /// <summary>
-    /// Converts a byte array to a string using UTF-8 decoding.
+    /// Chuyển đổi một mảng byte thành chuỗi sử dụng mã hóa UTF-8.
     /// </summary>
-    /// <param name="byteArray">The byte array to convert.</param>
-    /// <returns>The string represented by the byte array.</returns>
+    /// <param name="byteArray">Mảng byte cần chuyển đổi.</param>
+    /// <returns>Chuỗi được đại diện bởi mảng byte.</returns>
     public static string ToString(byte[] byteArray) => Encoding.UTF8.GetString(byteArray);
 
     /// <summary>
-    /// Converts a byte array to a double.
+    /// Chuyển đổi một mảng byte thành số thực.
     /// </summary>
-    /// <param name="byteArray">The byte array to convert.</param>
-    /// <returns>The double value represented by the byte array.</returns>
+    /// <param name="byteArray">Mảng byte cần chuyển đổi.</param>
+    /// <returns>Giá trị số thực được đại diện bởi mảng byte.</returns>
     public static double ToDouble(byte[] byteArray) => BitConverter.ToDouble(byteArray, 0);
 
     /// <summary>
-    /// Converts a hexadecimal string to a byte array.
+    /// Chuyển đổi một chuỗi hex thành mảng byte.
     /// </summary>
-    /// <param name="hex">The hexadecimal string to convert.</param>
-    /// <returns>A byte array representing the hexadecimal string.</returns>
+    /// <param name="hex">Chuỗi hex cần chuyển đổi.</param>
+    /// <returns>Mảng byte đại diện cho chuỗi hex.</returns>
     public static byte[] HexStrToBytes(string hex)
     {
         int numberChars = hex.Length;
@@ -74,10 +74,10 @@ public static class ConverterHelper
     }
 
     /// <summary>
-    /// Converts a byte array to a hexadecimal string.
+    /// Chuyển đổi một mảng byte thành chuỗi hex.
     /// </summary>
-    /// <param name="byteArray">The byte array to convert.</param>
-    /// <returns>A string representing the byte array in hexadecimal format.</returns>
+    /// <param name="byteArray">Mảng byte cần chuyển đổi.</param>
+    /// <returns>Chuỗi đại diện cho mảng byte trong định dạng hex.</returns>
     public static string BytesToHexStr(byte[] byteArray)
     {
         var hex = new StringBuilder(byteArray.Length * 2);

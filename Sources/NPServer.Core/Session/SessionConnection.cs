@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Net.Sockets;
 
-namespace NPServer.Core.Session.Network;
+namespace NPServer.Core.Session;
 
 /// <summary>
 /// Quản lý kết nối socket của khách hàng và theo dõi thời gian hoạt động.
@@ -28,10 +28,14 @@ internal sealed class SessionConnection(Socket socket, TimeSpan timeout) : ISess
     public string IpAddress => _clientIp;
 
     /// <summary>
-    /// Cập nhật thời gian hoạt động của phiên làm việc.
+    /// Cập nhật thời gian hoạt động cuối cùng của kết nối.
     /// </summary>
     public void UpdateLastActivity() => _activityTimer.Restart();
 
+    /// <summary>
+    /// Thiết lập thời gian chờ cho kết nối.
+    /// </summary>
+    /// <param name="timeout">Thời gian chờ.</param>
     public void SetTimeout(TimeSpan timeout)
     { _timeout = timeout; }
 
@@ -42,7 +46,7 @@ internal sealed class SessionConnection(Socket socket, TimeSpan timeout) : ISess
     public bool IsTimedOut() => _activityTimer.Elapsed > _timeout;
 
     /// <summary>
-    /// Ngắt kết nối phiên làm việc.
+    /// Giải phóng tài nguyên của kết nối.
     /// </summary>
     public void Dispose()
     {

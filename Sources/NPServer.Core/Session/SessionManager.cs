@@ -99,13 +99,6 @@ public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
         return _sessionCount;
     }
 
-
-    /// <summary>
-    /// Quản lý giới hạn kết nối cho một địa chỉ IP cụ thể.
-    /// </summary>
-    /// <param name="ipAddress">Địa chỉ IP cần kiểm tra.</param>
-    /// <param name="isAdding">Xác định xem có đang thêm kết nối mới hay không.</param>
-    /// <returns>Trả về <c>true</c> nếu kết nối được phép, ngược lại là <c>false</c>.</returns>
     private bool ManageConnLimit(string ipAddress, bool isAdding)
     {
         if (isAdding)

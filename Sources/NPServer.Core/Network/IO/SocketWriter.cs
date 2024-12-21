@@ -14,6 +14,11 @@ public sealed class SocketWriter(Socket socket, IMultiSizeBufferPool multiSizeBu
     private readonly Socket _socket = socket ?? throw new ArgumentNullException(nameof(socket));
     private readonly IMultiSizeBufferPool _multiSizeBuffer = multiSizeBuffer ?? throw new ArgumentNullException(nameof(multiSizeBuffer));
 
+    /// <summary>
+    /// Sự kiện hoàn tất gửi dữ liệu qua socket.
+    /// </summary>
+    /// <param name="sender">Nguồn của sự kiện.</param>
+    /// <param name="e">Thông tin sự kiện.</param>
     public static void OnCompleted(object? sender, SocketAsyncEventArgs e)
     {
         if (e.SocketError != SocketError.Success)

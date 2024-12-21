@@ -11,8 +11,15 @@ public sealed class ObjectPool
 {
     private readonly Stack<IPoolable> _objects = new();
 
-    public int TotalCount { get; private set; } // Tổng số đối tượng đã tạo
-    public int AvailableCount { get => _objects.Count; } // Số đối tượng sẵn có trong pool
+    /// <summary>
+    /// Tổng số đối tượng đã tạo.
+    /// </summary>
+    public int TotalCount { get; private set; }
+
+    /// <summary>
+    /// Số đối tượng sẵn có trong pool.
+    /// </summary>
+    public int AvailableCount { get => _objects.Count; } 
 
     /// <summary>
     /// Tạo mới nếu cần và trả về một instance của <typeparamref name="T"/>.

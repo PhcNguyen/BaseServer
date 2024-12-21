@@ -16,7 +16,9 @@ public partial class Packet : IPacket, IPoolable
     /// </summary>
     public UniqueId Id { get; private set; }
 
-    // Constructor mặc định
+    /// <summary>
+    ///Constructor mặc định.
+    /// </summary>
     public Packet()
     { }
 

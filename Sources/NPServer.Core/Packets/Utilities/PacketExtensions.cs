@@ -8,8 +8,17 @@ namespace NPServer.Core.Packets.Utilities;
 /// </summary>
 public static class PacketExtensions
 {
+    /// <summary>
+    /// Đại diện cho một gói tin rỗng với các giá trị mặc định.
+    /// </summary>
     public static readonly Packet EmptyPacket = new(0, 0, 0, []);
 
+    /// <summary>
+    /// Chuyển đổi một lệnh và thông điệp thành một gói tin phản hồi.
+    /// </summary>
+    /// <param name="command">Lệnh để thiết lập trong gói tin.</param>
+    /// <param name="message">Thông điệp để thiết lập như là dữ liệu trong gói tin.</param>
+    /// <returns>Gói tin với lệnh và thông điệp đã thiết lập làm dữ liệu.</returns>
     public static Packet ToResponsePacket(this short command, string message)
     {
         var packet = new Packet();
@@ -18,6 +27,7 @@ public static class PacketExtensions
         packet.SetPayload(message);
         return packet;
     }
+
 
     /// <summary>
     /// Tạo một gói tin từ mảng byte.

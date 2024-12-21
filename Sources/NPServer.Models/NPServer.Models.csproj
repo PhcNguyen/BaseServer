@@ -1,15 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<OutputType>Library</OutputType>
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<Platforms>AnyCPU;x64</Platforms>
+		<Platforms>AnyCPU</Platforms>
 		<IsPublishable>false</IsPublishable>
 		<Nullable>enable</Nullable>
 		<DebugType>none</DebugType>
+		<GenerateJson>false</GenerateJson>
 	</PropertyGroup>
 
-	<Target Name="CleanObjFolder" AfterTargets="Build">
-		<RemoveDir Directories="$(ProjectDir)NPServer.Models\obj" ContinueOnError="true" />
-	</Target>
-	
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<OutputPath>..\..\bin\Debug\</OutputPath>
+		<IntermediateOutputPath>..\..\obj\Debug\</IntermediateOutputPath>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<Optimize>true</Optimize>
+		<Deterministic>true</Deterministic>
+		<UseCompression>true</UseCompression>
+		<OutputPath>..\..\bin\Release\</OutputPath>
+		<IntermediateOutputPath>..\..\obj\Release\</IntermediateOutputPath>
+	</PropertyGroup>
+
 </Project>
