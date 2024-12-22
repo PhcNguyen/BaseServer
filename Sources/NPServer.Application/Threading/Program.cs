@@ -1,5 +1,7 @@
 ﻿using NPServer.Application.Main;
+using NPServer.Shared.Management;
 using NPServer.Shared.Services;
+using System;
 using System.Threading;
 
 namespace NPServer.Application.Threading;
@@ -11,6 +13,13 @@ internal static class Program
 
     private static void Main()
     {
+        Console.WriteLine(InfoOS.Details());
+        Console.WriteLine(InfoCPU.Name());
+        Console.WriteLine(InfoCPU.Usage());
+        Console.WriteLine(InfoMemory.Usage());
+
+        System.Console.ReadKey();
+
         System.Console.Title = $"NPServer ({ServiceController.VersionInfo})";
 
         ServiceController.RegisterSingleton();

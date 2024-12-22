@@ -2,13 +2,16 @@
 using NPServer.Application.Threading;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Logging.Targets;
+using NPServer.Shared.Management;
 using NPServer.Shared.Services;
 using NPServer.UI.Enums;
 using NPServer.UI.Implementations;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 namespace NPServer.UI
 {
@@ -27,7 +30,11 @@ namespace NPServer.UI
             this.InitializeComponent();
             this.InitializeLogging();
 
-            StopButton.IsEnabled = false;
+            ButtonStop.IsEnabled = false;
+            LabelInfoCPU.Content = "CPU Name: " + InfoCPU.Name();
+            LabelInfoOS.Content = "OS: " + InfoOS.Details();
+
+            ButtonTheme.Content = Theme.Dark.ToString();
         }
 
         private void InitializeServices()
@@ -48,16 +55,62 @@ namespace NPServer.UI
         private void ThemeSwitchButtonClick(object sender, RoutedEventArgs e)
         {
             var currentTheme = _appInstance.GetCurrentTheme();
+            ButtonTheme.Content = currentTheme.ToString();
+
             var newTheme = currentTheme == Theme.Dark ? Theme.Light : Theme.Dark;
             _appInstance.ChangeTheme(newTheme);
         }
 
-        private void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private async void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is TabControl tabControl && tabControl.SelectedItem is TabItem selectedTab)
+            {
+                if (selectedTab.Content is FrameworkElement content)
+                {
+                    await AnimateOpacity(content, from: 1.0, to: 0.0, duration: 100);
+                    await AnimateOpacity(content, from: 0.0, to: 1.0, duration: 100);
+                }
+            }
+        }
+
+        private static async Task AnimateOpacity(FrameworkElement element, double from, double to, int duration)
+        {
+            const int frames = 120; // Số khung hình
+            double step = (to - from) / frames;
+            int delay = duration / frames;
+
+            for (int i = 0; i <= frames; i++)
+            {
+                element.Opacity = from + (step * i);
+                await Task.Delay(delay);
+            }
+        }
 
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             _serverApplication.Shutdown();
             _ctokens.Cancel();
+        }
+
+        private async void ClearLogButtonClick(object sender, RoutedEventArgs e)
+        {
+            double opacity = 1.0;
+            while (opacity >= 0)
+            {
+                LogsTextBox.Opacity = opacity;
+                opacity -= 0.1;
+                await Task.Delay(50); 
+            }
+
+            LogsTextBox.Text = string.Empty;
+            LogsTextBox.Opacity = 1.0;
+        }
+
+        private void InfoButtonClick(object sender, RoutedEventArgs e) 
+        {
+            LogsTextBox.AppendText("CPU: " + InfoCPU.Usage() + Environment.NewLine);
+            LogsTextBox.AppendText("Ram: " + InfoMemory.Usage() + Environment.NewLine);
+            LogsTextBox.ScrollToEnd();
         }
 
         private async void StartServerButtonClick(object sender, RoutedEventArgs e)
@@ -68,10 +121,12 @@ namespace NPServer.UI
             }
             finally
             {
-                StartButton.IsEnabled = false;
+                LabelAddressIP.Content = $"IP: {ServiceController.NetworkConfig.IP}";
+                LabelPort.Content = $"Port: {ServiceController.NetworkConfig.Port}";
+                ButtonStart.IsEnabled = false;
 
-                await Task.Delay(5000);
-                StopButton.IsEnabled = true;
+                await Task.Delay(2000);
+                ButtonStop.IsEnabled = true;
             }
         }
 
@@ -83,10 +138,12 @@ namespace NPServer.UI
             }
             finally
             {
-                StopButton.IsEnabled = false;
+                LabelAddressIP.Content = $"IP: None";
+                LabelPort.Content = $"Port: None";
+                ButtonStop.IsEnabled = false;
 
-                await Task.Delay(5000);
-                StartButton.IsEnabled = true;
+                await Task.Delay(2000);
+                ButtonStart.IsEnabled = true;
             }
         }
     }

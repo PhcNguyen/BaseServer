@@ -19,8 +19,8 @@ namespace NPServer.Application.Main;
 /// </summary>
 public static class ServiceController
 {
-    private static readonly BufferConfig _bufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
-    private static readonly NetworkConfig _networkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
+    public static readonly BufferConfig BufferConfig = ConfigManager.Instance.GetConfig<BufferConfig>();
+    public static readonly NetworkConfig NetworkConfig = ConfigManager.Instance.GetConfig<NetworkConfig>();
 
     public static readonly string VersionInfo =
         $"Version {AssemblyHelper.GetAssemblyInformationalVersion()} " +
@@ -53,16 +53,16 @@ public static class ServiceController
 
         // Core
         Singleton.Register<IConnLimiter, ConnLimiter>(() =>
-        new ConnLimiter(_networkConfig.MaxConnections));
+        new ConnLimiter(NetworkConfig.MaxConnections));
 
         Singleton.Register<ISessionManager, SessionManager>(() =>
         new SessionManager(Singleton.GetInstanceOfInterface<IConnLimiter>()));
 
         Singleton.Register<IFirewallRateLimit, FirewallRateLimit>(() =>
-        new FirewallRateLimit(_networkConfig.MaxAllowedRequests,
-        _networkConfig.TimeWindowInMilliseconds, _networkConfig.LockoutDurationInSeconds));
+        new FirewallRateLimit(NetworkConfig.MaxAllowedRequests,
+        NetworkConfig.TimeWindowInMilliseconds, NetworkConfig.LockoutDurationInSeconds));
 
         Singleton.Register<IMultiSizeBufferPool, MultiSizeBufferPool>(() =>
-        new MultiSizeBufferPool(_bufferConfig.BufferAllocationsString.ParseBufferAllocations(), _bufferConfig.TotalBuffers));
+        new MultiSizeBufferPool(BufferConfig.BufferAllocationsString.ParseBufferAllocations(), BufferConfig.TotalBuffers));
     }
 }
