@@ -37,7 +37,7 @@ public interface ISessionClient
     /// <summary>
     /// Địa chỉ IP của client đang kết nối.
     /// </summary>
-    string IpAddress { get; }
+    string EndPoint { get; }
 
     /// <summary>
     /// Sự kiện thông tin.

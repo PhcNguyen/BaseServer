@@ -93,12 +93,37 @@
                 </Grid>
             </TabItem>
 
+            <!-- Tab Client -->
+            <TabItem Header="Client" FontSize="14">
+                <Grid Background="{DynamicResource BackgroundColor}">
+                    
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="0.5*" />
+                        <RowDefinition Height="3*" />
+                        <RowDefinition Height="0.5*" />
+                    </Grid.RowDefinitions>
+
+                    <ListView x:Name="ListViewClient"     
+                              Margin="40,5,40,5" 
+                              Grid.Row="1">
+                        <ListView.View>
+                            <GridView AllowsColumnReorder="False" >
+                                <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}" Width="100"/>
+                                <GridViewColumn Header="EndPoint" DisplayMemberBinding="{Binding EndPoint}" Width="100"/>
+                                <GridViewColumn Header="First Recording Time" DisplayMemberBinding="{Binding FirstRecordingTime}" Width="200"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+
+                </Grid>
+            </TabItem>
+
             <!-- Tab Logging -->
             <TabItem Header="Logging" FontSize="14" Height="24" Margin="-2,-2,-2,0" VerticalAlignment="Top">
                 <Grid Background="{DynamicResource BackgroundColor}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="127*" />
-                        <ColumnDefinition Width="947*" />
+                        <ColumnDefinition Width="135*" />
+                        <ColumnDefinition Width="942*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -106,15 +131,8 @@
                     </Grid.RowDefinitions>
 
                     <!-- Button -->
-                    <Button Margin="10,5,10,0" Height="30" Click="InfoButtonClick" Grid.Column="0">
-                        <Button.Content>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Width="100" Margin="10,0,0,0"><Run Text="Info System"/></TextBlock>
-                            </StackPanel>
-                        </Button.Content>
-                    </Button>
 
-                    <Button Grid.Row="0" Margin="815,5,10,0" Height="30" Click="ClearLogButtonClick" Grid.Column="1">
+                    <Button Grid.Row="0" Margin="5,5,5,5" Width="120" Height="30" Click="ClearLogButtonClick">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <Image Source="pack://siteoforigin:,,,/Resources/Icons/Clean.ico" Width="16" Height="16" />
@@ -124,7 +142,7 @@
                     </Button>
 
                     <!-- Logs -->
-                    <TextBox x:Name="LogsTextBox" Margin="10,10,10,10" Grid.Row="1" Grid.ColumnSpan="2" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" IsReadOnly="True" />
+                    <TextBox x:Name="LogsTextBox" Margin="10,5,10,10" Grid.Row="1" Grid.ColumnSpan="2" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" IsReadOnly="True" />
                 </Grid>
             </TabItem>
 

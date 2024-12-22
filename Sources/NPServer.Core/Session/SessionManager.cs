@@ -30,7 +30,7 @@ public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
     /// <returns>Trả về <c>true</c> nếu session được thêm thành công, ngược lại là <c>false</c>.</returns>
     public bool AddSession(ISessionClient session)
     {
-        if (!ManageConnLimit(session.IpAddress, true))
+        if (!ManageConnLimit(session.EndPoint, true))
             return false;
 
         bool isNewSession = _activeSessions.TryAdd(session.Id, session);
@@ -74,7 +74,7 @@ public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
 
         if (session != null)
         {
-            ManageConnLimit(session.IpAddress, false);
+            ManageConnLimit(session.EndPoint, false);
             Interlocked.Decrement(ref _sessionCount);
         }
 

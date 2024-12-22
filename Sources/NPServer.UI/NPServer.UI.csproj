@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net9.0-windows</TargetFramework>
-		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
 		<AssemblyName>NPServerUI</AssemblyName>
 	</PropertyGroup>

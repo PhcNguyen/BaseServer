@@ -61,7 +61,7 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     /// <summary>
     /// Địa chỉ IP của client đang kết nối.
     /// </summary>
-    public string IpAddress => _connection.IpAddress;
+    public string EndPoint => _connection.IpAddress;
 
     /// <summary>
     /// Sự kiện thông tin.

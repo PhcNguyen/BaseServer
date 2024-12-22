@@ -13,6 +13,16 @@ namespace NPServer.Shared.Management;
 /// </summary>
 internal static class SystemInfo
 {
+    private static readonly Process process = new();
+
+    static SystemInfo()
+    {
+        process.StartInfo.FileName = @"C:\Windows\System32\cmd.exe";
+        process.StartInfo.RedirectStandardOutput = true;
+        process.StartInfo.UseShellExecute = false;
+        process.StartInfo.CreateNoWindow = true;
+    }
+
     /// <summary>
     /// Phân tích chuỗi thông tin mặc định.
     /// </summary>
@@ -67,16 +77,7 @@ internal static class SystemInfo
     {
         try
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = "cmd.exe",
-                Arguments = $"/C {command}",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using Process process = new() { StartInfo = startInfo };
+            process.StartInfo.Arguments = $"/C {command}";
             StringBuilder output = new();
 
             process.Start();
@@ -85,12 +86,31 @@ internal static class SystemInfo
             {
                 output.AppendLine(process.StandardOutput.ReadLine());
             }
+
             process.WaitForExit();
             return output.ToString().Trim();
         }
         catch (Exception ex)
         {
             return $"Error: {ex.Message} (Command: {command})";
+        }
+    }
+
+    /// <summary>
+    /// Dừng quá trình `cmd.exe`.
+    /// </summary>
+    public static void StopProcess()
+    {
+        try
+        {
+            if (!process.HasExited)
+            {
+                process.Kill();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error stopping process: {ex.Message}");
         }
     }
 }
