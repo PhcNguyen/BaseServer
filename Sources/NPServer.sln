@@ -13,9 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Core", "NPServer.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Shared", "NPServer.Shared\NPServer.Shared.csproj", "{96CA44ED-11B4-4BD6-BED8-375779D9AD72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.UI.Server", "NPServer.UI\NPServer.UI.Server.csproj", "{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.UI", "NPServer.UI\NPServer.UI.csproj", "{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.UI.Client", "NPServer.UI.Client\NPServer.UI.Client.csproj", "{10D111BC-7354-4865-B004-EFB54A8FEFA9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Client", "NPServer.UI.Client\NPServer.Client.csproj", "{10D111BC-7354-4865-B004-EFB54A8FEFA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
