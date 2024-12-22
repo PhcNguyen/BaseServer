@@ -37,7 +37,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\NPServer.Core\NPServer.Core.csproj" />
-		<ProjectReference Include="..\NPServer.Models\NPServer.Models.csproj" />
+		<ProjectReference Include="..\NPServer.Models\NPServer.Common.csproj" />
 		<ProjectReference Include="..\NPServer.Infrastructure\NPServer.Infrastructure.csproj" />
 	</ItemGroup>
 

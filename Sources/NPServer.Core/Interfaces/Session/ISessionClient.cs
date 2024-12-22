@@ -1,4 +1,4 @@
-﻿using NPServer.Models.Common;
+﻿using NPServer.Common.Models;
 using NPServer.Shared.Services;
 using System;
 

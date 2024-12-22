@@ -103,17 +103,19 @@
                         <RowDefinition Height="0.5*" />
                     </Grid.RowDefinitions>
 
-                    <ListView x:Name="ListViewClient"     
-                              Margin="40,5,40,5" 
-                              Grid.Row="1">
-                        <ListView.View>
-                            <GridView AllowsColumnReorder="False" >
-                                <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ID}" Width="100"/>
-                                <GridViewColumn Header="EndPoint" DisplayMemberBinding="{Binding EndPoint}" Width="100"/>
-                                <GridViewColumn Header="First Recording Time" DisplayMemberBinding="{Binding FirstRecordingTime}" Width="200"/>
-                            </GridView>
-                        </ListView.View>
-                    </ListView>
+                    <DataGrid x:Name="DataClientList" 
+                                Margin="40,5,40,5" 
+                                Grid.Row="1"
+                                AutoGenerateColumns="False"
+                                CanUserReorderColumns="False"
+                                CanUserResizeColumns="False"
+                                CanUserSortColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Width="100" Binding="{Binding ID}" />
+                            <DataGridTextColumn Header="EndPoint" Width="100" Binding="{Binding EndPoint}" />
+                            <DataGridTextColumn Header="First Recording Time" Width="200" Binding="{Binding FirstRecordingTime}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
 
                 </Grid>
             </TabItem>

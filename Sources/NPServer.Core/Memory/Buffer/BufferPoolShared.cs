@@ -77,7 +77,7 @@ public sealed class BufferPoolShared : IDisposable
     /// <returns>Đối tượng <see cref="BufferPoolShared"/> cho kích thước bộ đệm chỉ định.</returns>
     public static BufferPoolShared GetOrCreatePool(int bufferSize, int initialCapacity)
     {
-        return GlobalPools.GetOrAdd(bufferSize, _ => new BufferPoolShared(bufferSize, initialCapacity));
+        return GlobalPools.GetOrAdd(bufferSize, size => new BufferPoolShared(size, initialCapacity));
     }
 
     /// <summary>

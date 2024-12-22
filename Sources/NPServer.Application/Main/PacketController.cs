@@ -7,7 +7,7 @@ using NPServer.Core.Packets;
 using NPServer.Core.Packets.Queue;
 using NPServer.Core.Packets.Utilities;
 using NPServer.Infrastructure.Logging;
-using NPServer.Models.Common;
+using NPServer.Common.Models;
 using NPServer.Shared.Services;
 using System;
 using System.Collections.Generic;
@@ -43,7 +43,7 @@ internal sealed class PacketController(CancellationToken token)
         Packet packet = _packetPool.Get<Packet>();
 
         packet.SetId(id);
-        packet.ParseFromBytes(data);
+        packet.UnPack(data);
 
         _packetQueueManager.GetQueue(PacketQueueType.Incoming).Enqueue(packet);
     }
@@ -138,7 +138,7 @@ internal sealed class PacketController(CancellationToken token)
             if (packet.PayloadData.Length == 0)
                 return;
 
-            RetryHelper.Execute(() => session.Network.Send(packet.ToByteArray()), maxRetries: 3, delayMs: 100,
+            RetryHelper.Execute(() => session.Network.Send(packet.Pack()), maxRetries: 3, delayMs: 100,
                 onRetry: attempt => NPLog.Instance.Warning<PacketController>($"Retrying send for packet {packet.Id}, attempt {attempt}."),
                 onFailure: () => NPLog.Instance.Error<PacketController>($"Failed to send packet {packet.Id} after retries.")
             );

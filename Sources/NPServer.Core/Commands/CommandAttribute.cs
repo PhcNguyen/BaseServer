@@ -12,16 +12,16 @@
 /// <param name="command">Lệnh được liên kết với phương thức.</param>
 /// <param name="requiredRole">Vai trò yêu cầu để thực thi lệnh.</param>
 [System.AttributeUsage(System.AttributeTargets.Method, Inherited = false)]
-public sealed class CommandAttribute(Models.Common.Command command, Models.Common.AccessLevel requiredRole)
+public sealed class CommandAttribute(Common.Models.Command command, Common.Models.AccessLevel requiredRole)
     : System.Attribute
 {
     /// <summary>
     /// Lệnh được liên kết với phương thức.
     /// </summary>
-    public Models.Common.Command Command { get; } = command;
+    public Common.Models.Command Command { get; } = command;
 
     /// <summary>
     /// Vai trò yêu cầu để thực thi lệnh này.
     /// </summary>
-    public Models.Common.AccessLevel RequiredRole { get; } = requiredRole;
+    public Common.Models.AccessLevel RequiredRole { get; } = requiredRole;
 }

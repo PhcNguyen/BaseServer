@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Application", "NPServer.Application\NPServer.Application.csproj", "{F007331B-B7FF-42AB-A096-EE67C56FDA02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPServer.Models", "NPServer.Models\NPServer.Models.csproj", "{5D502715-00A5-4458-8BFF-105608756982}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPServer.Common", "NPServer.Models\NPServer.Common.csproj", "{5D502715-00A5-4458-8BFF-105608756982}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Infrastructure", "NPServer.Infrastructure\NPServer.Infrastructure.csproj", "{3E243106-203E-4878-9A20-296F925503D8}"
 EndProject
@@ -13,7 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Core", "NPServer.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Shared", "NPServer.Shared\NPServer.Shared.csproj", "{96CA44ED-11B4-4BD6-BED8-375779D9AD72}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.UI", "NPServer.UI\NPServer.UI.csproj", "{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.UI.Server", "NPServer.UI\NPServer.UI.Server.csproj", "{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.UI.Client", "NPServer.UI.Client\NPServer.UI.Client.csproj", "{10D111BC-7354-4865-B004-EFB54A8FEFA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +73,14 @@ Global
 		{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}.Release|x64.ActiveCfg = Release|Any CPU
 		{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}.Release|x64.Build.0 = Release|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Debug|x64.Build.0 = Debug|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Release|x64.ActiveCfg = Release|Any CPU
+		{10D111BC-7354-4865-B004-EFB54A8FEFA9}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

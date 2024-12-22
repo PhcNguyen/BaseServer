@@ -97,7 +97,7 @@ public sealed class MultiSizeBufferPool : IMultiSizeBufferPool
     /// Tăng dung lượng bộ đệm nếu số lượng bộ đệm rảnh dưới ngưỡng cho phép.
     /// </summary>
     /// <param name="pool">Bộ đệm cần tăng dung lượng.</param>
-    private void IncreaseBufferPoolSize(BufferPoolShared pool)
+    private static void IncreaseBufferPoolSize(BufferPoolShared pool)
     {
         if (pool.FreeBuffers <= pool.TotalBuffers * 0.2)
         {

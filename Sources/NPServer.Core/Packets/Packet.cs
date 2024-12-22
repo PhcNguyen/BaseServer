@@ -25,7 +25,7 @@ public partial class Packet : IPacket, IPoolable
     /// <summary>
     /// Constructor để tạo Packet với các tham số tuỳ chọn.
     /// </summary>
-    public Packet(PacketType type = PacketType.NONE, PacketFlags flags = PacketFlags.NONE, Enum? command = null, byte[]? payload = null)
+    public Packet(PacketType type = PacketType.None, PacketFlags flags = PacketFlags.None, Enum? command = null, byte[]? payload = null)
     {
         Initialize(type, flags, ConvertCommand(command), payload);
     }
@@ -64,7 +64,7 @@ public partial class Packet : IPacket, IPoolable
     public void ResetForPool()
     {
         Id = UniqueId.Empty;
-        Flags = PacketFlags.NONE;
+        Flags = PacketFlags.None;
         Cmd = -1;
         PayloadData = Memory<byte>.Empty;
         _signature = [];

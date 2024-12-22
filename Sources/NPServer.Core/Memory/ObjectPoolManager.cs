@@ -69,7 +69,7 @@ public sealed class ObjectPoolManager
     {
         Type type = typeof(T);
 
-        if (_poolDict.TryGetValue(type, out ObjectPool? pool) == false)
+        if (!_poolDict.TryGetValue(type, out ObjectPool? pool))
         {
             pool = new();
             _poolDict.Add(type, pool);

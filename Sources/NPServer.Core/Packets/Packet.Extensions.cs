@@ -16,7 +16,7 @@ public partial class Packet : IPacket
     /// Chuyển đổi gói tin thành mảng byte để gửi qua mạng.
     /// </summary>
     /// <returns>Mảng byte của gói tin.</returns>
-    public byte[] ToByteArray()
+    public byte[] Pack()
     {
         this.SignPacket(); // Ký gói tin trước khi chuyển đổi
 
@@ -57,7 +57,7 @@ public partial class Packet : IPacket
     /// </summary>
     /// <param name="data">Mảng byte chứa dữ liệu gói tin.</param>
     /// <returns>True nếu phân tích thành công, ngược lại là False.</returns>
-    public bool ParseFromBytes(ReadOnlySpan<byte> data)
+    public bool UnPack(ReadOnlySpan<byte> data)
     {
         // Kiểm tra dữ liệu có đủ nhỏ nhất để chứa header
         if (data.Length < PacketMetadata.HEADERSIZE)

@@ -59,7 +59,7 @@ public static class AssemblyHelper
 
         // Lấy chuỗi thời gian build từ thuộc tính
         string buildTimeString = attribute.InformationalVersion[(buildTimeIndex + prefix.Length)..];
-        if (DateTime.TryParseExact(buildTimeString, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var buildTime) == false)
+        if (!DateTime.TryParseExact(buildTimeString, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var buildTime))
             return default;
 
         return buildTime;

@@ -8,14 +8,14 @@ public partial interface IPacket
     /// Chuyển đổi gói tin thành mảng byte.
     /// </summary>
     /// <returns>Mảng byte đại diện cho gói tin.</returns>
-    byte[] ToByteArray();
+    byte[] Pack();
 
     /// <summary>
     /// Giải mã gói tin từ mảng byte.
     /// </summary>
     /// <param name="data">Dữ liệu dạng byte cần giải mã.</param>
     /// <returns>Trả về `true` nếu thành công, ngược lại `false`.</returns>
-    bool ParseFromBytes(ReadOnlySpan<byte> data);
+    bool UnPack(ReadOnlySpan<byte> data);
 
     /// <summary>
     /// Chuyển đổi gói tin thành định dạng JSON.

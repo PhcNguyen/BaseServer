@@ -1,4 +1,4 @@
-﻿using NPServer.Models.Common;
+﻿using NPServer.Common.Models;
 
 namespace NPServer.Core.Commands.Interfaces;
 

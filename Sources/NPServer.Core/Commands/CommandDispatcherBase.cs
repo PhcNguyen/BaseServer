@@ -1,4 +1,4 @@
-﻿using NPServer.Models.Common;
+﻿using NPServer.Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

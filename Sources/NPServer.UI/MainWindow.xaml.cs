@@ -7,7 +7,6 @@ using NPServer.Shared.Services;
 using NPServer.UI.Enums;
 using NPServer.UI.Implementations;
 using System;
-using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,7 +20,6 @@ namespace NPServer.UI
     public partial class MainWindow : Window
     {
         private static readonly CancellationTokenSource _ctokens = new();
-        public ObservableCollection<ModelDataClient> DataClient { get; set; } = [];
 
         private readonly App _appInstance = (App)System.Windows.Application.Current;
         private static readonly ServerApp _serverApplication = Singleton.GetInstance<ServerApp>(() => new ServerApp(_ctokens));
@@ -37,7 +35,6 @@ namespace NPServer.UI
             LabelInfoOS.Content = "OS: " + InfoOS.Details();
 
             ButtonTheme.Content = Theme.Dark.ToString();
-            DataClient.Add(new ModelDataClient { ID = "00000", EndPoint = "192.168.1.1", FirstRecordingTime = DateTime.Now.ToString() });
         }
 
         private void InitializeServices()

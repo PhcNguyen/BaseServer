@@ -1,6 +1,6 @@
-﻿namespace NPServer.UI.Implementations;
+﻿namespace NPServer.UI;
 
-public class ModelDataClient
+public class DataClient
 {
     public string ID { get; set; }
     public string EndPoint { get; set; }

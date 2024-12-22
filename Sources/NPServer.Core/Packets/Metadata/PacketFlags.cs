@@ -9,40 +9,40 @@ public enum PacketFlags : byte
     /// <summary>
     /// No flags set.
     /// </summary>
-    NONE = 0,
+    None = 0,
 
     /// <summary>
     /// Flag indicating that the packet is compressed.
     /// </summary>
-    ISCOMPRESSED = 1,
+    IsCompressed = 1,
 
     /// <summary>
     /// Flag indicating that the packet is encrypted.
     /// </summary>
-    ISENCRYPTED = 2,
+    IsEncrypted = 2,
 
     /// <summary>
     /// Flag indicating that the packet is reliable.
     /// </summary>
-    ISRELIABLE = 4,
+    IsReliable = 4,
 
     /// <summary>
     /// Low priority.
     /// </summary>
-    LOW = 8,
+    Low = 8,
 
     /// <summary>
     /// Medium priority.
     /// </summary>
-    MEDIUM = 16,
+    Medium = 16,
 
     /// <summary>
     /// High priority.
     /// </summary>
-    HIGH = 32,
+    High = 32,
 
     /// <summary>
     /// Flag indicating that the packet is urgent.
     /// </summary>
-    URGENT = 64
+    Urgent = 64
 }

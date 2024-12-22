@@ -1,4 +1,4 @@
-﻿namespace NPServer.Models.Common;
+﻿namespace NPServer.Common.Models;
 
 public enum AccessLevel : byte
 {

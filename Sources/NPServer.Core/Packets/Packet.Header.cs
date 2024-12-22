@@ -11,12 +11,12 @@ public partial class Packet : IPacket
     /// <summary>
     /// Type để xác định loại gói tin.
     /// </summary>
-    public PacketType Type { get; private set; } = PacketType.NONE;
+    public PacketType Type { get; private set; } = PacketType.None;
 
     /// <summary>
     /// Cờ trạng thái của gói tin.
     /// </summary>
-    public PacketFlags Flags { get; private set; } = PacketFlags.NONE;
+    public PacketFlags Flags { get; private set; } = PacketFlags.None;
 
     /// <summary>
     /// Command để xác định loại gói tin.

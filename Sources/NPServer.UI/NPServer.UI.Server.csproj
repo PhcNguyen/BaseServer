@@ -4,7 +4,7 @@
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net9.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
-		<AssemblyName>NPServerUI</AssemblyName>
+		<AssemblyName>NPS-GUI</AssemblyName>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
