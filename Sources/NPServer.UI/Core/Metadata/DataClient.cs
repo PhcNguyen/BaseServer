@@ -1,4 +1,4 @@
-﻿namespace NPServer.UI;
+﻿namespace NPServer.UI.Core.Metadata;
 
 public class DataClient
 {

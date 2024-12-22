@@ -13,18 +13,18 @@ namespace NPServer.Infrastructure.Logging.Targets;
 /// </summary>
 public class WinFormTagers : INPLogTarget, IDisposable
 {
+    private readonly Task _workerTask;
+    private readonly INLogPrintTagers _textBox;
     private readonly ILogFormatter _loggerFormatter;
     private readonly ConcurrentQueue<LogMessage> _logQueue = new();
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-    private readonly INLogWinFormTagers _textBox;
-    private readonly Task _workerTask;
 
     /// <summary>
     /// Khởi tạo đối tượng ConsoleTarget với định dạng log cụ thể.
     /// </summary>
     /// <param name="textBox">Đối tượng thực hiện thị log.</param>
     /// <param name="loggerFormatter">Đối tượng thực hiện định dạng log.</param>
-    public WinFormTagers(INLogWinFormTagers textBox, ILogFormatter loggerFormatter)
+    public WinFormTagers(INLogPrintTagers textBox, ILogFormatter loggerFormatter)
     {
         _textBox = textBox ?? throw new ArgumentNullException(nameof(textBox));
         _loggerFormatter = loggerFormatter ?? throw new ArgumentNullException(nameof(loggerFormatter));
@@ -35,7 +35,7 @@ public class WinFormTagers : INPLogTarget, IDisposable
     /// <summary>
     /// Khởi tạo đối tượng ConsoleTarget với định dạng mặc định.
     /// </summary>
-    public WinFormTagers(INLogWinFormTagers textBox) : this(textBox, new LogFormatter())
+    public WinFormTagers(INLogPrintTagers textBox) : this(textBox, new LogFormatter())
     {
     }
 
@@ -55,7 +55,7 @@ public class WinFormTagers : INPLogTarget, IDisposable
         {
             if (_logQueue.TryDequeue(out var logMessage))
             {
-                _textBox.AppendText(_loggerFormatter.ApplyFormat(logMessage));
+                _textBox.WriteLine(_loggerFormatter.ApplyFormat(logMessage));
             }
             else
             {

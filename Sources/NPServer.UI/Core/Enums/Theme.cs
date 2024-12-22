@@ -1,4 +1,4 @@
-﻿namespace NPServer.UI.Enums;
+﻿namespace NPServer.UI.Core.Enums;
 
 public enum Theme
 {

@@ -1,18 +1,19 @@
-﻿namespace NPServer.Infrastructure.Logging.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace NPServer.Infrastructure.Logging.Interfaces;
 
 /// <summary>
 /// Định nghĩa giao diện cho mục tiêu xử lý nhật ký.
 /// </summary>
-public interface INLogWinFormTagers
+public interface INLogPrintTagers
 {
     /// <summary>
     /// Thêm văn bản vào cuối nội dung hiện tại.
     /// </summary>
     /// <param name="text">Văn bản cần thêm.</param>
-    void AppendText(string text);
-
-    /// <summary>
-    /// Xóa toàn bộ văn bản hiện có.
-    /// </summary>
-    void ClearText();
+    void WriteLine(string text);
 }

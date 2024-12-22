@@ -2,17 +2,17 @@
 using System.Windows.Controls;
 using NPServer.Infrastructure.Logging.Interfaces;
 
-namespace NPServer.UI.Implementations;
+namespace NPServer.UI.Core.Implementations;
 
 public class NLogWinFormTagers(TextBox textBox)
-    : INLogWinFormTagers
+    : INLogPrintTagers
 {
     private readonly TextBox _textBox = textBox ?? throw new ArgumentNullException(nameof(textBox));
     private int _line = 0;
 
-    public void AppendText(string text)
+    public void WriteLine(string text)
     {
-        if(System.Windows.Application.Current.Dispatcher.CheckAccess())
+        if (System.Windows.Application.Current.Dispatcher.CheckAccess())
         {
             // Thêm vào nội dung hiện tại của TextBox
             _textBox.Text += $"{++_line:D5} - " + text + Environment.NewLine;
