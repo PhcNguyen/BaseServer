@@ -5,44 +5,121 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NPServer.UI"
         mc:Ignorable="d"
-        Title="NPServer" 
-        Width="800" 
-        Height="450"
-        ResizeMode="NoResize"
-        MinWidth="400" MinHeight="300">
+        Width="1080" Height="520"
+        ResizeMode="NoResize" MinWidth="400" MinHeight="300" 
+        Background="{DynamicResource BackgroundColor}">
 
     <Window.Resources>
         <FontFamily x:Key="JetBrainsMono-Bold">/Resources/JetBrainsMono-Bold.ttf</FontFamily>
+        <FontFamily x:Key="PixelGame">/Resources/Pixel-Game.otf</FontFamily>
 
         <Style TargetType="Label">
             <Setter Property="FontFamily" Value="JetBrainsMono-Bold"/>
+            <Setter Property="FontFamily" Value="PixelGame"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="JetBrainsMono-Bold"/>
+            <Setter Property="FontFamily" Value="PixelGame"/>
+            <Setter Property="FontSize" Value="14"/>
+
         </Style>
 
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="JetBrainsMono-Bold"/>
             <Setter Property="FontSize" Value="14"/>
-        </Style>
-
-        <Style TargetType="Button">
-            <Setter Property="FontFamily" Value="JetBrainsMono-Bold"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
         </Style>
     </Window.Resources>
 
     <Grid>
-        <TabControl>
-            <TabItem Header="Server" FontSize="16" FontFamily="Consolas">
-                <Grid Background="#FFE5E5E5">
-                    <Label x:Name="AddressIP" Content="IP: 0.0.0.0" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="100"/>
-                    <Label x:Name="Port" Content="Port: 00000" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top" Width="100"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TabControl Grid.Row="1" Background="{DynamicResource BackgroundColor}" SelectionChanged="TabControlSelectionChanged">
+            <!-- Tab Server -->
+            <TabItem Header="Server" FontSize="14" FontFamily="JetBrains Mono">
+                <Grid Background="{DynamicResource BackgroundColor}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- IP Address -->
+                    <Label x:Name="AddressIP" Content="IP: 0.0.0.0"
+                           HorizontalAlignment="Left" VerticalAlignment="Top"
+                           Margin="10" Grid.Row="0" Grid.ColumnSpan="2" FontFamily="JetBrains Mono"/>
+
+                    <!-- Port -->
+                    <Label x:Name="Port" Content="Port: 00000"
+                           HorizontalAlignment="Left" VerticalAlignment="Top"
+                           Margin="10" Grid.Row="1" Grid.ColumnSpan="2" FontFamily="JetBrains Mono"/>
+
+                    <!-- Start Server Button -->
+                    <Button x:Name="StartButton"
+                            Content="Start" 
+                            HorizontalAlignment="Left" Margin="10" 
+                            VerticalAlignment="Top" Width="120" Height="30" 
+                            Grid.Row="2" Grid.Column="0"
+                            Click="StartServerButtonClick" FontFamily="JetBrains Mono" />
+
+                    <!-- Stop Server Button -->
+                    <Button x:Name="StopButton"
+                            Content="Shutdown"  
+                            HorizontalAlignment="Left" Margin="10" 
+                            VerticalAlignment="Top" Width="120" Height="30" 
+                            Grid.Row="2" Grid.Column="1"
+                            Click="ShutdownServerButtonClick" FontFamily="JetBrains Mono" />
+
+                    <!-- Theme Button -->
+                    <Button Content="Theme" 
+                            HorizontalAlignment="Right" Margin="10" 
+                            VerticalAlignment="Top" Width="120" Height="30" 
+                            Grid.Row="2" Grid.Column="2"
+                            Click="ThemeSwitchButtonClick" FontFamily="JetBrains Mono" />
                 </Grid>
             </TabItem>
-            <TabItem Header="Client" FontSize="16" FontFamily="Consolas">
-                <Grid Background="#FFE5E5E5"/>
+
+            <!-- Tab Client -->
+            <TabItem Header="Client" FontSize="14" FontFamily="JetBrains Mono">
+                <Grid Background="{DynamicResource BackgroundColor}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                </Grid>
             </TabItem>
-            <TabItem Header="Chat" FontSize="16" FontFamily="Consolas">
-                <Grid Background="#FFE5E5E5"/>
+
+            <!-- Tab Logging -->
+            <TabItem Header="Logging" FontSize="14" FontFamily="JetBrains Mono">
+                <Grid Background="{DynamicResource BackgroundColor}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Logs -->
+                    <TextBox  x:Name="LogsTextBox" 
+                            Margin="10,10,10,10" 
+                            Grid.Row="0" 
+                            Grid.ColumnSpan="4" 
+                            ScrollViewer.VerticalScrollBarVisibility="Auto" 
+                            Background="{DynamicResource BackgroundColor}"
+                            Foreground="{ DynamicResource ForegroundColor }" 
+                            IsReadOnly="True" />
+                </Grid>
             </TabItem>
         </TabControl>
     </Grid>

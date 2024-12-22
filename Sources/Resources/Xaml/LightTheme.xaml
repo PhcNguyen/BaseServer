@@ -1,0 +1,32 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Background và Foreground chính -->
+    <SolidColorBrush x:Key="BackgroundColor" Color="#FFF2F2F2" />
+    <SolidColorBrush x:Key="ForegroundColor" Color="#FF2E2E2E" />
+
+    <!-- Nút và thanh công cụ -->
+    <SolidColorBrush x:Key="ButtonBackgroundColor" Color="#FFF5F5F5" />
+    <SolidColorBrush x:Key="ButtonForegroundColor" Color="#FF333333" />
+    <SolidColorBrush x:Key="ToolbarBackgroundColor" Color="#FFEFEFEF" />
+
+    <!-- Biên và đường viền -->
+    <SolidColorBrush x:Key="BorderColor" Color="#FFDADADA" />
+
+    <!-- Màu đặc biệt -->
+    <SolidColorBrush x:Key="HighlightColor" Color="#FF009688" />
+    <SolidColorBrush x:Key="AccentColor" Color="#FFFF9800" />
+
+    <!-- Font styles -->
+    <Style TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+    </Style>
+
+    <!-- Nút với màu sắc tùy chỉnh -->
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource ButtonBackgroundColor}"/>
+        <Setter Property="Foreground" Value="{StaticResource ButtonForegroundColor}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+</ResourceDictionary>

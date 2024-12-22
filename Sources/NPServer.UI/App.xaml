@@ -4,6 +4,11 @@
              xmlns:local="clr-namespace:NPServer.UI"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://siteoforigin:,,,/Resources/Xaml/DarkTheme.xaml"/>
+                <ResourceDictionary Source="pack://siteoforigin:,,,/Resources/Xaml/LightTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

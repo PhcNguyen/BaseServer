@@ -15,13 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Shared", "NPServer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.UI", "NPServer.UI\NPServer.UI.csproj", "{3132ACD6-1A2B-46AF-AF8B-26CECF5B803C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Resources", "Resources", "{17C484B2-5306-457F-AEE3-57B4C5831427}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Fonts", "Fonts", "{313EB0EB-BCCA-4622-9FCB-C457169A4000}"
-	ProjectSection(SolutionItems) = preProject
-		Resources\Fonts\JetBrainsMono-Bold.ttf = Resources\Fonts\JetBrainsMono-Bold.ttf
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,9 +74,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{313EB0EB-BCCA-4622-9FCB-C457169A4000} = {17C484B2-5306-457F-AEE3-57B4C5831427}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B5D1574-1C2E-443D-95CF-AEEE51A2949F}

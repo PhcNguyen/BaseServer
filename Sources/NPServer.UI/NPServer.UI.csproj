@@ -21,12 +21,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Content Include="..\Resources\**\*" CopyToOutputDirectory="PreserveNewest">
+			<Link>Resources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</Content>
 		<ProjectReference Include="..\NPServer.Shared\NPServer.Shared.csproj" />
 		<ProjectReference Include="..\NPServer.Application\NPServer.Application.csproj" />
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="A\" />
-	</ItemGroup>
-
 </Project>

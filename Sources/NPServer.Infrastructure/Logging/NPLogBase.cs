@@ -78,7 +78,7 @@ public abstract class NPLogBase
     /// <summary>
     /// Lấy đối tượng quản lý ghi nhật ký.
     /// </summary>
-    protected INPLogPublisher LoggerHandlerManager => _logPublisher;
+    public INPLogPublisher LoggerHandlerManager => _logPublisher;
 
     /// <summary>
     /// Thiết lập hoặc lấy trạng thái lưu trữ thông điệp nhật ký.
