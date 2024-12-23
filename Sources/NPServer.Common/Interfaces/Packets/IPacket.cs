@@ -1,5 +1,4 @@
 ﻿using NPServer.Common.Interfaces.Memory;
-using System;
 
 namespace NPServer.Common.Interfaces.Packets;
 

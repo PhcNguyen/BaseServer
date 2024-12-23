@@ -19,15 +19,15 @@
 
     <!-- Font styles -->
     <Style TargetType="TextBox">
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}"/>
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{StaticResource ForegroundColor}" />
     </Style>
 
     <!-- Nút với màu sắc tùy chỉnh -->
     <Style TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource ButtonBackgroundColor}"/>
-        <Setter Property="Foreground" Value="{StaticResource BackgroundColor}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Background" Value="{StaticResource ButtonBackgroundColor}" />
+        <Setter Property="Foreground" Value="{StaticResource BackgroundColor}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderColor}" />
+        <Setter Property="FontSize" Value="14" />
     </Style>
 </ResourceDictionary>

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Application", "NPServer.Application\NPServer.Application.csproj", "{F007331B-B7FF-42AB-A096-EE67C56FDA02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPServer.Common", "NPServer.Models\NPServer.Common.csproj", "{5D502715-00A5-4458-8BFF-105608756982}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NPServer.Common", "NPServer.Common\NPServer.Common.csproj", "{5D502715-00A5-4458-8BFF-105608756982}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NPServer.Infrastructure", "NPServer.Infrastructure\NPServer.Infrastructure.csproj", "{3E243106-203E-4878-9A20-296F925503D8}"
 EndProject

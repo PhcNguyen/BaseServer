@@ -13,10 +13,9 @@ namespace NPServer.Core.Network.Listeners;
 /// Khởi tạo một TcpSocketListener với số kết nối tối đa.
 /// </remarks>
 /// <param name="maxConnections">Số lượng kết nối tối đa cho listener.</param>
-public class TcpSocketListener(int maxConnections) 
+public class TcpSocketListener(int maxConnections)
     : SocketListenerBase(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp, maxConnections)
 {
-
     /// <summary>
     /// Bắt đầu lắng nghe kết nối từ client.
     /// </summary>

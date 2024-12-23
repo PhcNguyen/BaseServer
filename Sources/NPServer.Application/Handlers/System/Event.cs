@@ -1,5 +1,5 @@
-﻿using NPServer.Core.Commands;
-using NPServer.Common.Models;
+﻿using NPServer.Common.Models;
+using NPServer.Core.Commands;
 
 namespace NPServer.Application.Handlers.System;
 

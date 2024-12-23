@@ -24,7 +24,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-        <ProjectReference Include="..\NPServer.Models\NPServer.Common.csproj" />
+        <ProjectReference Include="..\NPServer.Common\NPServer.Common.csproj" />
 		<ProjectReference Include="..\NPServer.Shared\NPServer.Shared.csproj" />
 		
     </ItemGroup>

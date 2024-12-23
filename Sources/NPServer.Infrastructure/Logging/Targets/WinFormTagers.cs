@@ -1,10 +1,9 @@
 ﻿using NPServer.Infrastructure.Logging.Formatter;
 using NPServer.Infrastructure.Logging.Interfaces;
-using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
-
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NPServer.Infrastructure.Logging.Targets;
 

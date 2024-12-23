@@ -1,5 +1,5 @@
-﻿using NPServer.Common.Packets.Metadata;
-using NPServer.Common.Interfaces.Packets;
+﻿using NPServer.Common.Interfaces.Packets;
+using NPServer.Common.Packets.Metadata;
 using System;
 
 namespace NPServer.Common.Packets;

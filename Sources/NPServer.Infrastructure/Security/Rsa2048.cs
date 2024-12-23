@@ -94,7 +94,7 @@ public sealed class Rsa2048 : IDisposable
     /// Giải phóng tài nguyên.
     /// </summary>
     /// <param name="disposing">
-    /// <c>true</c> nếu giải phóng tài nguyên được quản lý; 
+    /// <c>true</c> nếu giải phóng tài nguyên được quản lý;
     /// <c>false</c> nếu chỉ giải phóng tài nguyên không được quản lý.
     /// </param>
     private void Dispose(bool disposing)

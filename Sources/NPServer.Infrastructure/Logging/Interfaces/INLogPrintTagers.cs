@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NPServer.Infrastructure.Logging.Interfaces;
+﻿namespace NPServer.Infrastructure.Logging.Interfaces;
 
 /// <summary>
 /// Định nghĩa giao diện cho mục tiêu xử lý nhật ký.
