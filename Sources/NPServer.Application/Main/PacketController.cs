@@ -1,11 +1,8 @@
 ﻿using NPServer.Application.Handlers;
 using NPServer.Application.Helper;
-using NPServer.Core.Interfaces.Packets;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Memory;
-using NPServer.Core.Packets;
 using NPServer.Core.Packets.Queue;
-using NPServer.Core.Packets.Utilities;
 using NPServer.Infrastructure.Logging;
 using NPServer.Common.Models;
 using NPServer.Shared.Services;
@@ -13,6 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NPServer.Core.Packets.Utilities;
+using NPServer.Common.Interfaces.Packets;
+using NPServer.Common.Packets;
 
 namespace NPServer.Application.Main;
 
@@ -42,7 +42,7 @@ internal sealed class PacketController(CancellationToken token)
 
         Packet packet = _packetPool.Get<Packet>();
 
-        packet.SetId(id);
+        packet.SetId(id.ToString());
         packet.UnPack(data);
 
         _packetQueueManager.GetQueue(PacketQueueType.Incoming).Enqueue(packet);
@@ -100,7 +100,7 @@ internal sealed class PacketController(CancellationToken token)
     {
         try
         {
-            if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
+            if (!_sessionManager.TryGetSession(UniqueId.Parse(packet.Id), out var session) || session == null)
                 return;
 
             (object packetToSend, object? packetFromServer) = _commandDispatcher.HandleCommand(
@@ -130,7 +130,7 @@ internal sealed class PacketController(CancellationToken token)
     {
         try
         {
-            if (!_sessionManager.TryGetSession(packet.Id, out var session) || session == null)
+            if (!_sessionManager.TryGetSession(UniqueId.Parse(packet.Id), out var session) || session == null)
                 return;
 
             session.UpdateLastActivityTime();

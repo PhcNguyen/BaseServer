@@ -1,4 +1,4 @@
-﻿namespace NPServer.Core.Packets.Metadata;
+﻿namespace NPServer.Common.Packets.Metadata;
 
 /// <summary>
 /// Represents different types of packets used in the network.

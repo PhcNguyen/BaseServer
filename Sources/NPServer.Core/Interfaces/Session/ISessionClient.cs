@@ -17,7 +17,7 @@ public interface ISessionClient
     /// <summary>
     /// Cấp độ truy cập của phiên.
     /// </summary>
-    AccessLevel Role { get; }
+    Authoritys Role { get; }
 
     /// <summary>
     /// Mạng kết nối của phiên.

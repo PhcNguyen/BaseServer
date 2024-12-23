@@ -19,7 +19,7 @@
 //    /// </summary>
 //    /// <param name="packet">Dữ liệu đăng ký bao gồm email và mật khẩu.</param>
 //    /// <returns>Gói tin phản hồi kết quả đăng ký.</returns>
-//    [Command(Command.Register, AccessLevel.Guests)]
+//    [Command(Command.Register, Authoritys.Guests)]
 //    public static async Task<Packet> Register(Packet packet)
 //    {
 //        byte[] data = packet.PayloadData.ToArray();
@@ -76,7 +76,7 @@
 //    /// </summary>
 //    /// <param name="packet">Dữ liệu đăng nhập bao gồm email và mật khẩu.</param>
 //    /// <returns>Gói tin phản hồi kết quả đăng nhập.</returns>
-//    [Command(Command.Login, AccessLevel.Guests)]
+//    [Command(Command.Login, Authoritys.Guests)]
 //    public static async Task<IPacket> Login(IPacket packet)
 //    {
 //        byte[] data = packet.PayloadData.ToArray();
@@ -155,7 +155,7 @@
 //    /// </summary>
 //    /// <param name="packet">Dữ liệu đăng xuất bao gồm email (nếu có yêu cầu).</param>
 //    /// <returns>Gói tin phản hồi kết quả đăng xuất.</returns>
-//    [Command(Command.Logout, AccessLevel.User)]
+//    [Command(Command.Logout, Authoritys.User)]
 //    public static async Task<IPacket> Logout(IPacket packet)
 //    {
 //        byte[] data = packet.PayloadData.ToArray();
@@ -193,7 +193,7 @@
 //    /// </summary>
 //    /// <param name="packet">Dữ liệu bao gồm email, mật khẩu hiện tại và mật khẩu mới.</param>
 //    /// <returns>Gói tin phản hồi kết quả cập nhật mật khẩu.</returns>
-//    [Command(Command.UpdatePassword, AccessLevel.User)]
+//    [Command(Command.UpdatePassword, Authoritys.User)]
 //    public static async Task<IPacket> UpdatePassword(IPacket packet)
 //    {
 //        byte[] data = packet.PayloadData.ToArray();

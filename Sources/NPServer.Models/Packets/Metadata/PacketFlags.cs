@@ -1,4 +1,4 @@
-﻿namespace NPServer.Core.Packets.Metadata;
+﻿namespace NPServer.Common.Packets.Metadata;
 
 /// <summary>
 /// Packet flags indicating different states of a packet.

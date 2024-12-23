@@ -2,7 +2,7 @@
 using System.Buffers;
 using System.Security.Cryptography;
 
-namespace NPServer.Core.Packets;
+namespace NPServer.Common.Packets;
 
 public partial class Packet
 {

@@ -1,10 +1,9 @@
-﻿using NPServer.Core.Interfaces.Memory;
-using NPServer.Core.Interfaces.Packets;
-using NPServer.Core.Packets.Metadata;
-using NPServer.Shared.Services;
+﻿using NPServer.Common.Interfaces.Memory;
+using NPServer.Common.Packets.Metadata;
+using NPServer.Common.Interfaces.Packets;
 using System;
 
-namespace NPServer.Core.Packets;
+namespace NPServer.Common.Packets;
 
 /// <summary>
 /// Lớp cơ sở cho tất cả các gói tin mạng.
@@ -14,7 +13,7 @@ public partial class Packet : IPacket, IPoolable
     /// <summary>
     /// Id gói tin.
     /// </summary>
-    public UniqueId Id { get; private set; }
+    public string? Id { get; private set; }
 
     /// <summary>
     ///Constructor mặc định.
@@ -56,14 +55,14 @@ public partial class Packet : IPacket, IPoolable
     /// <summary>
     /// Đặt ID cho gói tin.
     /// </summary>
-    public void SetId(UniqueId id) => Id = id;
+    public void SetId(string id) => Id = id;
 
     /// <summary>
     /// Đặt lại gói tin về trạng thái ban đầu.
     /// </summary>
     public void ResetForPool()
     {
-        Id = UniqueId.Empty;
+        Id = string.Empty;
         Flags = PacketFlags.None;
         Cmd = -1;
         PayloadData = Memory<byte>.Empty;

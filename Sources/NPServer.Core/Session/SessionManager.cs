@@ -1,8 +1,10 @@
 ﻿using NPServer.Core.Interfaces.Network;
 using NPServer.Core.Interfaces.Session;
 using NPServer.Shared.Services;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading;
 
 namespace NPServer.Core.Session;
@@ -24,6 +26,16 @@ public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
     private int _sessionCount = 0;
 
     /// <summary>
+    /// Xảy ra khi một phiên làm việc được thêm.
+    /// </summary>
+    public event Action<ISessionClient>? SessionAdded;
+
+    /// <summary>
+    /// Xảy ra khi một phiên làm việc bị xóa.
+    /// </summary>
+    public event Action<UniqueId>? SessionRemoved;
+
+    /// <summary>
     /// Thêm session mới vào danh sách và cập nhật số lượng session.
     /// </summary>
     /// <param name="session">Phiên làm việc cần thêm.</param>
@@ -38,6 +50,7 @@ public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
         if (isNewSession)
         {
             Interlocked.Increment(ref _sessionCount);
+            SessionAdded?.Invoke(session);
         }
 
         return isNewSession;
@@ -76,6 +89,7 @@ public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
         {
             ManageConnLimit(session.EndPoint, false);
             Interlocked.Decrement(ref _sessionCount);
+            SessionRemoved?.Invoke(sessionId);
         }
 
         return isRemoved;
@@ -94,10 +108,7 @@ public sealed class SessionManager(IConnLimiter connLimiter) : ISessionManager
     /// Lấy số lượng session hiện tại.
     /// </summary>
     /// <returns>Số lượng session hiện tại.</returns>
-    public int Count()
-    {
-        return _sessionCount;
-    }
+    public int Count() => _sessionCount;
 
     private bool ManageConnLimit(string ipAddress, bool isAdding)
     {

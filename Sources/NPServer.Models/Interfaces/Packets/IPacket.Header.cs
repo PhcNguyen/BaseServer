@@ -1,6 +1,6 @@
-﻿using NPServer.Core.Packets.Metadata;
+﻿using NPServer.Common.Packets.Metadata;
 
-namespace NPServer.Core.Interfaces.Packets;
+namespace NPServer.Common.Interfaces.Packets;
 
 public partial interface IPacket
 {

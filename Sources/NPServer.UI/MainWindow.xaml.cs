@@ -1,11 +1,13 @@
 ﻿using NPServer.Application.Main;
 using NPServer.Application.Threading;
+using NPServer.Core.Interfaces.Session;
 using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Logging.Targets;
 using NPServer.Shared.Management;
 using NPServer.Shared.Services;
 using NPServer.UI.Core.Enums;
 using NPServer.UI.Core.Implementations;
+using NPServer.UI.ViewsModels;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +21,7 @@ namespace NPServer.UI
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly SessionViewModel _viewModel;
         private static readonly CancellationTokenSource _ctokens = new();
 
         private readonly App _appInstance = (App)System.Windows.Application.Current;
@@ -35,11 +38,13 @@ namespace NPServer.UI
             LabelInfoOS.Content = "OS: " + InfoOS.Details();
 
             ButtonTheme.Content = Theme.Dark.ToString();
+
+            _viewModel = new SessionViewModel(Singleton.GetInstanceOfInterface<ISessionManager>());
+            DataContext = _viewModel;
         }
 
         private void InitializeServices()
         {
-            ServiceController.RegisterSingleton();
             ServiceController.Initialization();
 
             _appInstance.Initialize();

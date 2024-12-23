@@ -9,7 +9,7 @@ internal static class ServerManager
 {
     private static readonly ServerApp _serverApp = Singleton.GetInstance<ServerApp>();
 
-    [Command(Command.Restart, AccessLevel.Admin)]
+    [Command(Command.Restart, Authoritys.Administrator)]
     public static bool Restart()
     {
         try
@@ -23,7 +23,7 @@ internal static class ServerManager
         }
     }
 
-    [Command(Command.Shutdown, AccessLevel.Admin)]
+    [Command(Command.Shutdown, Authoritys.Administrator)]
     public static bool Shutdown()
     {
         try
@@ -37,7 +37,7 @@ internal static class ServerManager
         }
     }
 
-    [Command(Command.Status, AccessLevel.Admin)]
+    [Command(Command.Status, Authoritys.Administrator)]
     public static bool Status()
     {
         try

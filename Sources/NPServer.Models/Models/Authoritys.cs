@@ -1,6 +1,6 @@
 ﻿namespace NPServer.Common.Models;
 
-public enum AccessLevel : byte
+public enum Authoritys : byte
 {
     /// <summary>
     /// Người dùng chưa đăng nhập hoặc đăng ký.
@@ -19,8 +19,7 @@ public enum AccessLevel : byte
     Supervisor = 2,
 
     /// <summary>
-    /// Cấp độ truy cập cao nhất, có quyền kiểm soát hoàn toàn hệ thống,
-    /// quản lý người dùng, quản trị nội dung và cấu hình hệ thống.
+    /// Quản trị viên.
     /// </summary>
-    Admin = 3
+    Administrator = 3
 }

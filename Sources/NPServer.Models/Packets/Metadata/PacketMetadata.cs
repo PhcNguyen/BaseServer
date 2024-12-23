@@ -1,4 +1,4 @@
-﻿namespace NPServer.Core.Packets.Metadata;
+﻿namespace NPServer.Common.Packets.Metadata;
 
 /// <summary>
 /// Metadata offsets and sizes for network packets.

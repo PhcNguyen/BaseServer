@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using System.Windows.Controls;
 using NPServer.Infrastructure.Logging.Interfaces;
 
@@ -8,24 +9,26 @@ public class NLogWinFormTagers(TextBox textBox)
     : INLogPrintTagers
 {
     private readonly TextBox _textBox = textBox ?? throw new ArgumentNullException(nameof(textBox));
+    private readonly StringBuilder _logBuilder = new();
     private int _line = 0;
 
     public void WriteLine(string text)
     {
         if (System.Windows.Application.Current.Dispatcher.CheckAccess())
         {
-            // Thêm vào nội dung hiện tại của TextBox
-            _textBox.Text += $"{++_line:D5} - " + text + Environment.NewLine;
-            _textBox.ScrollToEnd();
+            AppendText(text);
         }
         else
         {
-            System.Windows.Application.Current.Dispatcher.Invoke(() =>
-            {
-                _textBox.Text += $"{++_line:D5} - " + text + Environment.NewLine;
-                _textBox.ScrollToEnd();
-            });
+            System.Windows.Application.Current.Dispatcher.Invoke(() => AppendText(text));
         }
+    }
+
+    private void AppendText(string text)
+    {
+        _logBuilder.AppendLine($"{++_line:D5} - {text}");
+
+        _textBox.Text = _logBuilder.ToString();
     }
 
     public void ClearText()

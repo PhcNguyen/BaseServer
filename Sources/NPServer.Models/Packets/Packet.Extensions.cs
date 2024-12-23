@@ -1,9 +1,9 @@
-﻿using NPServer.Core.Interfaces.Packets;
-using NPServer.Core.Packets.Metadata;
+﻿using NPServer.Common.Packets.Metadata;
+using NPServer.Common.Interfaces.Packets;
 using System;
 using System.Buffers;
 
-namespace NPServer.Core.Packets;
+namespace NPServer.Common.Packets;
 
 public partial class Packet : IPacket
 {

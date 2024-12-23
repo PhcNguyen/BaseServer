@@ -1,4 +1,5 @@
 ﻿using NPServer.Shared.Services;
+using System;
 using System.Collections.Generic;
 
 namespace NPServer.Core.Interfaces.Session;
@@ -11,6 +12,16 @@ namespace NPServer.Core.Interfaces.Session;
 /// </summary>
 public interface ISessionManager
 {
+    /// <summary>
+    /// Xảy ra khi một phiên làm việc được thêm.
+    /// </summary>
+    event Action<ISessionClient>? SessionAdded;
+
+    /// <summary>
+    /// Xảy ra khi một phiên làm việc bị xóa.
+    /// </summary>
+    event Action<UniqueId>? SessionRemoved;
+
     /// <summary>
     /// Thêm session mới vào danh sách và cập nhật số lượng session.
     /// </summary>

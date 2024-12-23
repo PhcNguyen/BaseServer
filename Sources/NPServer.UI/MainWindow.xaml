@@ -3,7 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NPServer.UI"
+        xmlns:local="clr-namespace:NPServer.UI" 
+        xmlns:vm="clr-namespace:NPServer.UI.ViewsModels" 
+        d:DataContext="{d:DesignInstance Type=vm:SessionViewModel}"
         mc:Ignorable="d"
         Width="1080" Height="520"
         ResizeMode="NoResize" MinWidth="400" MinHeight="300" 
@@ -103,20 +105,26 @@
                         <RowDefinition Height="0.5*" />
                     </Grid.RowDefinitions>
 
-                    <DataGrid x:Name="DataClientList" 
-                                Margin="40,5,40,5" 
-                                Grid.Row="1"
-                                AutoGenerateColumns="False"
-                                CanUserReorderColumns="False"
-                                CanUserResizeColumns="False"
-                                CanUserSortColumns="False">
+                    <DataGrid ItemsSource="{Binding Sessions}" 
+                              Margin="40,5,40,5" 
+                              Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              CanUserReorderColumns="False"
+                              CanUserResizeColumns="False"
+                              CanUserSortColumns="False">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="ID" Width="100" Binding="{Binding ID}" />
-                            <DataGridTextColumn Header="EndPoint" Width="100" Binding="{Binding EndPoint}" />
-                            <DataGridTextColumn Header="First Recording Time" Width="200" Binding="{Binding FirstRecordingTime}" />
+                            <DataGridTextColumn Header="SN" Width="Auto" MinWidth="50" MaxWidth="75" Binding="{Binding SerialNumber}" />
+                            <DataGridTextColumn Header="ID" Width="Auto" MinWidth="75" MaxWidth="100" Binding="{Binding ID}" />
+                            <DataGridTextColumn Header="Role" Width="Auto" MinWidth="75" MaxWidth="100" Binding="{Binding Role}" />
+                            <DataGridTextColumn Header="EndPoint" Width="*"  MinWidth="150" Binding="{Binding EndPoint}" />
+                            <DataGridTextColumn Header="First Recording Time" Width="*"  MinWidth="200" Binding="{Binding FirstRecordingTime}" />
                         </DataGrid.Columns>
+                        <DataGrid.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel/>
+                            </ItemsPanelTemplate>
+                        </DataGrid.ItemsPanel>
                     </DataGrid>
-
                 </Grid>
             </TabItem>
 
@@ -144,7 +152,14 @@
                     </Button>
 
                     <!-- Logs -->
-                    <TextBox x:Name="LogsTextBox" Margin="10,5,10,10" Grid.Row="1" Grid.ColumnSpan="2" ScrollViewer.VerticalScrollBarVisibility="Auto" Background="{DynamicResource BackgroundColor}" Foreground="{DynamicResource ForegroundColor}" IsReadOnly="True" />
+                    <TextBox x:Name="LogsTextBox"
+                            Margin="10,5,10,10"
+                            Grid.Row="1"
+                            Grid.ColumnSpan="2"
+                            Background="{DynamicResource BackgroundColor}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            IsReadOnly="True"
+                            TextWrapping="Wrap" />
                 </Grid>
             </TabItem>
 

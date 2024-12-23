@@ -22,8 +22,7 @@ namespace NPServer.Core.Session;
 /// <param name="timeout">Thời gian chờ của phiên làm việc.</param>
 /// <param name="multiSizeBuffer">Bộ đệm nhiều kích thước.</param>
 /// <param name="token">Mã thông báo hủy để kiểm soát việc dừng giám sát.</param>
-public sealed class SessionClient(Socket socket, TimeSpan timeout,
-    IMultiSizeBufferPool multiSizeBuffer, CancellationToken token)
+public sealed class SessionClient(Socket socket, TimeSpan timeout, IMultiSizeBufferPool multiSizeBuffer, CancellationToken token)
     : ISessionClient, IDisposable
 {
     private bool _isDisposed = false;
@@ -41,7 +40,7 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     /// <summary>
     /// Cấp độ truy cập của phiên.
     /// </summary>
-    public AccessLevel Role { get; private set; } = AccessLevel.Guests;
+    public Authoritys Role { get; private set; } = Authoritys.Guests;
 
     /// <summary>
     /// Mạng kết nối của phiên.
@@ -78,14 +77,14 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout,
     /// </summary>
     public event Action<string, Exception>? ErrorOccurred;
 
-    AccessLevel ISessionClient.Role => Role;
+    Authoritys ISessionClient.Role => Role;
 
     ISessionNetwork ISessionClient.Network => _network;
 
     /// <summary>
     /// Cập nhật role của phiên.
     /// </summary>
-    public void SetRole(AccessLevel newRole)
+    public void SetRole(Authoritys newRole)
     {
         Role = newRole;
     }

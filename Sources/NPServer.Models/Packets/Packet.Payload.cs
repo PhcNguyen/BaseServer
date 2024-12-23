@@ -1,11 +1,11 @@
-﻿using NPServer.Core.Interfaces.Packets;
+﻿using NPServer.Common.Interfaces.Packets;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace NPServer.Core.Packets;
+namespace NPServer.Common.Packets;
 
 /// <summary>
 /// Lớp cơ sở cho các gói tin với khả năng quản lý dữ liệu payload.

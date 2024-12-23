@@ -28,6 +28,8 @@ public static class ServiceController
 
     public static void Initialization()
     {
+        RegisterSingleton();
+
         NPLog.Instance.Info("ServiceController: Starting Initialization.");
 
         try
@@ -40,13 +42,13 @@ public static class ServiceController
         {
             NPLog.Instance.Error("ServiceController: Initialization failed.", ex);
             throw;
-        }
+        }      
     }
 
     /// <summary>
     /// Đăng ký các instance của dịch vụ vào Singleton.axe ZASRBABEeev
     /// </summary>
-    public static void RegisterSingleton()
+    private static void RegisterSingleton()
     {
         // Application
         Singleton.Register<CommandDispatcher>();

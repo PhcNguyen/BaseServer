@@ -1,4 +1,4 @@
-﻿using NPServer.Core.Interfaces.Packets;
+﻿using NPServer.Common.Interfaces.Packets;
 using NPServer.Shared.Collections;
 
 namespace NPServer.Core.Packets.Queue;

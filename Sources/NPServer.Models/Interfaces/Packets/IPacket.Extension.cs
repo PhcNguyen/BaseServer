@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NPServer.Core.Interfaces.Packets;
+namespace NPServer.Common.Interfaces.Packets;
 
 public partial interface IPacket
 {

@@ -20,5 +20,5 @@ public interface ICommandInput
     /// <summary>
     /// Cấp độ truy cập (role) của người dùng đang thực thi lệnh.
     /// </summary>
-    AccessLevel UserRole { get; }
+    Authoritys UserRole { get; }
 }

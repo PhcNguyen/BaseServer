@@ -22,7 +22,7 @@ public abstract class CommandDispatcherBase
     /// <summary>
     /// Cache các lệnh đã được đăng ký cùng với phương thức xử lý và vai trò yêu cầu.
     /// </summary>
-    protected ImmutableDictionary<Command, (AccessLevel RequiredRole, Func<object?, object> Handler)> CommandDelegateCache;
+    protected ImmutableDictionary<Command, (Authoritys RequiredRole, Func<object?, object> Handler)> CommandDelegateCache;
 
     /// <summary>
     /// Khởi tạo đối tượng xử lý lệnh.
@@ -35,7 +35,7 @@ public abstract class CommandDispatcherBase
 
         // Chuyển danh sách lệnh thành ImmutableDictionary
         CommandDelegateCache = commandMethods
-            .Select(cmd => new KeyValuePair<Command, (AccessLevel, Func<object?, object>)>(
+            .Select(cmd => new KeyValuePair<Command, (Authoritys, Func<object?, object>)>(
                 cmd.Command,
                 (cmd.RequiredRole, CreateDelegate(cmd.Method))
             ))
@@ -47,7 +47,7 @@ public abstract class CommandDispatcherBase
     /// </summary>
     /// <param name="targetNamespaces">Danh sách các namespace mục tiêu.</param>
     /// <returns>Danh sách các lệnh, phương thức, và vai trò yêu cầu tương ứng.</returns>
-    private IEnumerable<(Command Command, MethodInfo Method, AccessLevel RequiredRole)> LoadCommandMethods(string[] targetNamespaces)
+    private IEnumerable<(Command Command, MethodInfo Method, Authoritys RequiredRole)> LoadCommandMethods(string[] targetNamespaces)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
 
@@ -69,7 +69,7 @@ public abstract class CommandDispatcherBase
     /// <param name="command">Lệnh cần đăng ký.</param>
     /// <param name="method">Phương thức xử lý lệnh.</param>
     /// <param name="requiredRole">Vai trò yêu cầu để thực hiện lệnh.</param>
-    protected void RegisterCommand(Command command, MethodInfo method, AccessLevel requiredRole)
+    protected void RegisterCommand(Command command, MethodInfo method, Authoritys requiredRole)
     {
         var commandDelegate = CreateDelegate(method);
 

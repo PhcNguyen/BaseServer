@@ -22,7 +22,6 @@ internal static class Program
 
         System.Console.Title = $"NPServer ({ServiceController.VersionInfo})";
 
-        ServiceController.RegisterSingleton();
         ServiceController.Initialization();
 
         Thread.Sleep(1000);
