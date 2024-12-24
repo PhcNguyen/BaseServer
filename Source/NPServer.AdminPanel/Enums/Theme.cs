@@ -1,4 +1,4 @@
-﻿namespace NPServer.AdminPanel.Core.Enums;
+﻿namespace NPServer.AdminPanel.Enums;
 
 public enum Theme
 {

@@ -12,6 +12,26 @@ namespace NPServer.Infrastructure.Random;
 public sealed class Rand(uint seed) : RandMwc(seed)
 {
     /// <summary>
+    /// Trả về một số thực dấu phẩy động ngẫu nhiên từ 0.0 đến 1.0.
+    /// </summary>
+    /// <returns>Số thực dấu phẩy động ngẫu nhiên từ 0.0 đến 1.0.</returns>
+    public float GetFloat()
+    {
+        uint value = Get() & 0x7fffff | 0x3f800000;
+        return BitConverter.UInt32BitsToSingle(value) - 1.0f;
+    }
+
+    /// <summary>
+    /// Trả về một số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến 1.0.
+    /// </summary>
+    /// <returns>Số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến 1.0.</returns>
+    public double GetDouble()
+    {
+        ulong value = Get64() & 0xfffffffffffff | 0x3ff0000000000000;
+        return BitConverter.UInt64BitsToDouble(value) - 1.0;
+    }
+
+    /// <summary>
     /// Trả về một số ngẫu nhiên từ 0 đến max (không bao gồm max).
     /// </summary>
     /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
@@ -21,6 +41,46 @@ public sealed class Rand(uint seed) : RandMwc(seed)
         if (max == 0)
             return 0;
         return Get() % max;
+    }
+
+    /// <summary>
+    /// Trả về một số nguyên ngẫu nhiên từ 0 đến max (không bao gồm max).
+    /// </summary>
+    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
+    /// <returns>Số nguyên ngẫu nhiên từ 0 đến max - 1.</returns>
+    public int Get(int max)
+    {
+        return max <= 0 ? 0 : (int)(Get() & 0x7fffffff) % max;
+    }
+
+    /// <summary>
+    /// Trả về một số nguyên không dấu ngẫu nhiên từ 0 đến max (không bao gồm max).
+    /// </summary>
+    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
+    /// <returns>Số nguyên không dấu ngẫu nhiên từ 0 đến max - 1.</returns>
+    public ulong Get(ulong max)
+    {
+        return max == 0 ? 0 : Get64() % max;
+    }
+
+    /// <summary>
+    /// Trả về một số nguyên dấu ngẫu nhiên từ 0 đến max (không bao gồm max).
+    /// </summary>
+    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
+    /// <returns>Số nguyên dấu ngẫu nhiên từ 0 đến max - 1.</returns>
+    public long Get(long max)
+    {
+        return max == 0 ? 0 : (long)(Get64() & 0x7fffffffffffffffUL) % max;
+    }
+
+    /// <summary>
+    /// Trả về một số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến max (không bao gồm max).
+    /// </summary>
+    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
+    /// <returns>Số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến max.</returns>
+    public double Get(double max)
+    {
+        return max <= 0.0f ? 0.0f : GetDouble() * max;
     }
 
     /// <summary>
@@ -38,13 +98,13 @@ public sealed class Rand(uint seed) : RandMwc(seed)
     }
 
     /// <summary>
-    /// Trả về một số nguyên ngẫu nhiên từ 0 đến max (không bao gồm max).
+    /// Trả về một số thực dấu phẩy động ngẫu nhiên từ 0.0 đến max (không bao gồm max).
     /// </summary>
     /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
-    /// <returns>Số nguyên ngẫu nhiên từ 0 đến max - 1.</returns>
-    public int Get(int max)
+    /// <returns>Số thực dấu phẩy động ngẫu nhiên từ 0.0 đến max.</returns>
+    public float Get(float max)
     {
-        return max <= 0 ? 0 : (int)(Get() & 0x7fffffff) % max;
+        return max <= 0.0f ? 0.0f : GetFloat() * max;
     }
 
     /// <summary>
@@ -62,16 +122,6 @@ public sealed class Rand(uint seed) : RandMwc(seed)
     }
 
     /// <summary>
-    /// Trả về một số nguyên không dấu ngẫu nhiên từ 0 đến max (không bao gồm max).
-    /// </summary>
-    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
-    /// <returns>Số nguyên không dấu ngẫu nhiên từ 0 đến max - 1.</returns>
-    public ulong Get(ulong max)
-    {
-        return max == 0 ? 0 : Get64() % max;
-    }
-
-    /// <summary>
     /// Trả về một số nguyên không dấu ngẫu nhiên từ min đến max (bao gồm cả min và max).
     /// </summary>
     /// <param name="min">Giới hạn dưới của giá trị ngẫu nhiên.</param>
@@ -83,16 +133,6 @@ public sealed class Rand(uint seed) : RandMwc(seed)
             return max;
         ulong range = max - min + 1;
         return range == 0 ? Get64() : Get(range) + min;
-    }
-
-    /// <summary>
-    /// Trả về một số nguyên dấu ngẫu nhiên từ 0 đến max (không bao gồm max).
-    /// </summary>
-    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
-    /// <returns>Số nguyên dấu ngẫu nhiên từ 0 đến max - 1.</returns>
-    public long Get(long max)
-    {
-        return max == 0 ? 0 : (long)(Get64() & 0x7fffffffffffffffUL) % max;
     }
 
     /// <summary>
@@ -110,26 +150,6 @@ public sealed class Rand(uint seed) : RandMwc(seed)
     }
 
     /// <summary>
-    /// Trả về một số thực dấu phẩy động ngẫu nhiên từ 0.0 đến 1.0.
-    /// </summary>
-    /// <returns>Số thực dấu phẩy động ngẫu nhiên từ 0.0 đến 1.0.</returns>
-    public float GetFloat()
-    {
-        uint value = Get() & 0x7fffff | 0x3f800000;
-        return BitConverter.UInt32BitsToSingle(value) - 1.0f;
-    }
-
-    /// <summary>
-    /// Trả về một số thực dấu phẩy động ngẫu nhiên từ 0.0 đến max (không bao gồm max).
-    /// </summary>
-    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
-    /// <returns>Số thực dấu phẩy động ngẫu nhiên từ 0.0 đến max.</returns>
-    public float Get(float max)
-    {
-        return max <= 0.0f ? 0.0f : GetFloat() * max;
-    }
-
-    /// <summary>
     /// Trả về một số thực dấu phẩy động ngẫu nhiên từ min đến max (bao gồm cả min và max).
     /// </summary>
     /// <param name="min">Giới hạn dưới của giá trị ngẫu nhiên.</param>
@@ -138,26 +158,6 @@ public sealed class Rand(uint seed) : RandMwc(seed)
     public float Get(float min, float max)
     {
         return max < min ? max : GetFloat() * (max - min) + min;
-    }
-
-    /// <summary>
-    /// Trả về một số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến 1.0.
-    /// </summary>
-    /// <returns>Số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến 1.0.</returns>
-    public double GetDouble()
-    {
-        ulong value = Get64() & 0xfffffffffffff | 0x3ff0000000000000;
-        return BitConverter.UInt64BitsToDouble(value) - 1.0;
-    }
-
-    /// <summary>
-    /// Trả về một số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến max (không bao gồm max).
-    /// </summary>
-    /// <param name="max">Giới hạn trên của giá trị ngẫu nhiên.</param>
-    /// <returns>Số thực dấu phẩy động đôi ngẫu nhiên từ 0.0 đến max.</returns>
-    public double Get(double max)
-    {
-        return max <= 0.0f ? 0.0f : GetDouble() * max;
     }
 
     /// <summary>

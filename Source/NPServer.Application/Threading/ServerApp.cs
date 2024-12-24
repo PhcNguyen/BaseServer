@@ -156,8 +156,7 @@ public sealed class ServerApp
             try
             {
                 _networkListener.StopListening();
-                //_networkListener.Dispose();
-                //NPLog.Instance.Info("Socket resources disposed.");
+                NPLog.Instance.Trace("Socket resources disposed.");
             }
             catch (Exception ex)
             {

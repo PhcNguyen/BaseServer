@@ -56,6 +56,7 @@ public abstract class SocketListenerBase : IDisposable
     public virtual void StopListening()
     {
         SocketHelper.CloseSocket(this.ListenerSocket);
+        Dispose(true);
     }
 
     /// <summary>
@@ -76,11 +77,11 @@ public abstract class SocketListenerBase : IDisposable
     /// <summary>
     /// Giải phóng tài nguyên socket.
     /// </summary>
-    public void Dispose(bool disposing)
+    protected virtual void Dispose(bool disposing)
     {
         if (disposing)
         {
-            this.ListenerSocket?.Dispose();
+            ListenerSocket?.Dispose();
         }
     }
 

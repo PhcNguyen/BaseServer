@@ -5,14 +5,14 @@ using NPServer.Infrastructure.Logging;
 using NPServer.Infrastructure.Logging.Targets;
 using NPServer.Infrastructure.Management;
 using NPServer.Shared.Services;
-using NPServer.AdminPanel.Core.Enums;
-using NPServer.AdminPanel.Core.Implementations;
 using NPServer.AdminPanel.ViewsModels;
+using NPServer.AdminPanel.Implementations;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using NPServer.AdminPanel.Enums;
 
 namespace NPServer.AdminPanel
 {
@@ -33,11 +33,11 @@ namespace NPServer.AdminPanel
             this.InitializeComponent();
             this.InitializeLogging();
 
-            ButtonStop.IsEnabled = false;
-            LabelInfoCPU.Content = "CPU Name: " + InfoCPU.Name();
-            LabelInfoOS.Content = "OS: " + InfoOS.Details();
+            this.ButtonStop.IsEnabled = false;
+            this.LabelInfoCPU.Content = "CPU Name: " + InfoCPU.Name();
+            this.LabelInfoOS.Content = "OS: " + InfoOS.Details();
 
-            ButtonTheme.Content = Theme.Dark.ToString();
+            this.ButtonTheme.Content = Theme.Dark.ToString();
 
             _viewModel = new SessionViewModel(Singleton.GetInstanceOfInterface<ISessionManager>());
             DataContext = _viewModel;
@@ -54,19 +54,18 @@ namespace NPServer.AdminPanel
         {
             NPLog.Instance.LoggerHandlerManager
                 .AddHandler(new FileTarget())
-                .AddHandler(new WinFormTagers(new NLogWinFormTagers(LogsTextBox)));
+                .AddHandler(new WinFormTagers(new NLogWinFormTagers(this.LogsTextBox)));
         }
 
         private void ThemeSwitchButtonClick(object sender, RoutedEventArgs e)
         {
             var currentTheme = _appInstance.GetCurrentTheme();
-            ButtonTheme.Content = currentTheme.ToString();
+            this.ButtonTheme.Content = currentTheme.ToString();
 
-            var newTheme = currentTheme == Theme.Dark ? Theme.Light : Theme.Dark;
-            _appInstance.ChangeTheme(newTheme);
+            _appInstance.ChangeTheme(currentTheme == Theme.Dark ? Theme.Light : Theme.Dark);
         }
 
-        private async void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private static async void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.Source is TabControl tabControl && tabControl.SelectedItem is TabItem selectedTab)
             {
@@ -102,20 +101,20 @@ namespace NPServer.AdminPanel
             double opacity = 1.0;
             while (opacity >= 0)
             {
-                LogsTextBox.Opacity = opacity;
+                this.LogsTextBox.Opacity = opacity;
                 opacity -= 0.1;
                 await Task.Delay(50);
             }
 
-            LogsTextBox.Text = string.Empty;
-            LogsTextBox.Opacity = 1.0;
+            this.LogsTextBox.Text = string.Empty;
+            this.LogsTextBox.Opacity = 1.0;
         }
 
         private void InfoButtonClick(object sender, RoutedEventArgs e)
         {
-            LogsTextBox.AppendText("CPU: " + InfoCPU.Usage() + Environment.NewLine);
-            LogsTextBox.AppendText("Ram: " + InfoMemory.Usage() + Environment.NewLine);
-            LogsTextBox.ScrollToEnd();
+            this.LogsTextBox.AppendText("CPU: " + InfoCPU.Usage() + Environment.NewLine);
+            this.LogsTextBox.AppendText("Ram: " + InfoMemory.Usage() + Environment.NewLine);
+            this.LogsTextBox.ScrollToEnd();
         }
 
         private async void StartServerButtonClick(object sender, RoutedEventArgs e)
@@ -126,12 +125,12 @@ namespace NPServer.AdminPanel
             }
             finally
             {
-                LabelAddressIP.Content = $"IP: {ServiceController.NetworkConfig.IP}";
-                LabelPort.Content = $"Port: {ServiceController.NetworkConfig.Port}";
-                ButtonStart.IsEnabled = false;
+                this.LabelAddressIP.Content = $"IP: {ServiceController.NetworkConfig.IP}";
+                this.LabelPort.Content = $"Port: {ServiceController.NetworkConfig.Port}";
+                this.ButtonStart.IsEnabled = false;
 
                 await Task.Delay(2000);
-                ButtonStop.IsEnabled = true;
+                this.ButtonStop.IsEnabled = true;
             }
         }
 
@@ -143,12 +142,12 @@ namespace NPServer.AdminPanel
             }
             finally
             {
-                LabelAddressIP.Content = $"IP: None";
-                LabelPort.Content = $"Port: None";
-                ButtonStop.IsEnabled = false;
+                this.LabelAddressIP.Content = $"IP: None";
+                this.LabelPort.Content = $"Port: None";
+                this.ButtonStop.IsEnabled = false;
 
                 await Task.Delay(2000);
-                ButtonStart.IsEnabled = true;
+                this.ButtonStart.IsEnabled = true;
             }
         }
     }

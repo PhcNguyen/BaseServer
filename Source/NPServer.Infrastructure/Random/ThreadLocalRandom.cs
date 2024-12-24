@@ -15,7 +15,7 @@ public static class ThreadLocalRandom
     /// <summary>
     /// Lớp triển khai thuật toán XorShift 128+ nhanh và có chất lượng ngẫu nhiên tốt
     /// </summary>
-    private class XorShift128Plus
+    private sealed class XorShift128Plus
     {
         private ulong _state0;
         private ulong _state1;
@@ -32,7 +32,7 @@ public static class ThreadLocalRandom
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong Next()
+        public ulong Generate()
         {
             ulong x = _state0;
             ulong y = _state1;
@@ -52,7 +52,7 @@ public static class ThreadLocalRandom
     /// Sinh số ngẫu nhiên 64-bit với chất lượng cao
     /// </summary>
     public static ulong NextUInt64() =>
-        _threadLocalRng.Value!.Next();
+        _threadLocalRng.Value!.Generate();
 
     /// <summary>
     /// Điền các byte ngẫu nhiên vào buffer với hiệu suất cao

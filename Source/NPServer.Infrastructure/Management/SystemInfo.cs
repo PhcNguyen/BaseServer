@@ -40,7 +40,7 @@ internal static class SystemInfo
     {
         if (string.IsNullOrEmpty(cpu)) return "Error";
 
-        string lastLine = cpu.Split(Environment.NewLine).Last();
+        string lastLine = cpu.Split(Environment.NewLine)[^1];
         return int.TryParse(lastLine, out int cpuUsage) ? $"{cpuUsage}%" : "0%";
     }
 

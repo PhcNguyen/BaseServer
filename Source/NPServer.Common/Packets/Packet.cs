@@ -24,9 +24,9 @@ public partial class Packet : IPacket, IPoolable
     /// <summary>
     /// Constructor để tạo Packet với các tham số tuỳ chọn.
     /// </summary>
-    public Packet(PacketType type = PacketType.None, PacketFlags flags = PacketFlags.None, Enum? command = null, byte[]? payload = null)
+    public Packet(PacketType? type, PacketFlags? flags, Enum? command = null, byte[]? payload = null)
     {
-        Initialize(type, flags, ConvertCommand(command), payload);
+        Initialize(type ?? PacketType.None, flags ?? PacketFlags.None, ConvertCommand(command), payload);
     }
 
     /// <summary>

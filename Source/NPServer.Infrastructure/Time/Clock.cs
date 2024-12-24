@@ -9,17 +9,10 @@ namespace NPServer.Infrastructure.Time;
 public static class Clock
 {
     private const long GameTimeEpochTimestamp = 1733534675; // Mốc thời gian game (Sat Dec 07 2024 08:24:35 GMT+0700)
-    private static readonly DateTime UnixEpoch = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc); // Unix Epoch
-    private static readonly DateTime GameTimeEpoch = UnixEpoch.AddSeconds(GameTimeEpochTimestamp); // Game Epoch
+    private static readonly DateTime GameTimeEpoch = DateTime.UnixEpoch.AddSeconds(GameTimeEpochTimestamp); // Game Epoch
 
-    private static readonly DateTime _utcBase; // Thời gian gốc UTC
-    private static readonly Stopwatch _utcStopwatch; // Stopwatch để tính chính xác thời gian
-
-    static Clock()
-    {
-        _utcBase = DateTime.UtcNow;
-        _utcStopwatch = Stopwatch.StartNew();
-    }
+    private static readonly DateTime _utcBase = DateTime.UtcNow; // Thời gian gốc UTC
+    private static readonly Stopwatch _utcStopwatch = Stopwatch.StartNew(); // Stopwatch để tính chính xác thời gian
 
     /// <summary>
     /// Trả về thời gian UTC hiện tại chính xác cao.
@@ -39,7 +32,7 @@ public static class Clock
     /// <summary>
     /// Timestamp Unix hiện tại (millisecond).
     /// </summary>
-    public static long CurrentUnixMilliseconds => (long)(UtcNowPrecise - UnixEpoch).TotalMilliseconds;
+    public static long CurrentUnixMilliseconds => (long)(UtcNowPrecise - DateTime.UnixEpoch).TotalMilliseconds;
 
     /// <summary>
     /// Timestamp game hiện tại (millisecond).
@@ -56,7 +49,7 @@ public static class Clock
     /// Chuyển đổi timestamp Unix (milliseconds) thành DateTime.
     /// </summary>
     public static DateTime UnixTimeMillisecondsToDateTime(long timestamp)
-        => UnixEpoch.AddMilliseconds(timestamp);
+        => DateTime.UnixEpoch.AddMilliseconds(timestamp);
 
     /// <summary>
     /// Chuyển đổi timestamp game (milliseconds) thành DateTime.
@@ -68,13 +61,13 @@ public static class Clock
     /// Chuyển đổi TimeSpan (thời gian Unix) thành DateTime.
     /// </summary>
     public static DateTime UnixTimeToDateTime(TimeSpan timeSpan)
-        => UnixEpoch.Add(timeSpan);
+        => DateTime.UnixEpoch.Add(timeSpan);
 
     /// <summary>
     /// Chuyển đổi DateTime thành TimeSpan đại diện cho thời gian Unix.
     /// </summary>
     public static TimeSpan DateTimeToUnixTime(DateTime dateTime)
-        => dateTime - UnixEpoch;
+        => dateTime - DateTime.UnixEpoch;
 
     /// <summary>
     /// Chuyển đổi DateTime thành TimeSpan đại diện cho thời gian game.

@@ -13,17 +13,13 @@ public class SessionViewModel : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
 
-    private readonly ISessionManager _sessionManager;
-
     public ObservableCollection<SessionData> Sessions { get; set; } = [];
 
     public SessionViewModel(ISessionManager sessionManager)
     {
-        _sessionManager = sessionManager;
-
         // Đăng ký sự kiện từ SessionManager
-        _sessionManager.SessionAdded += OnSessionAdded;
-        _sessionManager.SessionRemoved += OnSessionRemoved;
+        sessionManager.SessionAdded += OnSessionAdded;
+        sessionManager.SessionRemoved += OnSessionRemoved;
     }
 
     private void UpdateSN()

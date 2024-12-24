@@ -54,7 +54,7 @@ public partial class Packet : IPacket
     /// <summary>
     /// Thiết lập Command mới cho gói tin.
     /// </summary>
-    public void SetCmd(short cmd) => Cmd = cmd;
+    public void SetCmd(short command) => Cmd = command;
 
     /// <summary>
     /// Thiết lập giá trị lệnh từ một đối tượng enum bất kỳ.

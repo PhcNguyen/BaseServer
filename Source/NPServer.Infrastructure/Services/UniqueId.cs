@@ -65,13 +65,13 @@ public readonly struct UniqueId(uint value) : IEquatable<UniqueId>, IComparable<
     {
         Span<char> buffer = stackalloc char[13];
         int index = buffer.Length;
-        uint value = _value;
+        uint uniqueValue = _value;
 
         do
         {
-            buffer[--index] = Alphabet[(int)(value % Base)];
-            value /= Base;
-        } while (value > 0);
+            buffer[--index] = Alphabet[(int)(uniqueValue % Base)];
+            uniqueValue /= Base;
+        } while (uniqueValue > 0);
 
         return new string(buffer.Slice(Math.Max(0, index), buffer.Length - index)).PadLeft(7, '0');
     }
@@ -160,6 +160,26 @@ public readonly struct UniqueId(uint value) : IEquatable<UniqueId>, IComparable<
     /// <param name="other">Đối tượng <see cref="UniqueId"/> để so sánh.</param>
     /// <returns>Một số nguyên cho biết thứ tự tương đối của các đối tượng được so sánh.</returns>
     public int CompareTo(UniqueId other) => _value.CompareTo(other._value);
+
+    /// <summary>
+    /// So sánh thể hiện hiện tại với một <see cref="UniqueId"/> khác để xác định nếu nhỏ hơn.
+    /// </summary>
+    public static bool operator <(UniqueId left, UniqueId right) => left._value < right._value;
+
+    /// <summary>
+    /// So sánh thể hiện hiện tại với một <see cref="UniqueId"/> khác để xác định nếu nhỏ hơn hoặc bằng.
+    /// </summary>
+    public static bool operator <=(UniqueId left, UniqueId right) => left._value <= right._value;
+
+    /// <summary>
+    /// So sánh thể hiện hiện tại với một <see cref="UniqueId"/> khác để xác định nếu lớn hơn.
+    /// </summary>
+    public static bool operator >(UniqueId left, UniqueId right) => left._value > right._value;
+
+    /// <summary>
+    /// So sánh thể hiện hiện tại với một <see cref="UniqueId"/> khác để xác định nếu lớn hơn hoặc bằng.
+    /// </summary>
+    public static bool operator >=(UniqueId left, UniqueId right) => left._value >= right._value;
 
     /// <summary>
     /// Xác định xem hai đối tượng <see cref="UniqueId"/> có bằng nhau hay không.

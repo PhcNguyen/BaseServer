@@ -41,7 +41,7 @@ public static class FileHelper
     public static void SerializeJson<T>(string path, T @object, JsonSerializerOptions? options = null)
     {
         string? dirName = Path.GetDirectoryName(path);
-        if (Directory.Exists(dirName) == false && dirName != null)
+        if (!Directory.Exists(dirName) && dirName != null)
             Directory.CreateDirectory(dirName);
 
         string json = JsonSerializer.Serialize(@object, options);
@@ -69,7 +69,7 @@ public static class FileHelper
         if (maxBackups == 0)
             return false;
 
-        if (File.Exists(filePath) == false)
+        if (!File.Exists(filePath))
             return false;
 
         // Cache backup file names for reuse.
@@ -81,7 +81,7 @@ public static class FileHelper
         {
             backupPaths[i] = $"{filePath}.bak{i}";
 
-            if (File.Exists(backupPaths[i]) == false)
+            if (!File.Exists(backupPaths[i]))
             {
                 freeIndex = i;
                 break;

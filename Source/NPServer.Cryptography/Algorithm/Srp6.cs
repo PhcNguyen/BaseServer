@@ -24,10 +24,8 @@ namespace NPServer.Cryptography.Algorithm
         private BigInteger A;
         private BigInteger b;
         private BigInteger B;
-        private BigInteger u;
         private BigInteger S;
         private BigInteger M1;
-        private BigInteger M2;
         private BigInteger K;
 
         /// <summary>
@@ -85,7 +83,7 @@ namespace NPServer.Cryptography.Algorithm
                 throw new CryptographicException();
 
             A = a;
-            u = Hash(true, A, B);
+            BigInteger u = Hash(true, A, B);
             S = BigInteger.ModPow(A * BigInteger.ModPow(v, u, N), b, N);
         }
 
@@ -131,7 +129,7 @@ namespace NPServer.Cryptography.Algorithm
             if (A == BigInteger.Zero || M1 == BigInteger.Zero || K == BigInteger.Zero)
                 throw new CryptographicException("Missing data from previous operations: A, M1, K");
 
-            M2 = Hash(true, A, M1, K);
+            BigInteger M2 = Hash(true, A, M1, K);
 
             byte[] M2Bytes = M2.ToByteArray(true);
             ReverseBytesAsUInt32(M2Bytes);

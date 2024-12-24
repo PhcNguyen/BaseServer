@@ -7,7 +7,7 @@ namespace NPServer.Core.Interfaces.Session;
 /// <summary>
 /// Đại diện cho một phiên giao tiếp với client qua mạng.
 /// </summary>
-public interface ISessionClient
+public interface ISessionClient : IDisposable
 {
     /// <summary>
     /// ID duy nhất của phiên khách hàng.
@@ -88,5 +88,5 @@ public interface ISessionClient
     /// <summary>
     /// Giải phóng tài nguyên của phiên làm việc.
     /// </summary>
-    void Dispose();
+    new void Dispose();
 }

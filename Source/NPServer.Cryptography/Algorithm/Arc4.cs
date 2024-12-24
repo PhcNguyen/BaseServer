@@ -19,7 +19,9 @@ public class Arc4
     {
         s = Enumerable.Range(0, 256).Select(i => (byte)i).ToArray();
 
-        for (uint index = 0u, index2 = 0u; index < 256u; index++)
+        uint index2 = 0u;
+
+        for (uint index = 0u; index < 256u; index++)
         {
             index2 = index2 + key[index % key.Length] + s[index] & 0xFF;
             Swap(s, index, index2);
