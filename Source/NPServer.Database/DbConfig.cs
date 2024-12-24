@@ -20,15 +20,15 @@ public class DbConfig : ConfigContainer
     /// <summary>
     /// Tên người dùng để kết nối tới cơ sở dữ liệu.
     /// </summary>
-    public string User = "root";
+    public string User = "";
 
     /// <summary>
     /// Mật khẩu để kết nối tới cơ sở dữ liệu.
     /// </summary>
-    public string Password = "root";
+    public string Password = "";
 
     /// <summary>
     /// Tên của cơ sở dữ liệu.
     /// </summary>
-    public string DbName = "NPS";
+    public string DbName = "";
 }
