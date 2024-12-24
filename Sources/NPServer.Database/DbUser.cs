@@ -1,5 +1,5 @@
-﻿using NPServer.Common.Models;
-using FreeSql.DataAnnotations;
+﻿using FreeSql.DataAnnotations;
+using NPServer.Common.Models;
 
 namespace NPServer.Database
 {
@@ -15,7 +15,6 @@ namespace NPServer.Database
     [Table(Name = "user")]
     public class DbUser(string username, string password, Authoritys authority)
     {
-
         /// <summary>
         /// ID của người dùng, là khóa chính và tự tăng.
         /// </summary>

@@ -1,7 +1,7 @@
-﻿using System;
+﻿using NPServer.Infrastructure.Logging.Interfaces;
+using System;
 using System.Text;
 using System.Windows.Controls;
-using NPServer.Infrastructure.Logging.Interfaces;
 
 namespace NPServer.UI.Core.Implementations;
 

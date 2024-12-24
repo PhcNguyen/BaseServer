@@ -23,6 +23,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\NPServer.Common\NPServer.Common.csproj" />
+		<ProjectReference Include="..\NPServer.Shared\NPServer.Shared.csproj" />
 		<ProjectReference Include="..\NPServer.Infrastructure\NPServer.Infrastructure.csproj" />
 	</ItemGroup>
 

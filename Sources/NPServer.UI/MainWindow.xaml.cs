@@ -29,7 +29,7 @@ namespace NPServer.UI
 
         public MainWindow()
         {
-            this.InitializeServices();  
+            this.InitializeServices();
             this.InitializeComponent();
             this.InitializeLogging();
 
@@ -104,14 +104,14 @@ namespace NPServer.UI
             {
                 LogsTextBox.Opacity = opacity;
                 opacity -= 0.1;
-                await Task.Delay(50); 
+                await Task.Delay(50);
             }
 
             LogsTextBox.Text = string.Empty;
             LogsTextBox.Opacity = 1.0;
         }
 
-        private void InfoButtonClick(object sender, RoutedEventArgs e) 
+        private void InfoButtonClick(object sender, RoutedEventArgs e)
         {
             LogsTextBox.AppendText("CPU: " + InfoCPU.Usage() + Environment.NewLine);
             LogsTextBox.AppendText("Ram: " + InfoMemory.Usage() + Environment.NewLine);

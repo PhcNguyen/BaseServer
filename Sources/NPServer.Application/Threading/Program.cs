@@ -13,13 +13,6 @@ internal static class Program
 
     private static void Main()
     {
-        Console.WriteLine(InfoOS.Details());
-        Console.WriteLine(InfoCPU.Name());
-        Console.WriteLine(InfoCPU.Usage());
-        Console.WriteLine(InfoMemory.Usage());
-
-        System.Console.ReadKey();
-
         System.Console.Title = $"NPServer ({ServiceController.VersionInfo})";
 
         ServiceController.Initialization();

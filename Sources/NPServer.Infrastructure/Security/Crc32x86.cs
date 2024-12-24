@@ -1,4 +1,4 @@
-﻿using NPServer.Infrastructure.Helper;
+﻿using NPServer.Infrastructure.Helpers;
 using System;
 using System.Runtime.Intrinsics.X86;
 

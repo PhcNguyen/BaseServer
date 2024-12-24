@@ -1,8 +1,8 @@
-﻿using NPServer.Shared.Default;
+﻿using NPServer.Infrastructure.Default;
 using System.IO;
 using System.Text.Json;
 
-namespace NPServer.Infrastructure.Helper;
+namespace NPServer.Infrastructure.Helpers;
 
 /// <summary>
 /// Cung cấp các phương thức giúp dễ dàng tải và lưu các tập tin.

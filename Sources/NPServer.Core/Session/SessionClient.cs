@@ -1,6 +1,6 @@
-﻿using NPServer.Core.Interfaces.Memory;
+﻿using NPServer.Common.Models;
+using NPServer.Core.Interfaces.Memory;
 using NPServer.Core.Interfaces.Session;
-using NPServer.Common.Models;
 using NPServer.Shared.Services;
 using System;
 using System.IO;
@@ -138,7 +138,7 @@ public sealed class SessionClient(Socket socket, TimeSpan timeout, IMultiSizeBuf
     }
 
     /// <summary>
-    /// Kết nối lại phiên làm việc. 
+    /// Kết nối lại phiên làm việc.
     /// </summary>
     public void Reconnect()
     {

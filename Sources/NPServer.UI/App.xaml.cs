@@ -1,6 +1,4 @@
 ﻿using NPServer.Application.Main;
-using System.Windows.Media.Imaging;
-using System;
 using NPServer.UI.Core.Enums;
 
 namespace NPServer.UI;

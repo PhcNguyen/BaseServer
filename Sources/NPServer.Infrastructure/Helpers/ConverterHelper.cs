@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace NPServer.Infrastructure.Helper;
+namespace NPServer.Infrastructure.Helpers;
 
 /// <summary>
 /// Cung cấp các phương thức trợ giúp để chuyển đổi giữa các mảng byte và các kiểu dữ liệu khác nhau.
@@ -70,7 +70,7 @@ public static class ConverterHelper
     private static int GetHexValue(char hexChar)
     {
         // Xử lý ký tự hex (0-9, A-F)
-        return hexChar <= '9' ? hexChar - '0' : (char.ToUpper(hexChar) - 'A' + 10);
+        return hexChar <= '9' ? hexChar - '0' : char.ToUpper(hexChar) - 'A' + 10;
     }
 
     /// <summary>

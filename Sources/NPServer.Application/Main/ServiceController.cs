@@ -7,8 +7,9 @@ using NPServer.Core.Memory.Buffer;
 using NPServer.Core.Network;
 using NPServer.Core.Network.Firewall;
 using NPServer.Core.Session;
+using NPServer.Infrastructure.Configuration;
+using NPServer.Infrastructure.Helpers;
 using NPServer.Infrastructure.Logging;
-using NPServer.Shared.Configuration;
 using NPServer.Shared.Services;
 using System;
 
@@ -42,7 +43,7 @@ public static class ServiceController
         {
             NPLog.Instance.Error("ServiceController: Initialization failed.", ex);
             throw;
-        }      
+        }
     }
 
     /// <summary>

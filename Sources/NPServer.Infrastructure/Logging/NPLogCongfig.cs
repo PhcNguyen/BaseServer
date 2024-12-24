@@ -1,4 +1,4 @@
-﻿using NPServer.Shared.Default;
+﻿using NPServer.Infrastructure.Default;
 using System;
 using System.IO;
 
@@ -14,7 +14,6 @@ public static class NPLogCongfig
     /// </summary>
     /// <remarks>
     /// Thư mục nhật ký được đặt trong thư mục cấu hình chung,
-    /// cụ thể là trong <see cref="PathConfig.LogFolder"/> với định dạng "yyMMdd".
     /// </remarks>
-    public static readonly string LogDirectory = Path.Combine(PathConfig.LogFolder, DateTime.Now.ToString("yyMMdd"));
+    public static readonly string LogDirectory = Path.Combine(PathConfig.Base, DateTime.Now.ToString("yyMMdd"));
 }

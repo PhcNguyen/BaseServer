@@ -29,7 +29,6 @@ public static class PacketExtensions
         return packet;
     }
 
-
     /// <summary>
     /// Tạo một gói tin từ mảng byte.
     /// </summary>

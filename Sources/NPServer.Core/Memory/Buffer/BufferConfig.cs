@@ -1,4 +1,4 @@
-﻿using NPServer.Shared.Configuration;
+﻿using NPServer.Infrastructure.Configuration;
 
 namespace NPServer.Core.Memory.Buffer;
 

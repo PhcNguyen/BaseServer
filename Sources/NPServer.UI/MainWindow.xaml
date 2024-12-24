@@ -1,14 +1,13 @@
 ﻿<Window x:Class="NPServer.UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:NPServer.UI" 
-        xmlns:vm="clr-namespace:NPServer.UI.ViewsModels" 
+        xmlns:vm="clr-namespace:NPServer.UI.ViewsModels"
         d:DataContext="{d:DesignInstance Type=vm:SessionViewModel}"
         mc:Ignorable="d"
         Width="1080" Height="520"
-        ResizeMode="NoResize" MinWidth="400" MinHeight="300" 
+        ResizeMode="NoResize" MinWidth="400" MinHeight="300"
         Icon="pack://siteoforigin:,,,/Resources/Icons/Server.ico"
         Background="{DynamicResource BackgroundColor}">
 
@@ -17,25 +16,25 @@
         <FontFamily x:Key="PixelGame">/Resources/Pixel-Game.otf</FontFamily>
 
         <Style TargetType="Label">
-            <Setter Property="FontFamily" Value="JetBrains Mono"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}"/>
+            <Setter Property="FontFamily" Value="JetBrains Mono" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{DynamicResource ForegroundColor}" />
         </Style>
 
         <Style TargetType="Button">
-            <Setter Property="FontFamily" Value="JetBrains Mono"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="JetBrains Mono" />
+            <Setter Property="FontSize" Value="14" />
         </Style>
 
         <Style TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="JetBrains Mono"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="JetBrains Mono" />
+            <Setter Property="FontSize" Value="14" />
         </Style>
 
         <Style TargetType="TabControl">
-            <Setter Property="FontFamily" Value="JetBrains Mono"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
+            <Setter Property="FontFamily" Value="JetBrains Mono" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Background" Value="{DynamicResource BackgroundColor}" />
         </Style>
     </Window.Resources>
 
@@ -72,12 +71,12 @@
                     <Label x:Name="LabelInfoCPU" Content="CPU Name: None" HorizontalAlignment="Left" Margin="10" Grid.Row="0" Grid.Column="3" />
 
                     <!-- Buttons -->
-                    <Button x:Name="ButtonTheme" Content="Theme" HorizontalAlignment="Right" Margin="10" Width="120" Height="30" Grid.Row="0" Grid.Column="4" Click="ThemeSwitchButtonClick"/>
+                    <Button x:Name="ButtonTheme" Content="Theme" HorizontalAlignment="Right" Margin="10" Width="120" Height="30" Grid.Row="0" Grid.Column="4" Click="ThemeSwitchButtonClick" />
 
                     <Button x:Name="ButtonStart" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Top" Width="120" Height="30" Grid.Row="3" Grid.Column="0" Click="StartServerButtonClick">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Image Source="pack://siteoforigin:,,,/Resources/Icons/Run.ico" Width="16" Height="16"/>
+                                <Image Source="pack://siteoforigin:,,,/Resources/Icons/Run.ico" Width="16" Height="16" />
                                 <TextBlock Margin="10,0,0,0">Start</TextBlock>
                             </StackPanel>
                         </Button.Content>
@@ -86,27 +85,26 @@
                     <Button x:Name="ButtonStop" HorizontalAlignment="Left" Margin="10" VerticalAlignment="Top" Width="120" Height="30" Grid.Row="3" Grid.Column="1" Click="ShutdownServerButtonClick">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <Image Source="pack://siteoforigin:,,,/Resources/Icons/Shutdown.ico" Width="16" Height="16"/>
+                                <Image Source="pack://siteoforigin:,,,/Resources/Icons/Shutdown.ico" Width="16" Height="16" />
                                 <TextBlock Margin="10,0,0,0">Shutdown</TextBlock>
                             </StackPanel>
                         </Button.Content>
                     </Button>
-
                 </Grid>
             </TabItem>
 
             <!-- Tab Client -->
             <TabItem Header="Client" FontSize="14">
                 <Grid Background="{DynamicResource BackgroundColor}">
-                    
+
                     <Grid.RowDefinitions>
                         <RowDefinition Height="0.5*" />
                         <RowDefinition Height="3*" />
                         <RowDefinition Height="0.5*" />
                     </Grid.RowDefinitions>
 
-                    <DataGrid ItemsSource="{Binding Sessions}" 
-                              Margin="40,5,40,5" 
+                    <DataGrid ItemsSource="{Binding Sessions}"
+                              Margin="40,5,40,5"
                               Grid.Row="1"
                               AutoGenerateColumns="False"
                               CanUserReorderColumns="False"
@@ -121,7 +119,7 @@
                         </DataGrid.Columns>
                         <DataGrid.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <VirtualizingStackPanel/>
+                                <VirtualizingStackPanel />
                             </ItemsPanelTemplate>
                         </DataGrid.ItemsPanel>
                     </DataGrid>
@@ -162,7 +160,6 @@
                             TextWrapping="Wrap" />
                 </Grid>
             </TabItem>
-
         </TabControl>
     </Grid>
 </Window>

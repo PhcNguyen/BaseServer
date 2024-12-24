@@ -1,9 +1,9 @@
-﻿using NPServer.Shared.Default;
+﻿using NPServer.Infrastructure.Default;
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NPServer.Shared.Configuration;
+namespace NPServer.Infrastructure.Configuration;
 
 /// <summary>
 /// Một singleton cung cấp quyền truy cập vào các container giá trị cấu hình.

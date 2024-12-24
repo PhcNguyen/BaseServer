@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace NPServer.Shared.Configuration;
+namespace NPServer.Infrastructure.Configuration;
 
 /// <summary>
 /// Một lớp bao bọc để đọc và ghi các tệp ini.
@@ -12,6 +12,9 @@ public sealed class IniFile
     private readonly string _path;
     private readonly Dictionary<string, Dictionary<string, string>> _iniData;
 
+    /// <summary>
+    /// Kiểm tra xem tệp có tồn tại tại đường dẫn được cung cấp hay không.
+    /// </summary>
     public bool ExistsFile => File.Exists(_path);
 
     /// <summary>

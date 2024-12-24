@@ -24,7 +24,7 @@ public sealed class ObjectPool
     /// <summary>
     /// Số đối tượng sẵn có trong pool.
     /// </summary>
-    public int AvailableCount { get => _objects.Count; } 
+    public int AvailableCount { get => _objects.Count; }
 
     /// <summary>
     /// Tạo mới nếu cần và trả về một instance của <typeparamref name="T"/>.

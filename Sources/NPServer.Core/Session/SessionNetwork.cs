@@ -2,8 +2,8 @@
 using NPServer.Core.Interfaces.Session;
 using NPServer.Core.Network.IO;
 using System;
-using System.Text;
 using System.Net.Sockets;
+using System.Text;
 
 namespace NPServer.Core.Session;
 

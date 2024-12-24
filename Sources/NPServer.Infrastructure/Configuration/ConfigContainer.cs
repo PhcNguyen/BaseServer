@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace NPServer.Shared.Configuration;
+namespace NPServer.Infrastructure.Configuration;
 
 /// <summary>
 /// Thuộc tính để bỏ qua các thuộc tính khi khởi tạo các container cấu hình.

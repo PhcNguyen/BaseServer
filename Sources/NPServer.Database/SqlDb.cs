@@ -1,6 +1,6 @@
-﻿using NPServer.Shared.Configuration;
+﻿using NPServer.Common.Models;
+using NPServer.Infrastructure.Configuration;
 using NPServer.Infrastructure.Logging;
-using NPServer.Common.Models;
 
 namespace NPServer.Database;
 

@@ -1,4 +1,4 @@
-﻿using NPServer.Infrastructure.Helper;
+﻿using NPServer.Infrastructure.Helpers;
 
 namespace NPServer.Application.Helper;
 

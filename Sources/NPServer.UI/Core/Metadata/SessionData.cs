@@ -5,6 +5,7 @@ namespace NPServer.UI.Core.Metadata;
 public class SessionData : INotifyPropertyChanged
 {
     private int _serialNumber;
+
     public int SerialNumber
     {
         get => _serialNumber;

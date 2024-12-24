@@ -1,11 +1,11 @@
-﻿using System.Collections.ObjectModel;
+﻿using NPServer.Core.Interfaces.Session;
+using NPServer.Shared.Services;
+using NPServer.UI.Core.Metadata;
+using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using NPServer.UI.Core.Metadata;
-using NPServer.Core.Interfaces.Session;
-using NPServer.Shared.Services;
 using System.Windows.Controls;
-using System;
 
 namespace NPServer.UI.ViewsModels;
 
@@ -82,5 +82,4 @@ public class SessionViewModel : INotifyPropertyChanged
 
         return dataGrid;
     }
-
 }
