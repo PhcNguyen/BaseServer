@@ -132,7 +132,7 @@ public partial class Packet : IPacket
     /// </summary>
     public override int GetHashCode()
     {
-        int hashCode = HashCode.Combine(Flags, Cmd, _payload.Length, _signature.Length);
+        int hashCode = HashCode.Combine(Flags, Cmd, 0);
         return hashCode;
     }
 

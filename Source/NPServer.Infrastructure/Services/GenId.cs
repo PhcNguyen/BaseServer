@@ -1,5 +1,6 @@
 ﻿using NPServer.Infrastructure.Time;
 using System;
+using System.Threading;
 
 namespace NPServer.Infrastructure.Services
 {
@@ -58,8 +59,10 @@ namespace NPServer.Infrastructure.Services
 
         private readonly IdType _type;
         private readonly ushort _machineId;
-        private long _lastTimestamp = (long)Clock.UnixTime.TotalMilliseconds;
+        private readonly Lock _lockObject = new();
+
         private int _sequenceNumber;
+        private long _lastTimestamp = (long)Clock.UnixTime.TotalMilliseconds;
 
         /// <summary>
         /// Tạo một thể hiện mới của <see cref="GenId"/>.
@@ -89,7 +92,7 @@ namespace NPServer.Infrastructure.Services
             long timestamp = (long)Clock.UnixTime.TotalMilliseconds;
             int sequence;
 
-            lock (this)
+            lock (_lockObject)
             {
                 if (timestamp == _lastTimestamp)
                 {
