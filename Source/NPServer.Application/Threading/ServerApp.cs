@@ -33,7 +33,7 @@ public sealed class ServerApp
 
         _ctokens = tokenSource;
         _packetController = new PacketController(_ctokens.Token);
-        _networkListener = new TcpSocketListener(networkConfig.MaxConnections);
+        _networkListener = new TcpSocketListener(networkConfig);
         _sessionController = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
     }
 
@@ -41,7 +41,7 @@ public sealed class ServerApp
     {
         _ctokens = new CancellationTokenSource();
         _packetController = new PacketController(_ctokens.Token);
-        _networkListener = new TcpSocketListener(networkConfig.MaxConnections);
+        _networkListener = new TcpSocketListener(networkConfig);
         _sessionController = new SessionController(networkConfig.TimeoutInSeconds, _ctokens.Token);
     }
 
