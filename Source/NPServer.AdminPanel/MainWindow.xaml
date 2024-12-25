@@ -3,8 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:NPServer.AdminPanel.ViewsModels"
-        d:DataContext="{d:DesignInstance Type=vm:SessionViewModel}"
+        xmlns:vm="clr-namespace:NPServer.AdminPanel" d:DataContext="{d:DesignInstance Type=vm:SessionVM}"
         mc:Ignorable="d"
         Width="1080" Height="520"
         ResizeMode="NoResize" MinWidth="400" MinHeight="300"
@@ -12,8 +11,8 @@
         Background="{DynamicResource BackgroundColor}">
 
     <Window.Resources>
-        <FontFamily x:Key="JetBrainsMono-Bold">/Resources/JetBrainsMono-Bold.ttf</FontFamily>
-        <FontFamily x:Key="PixelGame">/Resources/Pixel-Game.otf</FontFamily>
+        <FontFamily x:Key="JetBrainsMono-Bold">/Resources/Fonts/JetBrainsMono-Bold.ttf</FontFamily>
+        <FontFamily x:Key="PixelGame">/Resources/Fonts/Pixel-Game.otf</FontFamily>
 
         <Style TargetType="Label">
             <Setter Property="FontFamily" Value="JetBrains Mono" />
@@ -127,7 +126,7 @@
             </TabItem>
 
             <!-- Tab Logging -->
-            <TabItem Header="Logging" FontSize="14" Height="24" Margin="-2,-2,-2,0" VerticalAlignment="Top">
+            <TabItem Header="Logging" FontSize="14">
                 <Grid Background="{DynamicResource BackgroundColor}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="135*" />

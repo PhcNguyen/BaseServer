@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace NPServer.AdminPanel.Metadata;
+namespace NPServer.AdminPanel;
 
 public class SessionData : INotifyPropertyChanged
 {

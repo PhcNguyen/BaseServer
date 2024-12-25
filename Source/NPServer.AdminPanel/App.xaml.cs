@@ -1,5 +1,4 @@
 ﻿using NPServer.Application.Main;
-using NPServer.AdminPanel.Enums;
 
 namespace NPServer.AdminPanel;
 

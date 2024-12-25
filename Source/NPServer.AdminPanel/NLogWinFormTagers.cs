@@ -3,7 +3,7 @@ using System;
 using System.Text;
 using System.Windows.Controls;
 
-namespace NPServer.AdminPanel.Implementations;
+namespace NPServer.AdminPanel;
 
 public class NLogWinFormTagers(TextBox textBox)
     : INLogPrintTagers
